@@ -49,6 +49,7 @@ Your AI drives the ring by writing tiny files into ./state/ :
 Missing files are fine — the ring just idles.
 """
 import json
+import re
 import time
 import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -93,7 +94,155 @@ _STATE = b"{}"          # latest scene state: tracker POSTs, render GETs
 _CMDS = []              # queued board commands (your AI -> tracker)
 _ALLOWED = ("add_img", "add_card", "clear", "reset", "hand", "give",
             "yank", "hover", "scroll_note", "widget", "explode", "assemble",
-            "present")
+            "present",
+            # anatomy-education fork: see the MEDICAL VERB EXTENSION below
+            "cut", "isolate", "hide", "label", "xray", "lesion", "layer")
+
+# ---------------------------------------------------------------------------
+# MEDICAL VERB EXTENSION (anatomy-education fork) — cut / isolate / hide /
+# label / xray / lesion / layer. Each validator below either raises (any
+# Exception — ValueError/TypeError/KeyError all work) to reject the command,
+# which do_POST's existing try/except already turns into a plain 400, or
+# returns after optionally coercing/normalizing fields on `cmd` in place
+# (e.g. clamping "t", normalizing a plane normal to unit length). None of
+# these verbs carry "src", so they never touch the media-airlock jail above.
+# See schemas/verbs.md for the full argument contract these enforce.
+# ---------------------------------------------------------------------------
+_STRUCT_RE = re.compile(r'^[a-z0-9_]{1,64}$')   # structure/lesion ids
+_CASE_RE = re.compile(r'^[a-z0-9-]{1,64}$')     # case ids (cases/<id>.json)
+_PLANES = ("sagittal", "coronal", "axial")
+
+
+def _num(v):
+    """float()-guarded numeric coercion — bools aren't numbers here, and
+    anything that can't become a float raises instead of silently NaN'ing."""
+    if isinstance(v, bool):
+        raise ValueError("bool is not a number")
+    return float(v)
+
+
+def _v_title(cmd):
+    """All medical verbs accept an optional "title" that targets a model
+    item exactly like explode's title does (title-match first, else the
+    freshest model on the board — client-side, see stage.html findItem)."""
+    if "title" in cmd:
+        t = cmd["title"]
+        if not isinstance(t, str) or len(t) > 200:
+            raise ValueError("bad title")
+
+
+def _v_off(cmd):
+    """Normalizes + consumes an "off": 1 request. Returns True if present
+    (and valid), so callers can skip their "otherwise required" fields."""
+    if "off" in cmd:
+        if cmd["off"] != 1:
+            raise ValueError("off must be 1")
+        cmd["off"] = 1
+        return True
+    return False
+
+
+def _v_structure_id(v):
+    if not isinstance(v, str) or not _STRUCT_RE.match(v):
+        raise ValueError("bad structure id")
+
+
+def _v_cut(cmd):
+    # plane: "sagittal"|"coronal"|"axial", OR {"o":[x,y,z], "n":[x,y,z]}
+    # (n is normalized here; a zero-length n is rejected outright).
+    have = False
+    if "plane" in cmd:
+        have = True
+        p = cmd["plane"]
+        if isinstance(p, str):
+            if p not in _PLANES:
+                raise ValueError("bad plane")
+        elif isinstance(p, dict):
+            o, n = p.get("o"), p.get("n")
+            if not (isinstance(o, list) and len(o) == 3):
+                raise ValueError("bad plane.o")
+            if not (isinstance(n, list) and len(n) == 3):
+                raise ValueError("bad plane.n")
+            o = [_num(x) for x in o]
+            if not all(-1.0 <= x <= 1.0 for x in o):
+                raise ValueError("plane.o out of range")
+            n = [_num(x) for x in n]
+            mag = sum(x * x for x in n) ** 0.5
+            if mag < 1e-9:
+                raise ValueError("zero plane normal")
+            cmd["plane"] = {"o": o, "n": [x / mag for x in n]}
+        else:
+            raise ValueError("bad plane")
+    if "t" in cmd:
+        have = True
+        cmd["t"] = max(0.0, min(1.0, _num(cmd["t"])))
+    if "arm" in cmd:
+        have = True
+        if cmd["arm"] not in (0, 1):
+            raise ValueError("bad arm")
+        cmd["arm"] = int(cmd["arm"])
+    if _v_off(cmd):
+        have = True
+    if not have:
+        raise ValueError("cut needs at least one of plane/t/arm/off")
+
+
+def _v_isolate(cmd):
+    if _v_off(cmd):
+        return
+    _v_structure_id(cmd.get("structure"))
+
+
+def _v_hide(cmd):
+    if _v_off(cmd):
+        return
+    _v_structure_id(cmd.get("structure"))
+
+
+def _v_label(cmd):
+    if _v_off(cmd):
+        return
+    s = cmd.get("structures")
+    if s == "all":
+        return
+    if not isinstance(s, list) or not (1 <= len(s) <= 12):
+        raise ValueError("bad structures")
+    for x in s:
+        _v_structure_id(x)
+
+
+def _v_xray(cmd):
+    _v_off(cmd)  # xray has nothing else required — plain {"a":"xray"} is OK
+    if "focus" in cmd:
+        _v_structure_id(cmd["focus"])
+
+
+def _v_lesion(cmd):
+    if _v_off(cmd):
+        return
+    c = cmd.get("case")
+    if not isinstance(c, str) or not _CASE_RE.match(c):
+        raise ValueError("bad case id")
+    _v_structure_id(cmd.get("lesion"))
+
+
+def _v_layer(cmd):
+    if _v_off(cmd):
+        return
+    d = int(_num(cmd.get("depth")))
+    if not (0 <= d <= 8):
+        raise ValueError("depth out of range")
+    cmd["depth"] = d
+
+
+_MEDICAL_VERBS = {
+    "cut": _v_cut, "isolate": _v_isolate, "hide": _v_hide,
+    "label": _v_label, "xray": _v_xray, "lesion": _v_lesion,
+    "layer": _v_layer,
+}
+# ---------------------------------------------------------------------------
+# end MEDICAL VERB EXTENSION
+# ---------------------------------------------------------------------------
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -158,6 +307,11 @@ class Handler(SimpleHTTPRequestHandler):
                             raise ValueError("not in the media airlock")
                         target = hits[0]
                     cmd["src"] = "/media/" + target.relative_to(media).as_posix()
+                if cmd["a"] in _MEDICAL_VERBS:
+                    # anatomy-education fork: validate + coerce, then queue
+                    # exactly like every other verb — see _MEDICAL_VERBS above
+                    _v_title(cmd)
+                    _MEDICAL_VERBS[cmd["a"]](cmd)
                 _CMDS.append(cmd)
                 self.send_response(204)
             except Exception:
@@ -234,6 +388,44 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(tree)
             except Exception:
                 self._json({"name": "Props", "items": [], "dirs": []}, 500)
+            return
+        if self.path.startswith("/case-render"):
+            # anatomy-education fork: the LEARNER-VISIBLE view of a case —
+            # only enough to render the scene (model + variant + where the
+            # lesions live). Everything answer-bearing (vignette, diagnosis,
+            # grading_rubric, teaching, sources, review, a lesion's
+            # "finding") is deliberately never read into `out` below; see
+            # schemas/case.schema.md for the full (private) case shape.
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            cid = (q.get("id") or [""])[0]
+            cases_root = (HERE / "cases").resolve()
+            if not _CASE_RE.match(cid):
+                self.send_response(404)
+                self.end_headers()
+                return
+            target = (cases_root / f"{cid}.json").resolve()
+            if cases_root not in target.parents or not target.is_file():
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                data = json.loads(target.read_text(encoding="utf-8"))
+                lesions = []
+                for l in (data.get("lesions") or []):
+                    if isinstance(l, dict):
+                        lesions.append({"id": l.get("id"),
+                                         "structure": l.get("structure"),
+                                         "render": l.get("render")})
+                out = {"id": data.get("id"),
+                       "model": data.get("model"),
+                       "variant_model": data.get("variant_model"),
+                       "lesions": lesions}
+                self._json(out)
+            except Exception:
+                # malformed JSON (or anything else unexpected) 404s rather
+                # than 500ing — a broken case file should look absent
+                self.send_response(404)
+                self.end_headers()
             return
         if self.path == "/orb":
             # the ring's heartbeat: your assistant's live state, read from

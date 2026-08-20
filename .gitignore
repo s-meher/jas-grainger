@@ -7,3 +7,5 @@ state/mood.json
 state/wave.json
 # your personal config, created at setup: never tracked, never touched by updates
 barehands.json
+# throwaway prototypes (e.g. the cut-plane harness) — never shipped
+scratch/

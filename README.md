@@ -1,4 +1,8 @@
-# barehands
+# barehands — anatomy edition
+
+> **This is a fork.** It builds a hand-tracked **anatomy and pathology education tool** on top of [jaredrhod/barehands](https://github.com/jaredrhod/barehands) by Jared Rhodenizer: pull up a 3D organ with your bare hands, cut it open along a plane you control, point at a structure and have your AI name and teach it, then work a sourced pathology case. The medical layer lives in `js/medical/`, `schemas/`, `pathology/`, `cases/`, and `skills/`; everything else is upstream barehands, kept merge-clean so gesture fixes keep flowing.
+>
+> **Education and training only.** This software is not a medical device, performs no diagnosis of real patients, and must never substitute for clinical judgment or be presented as doing so. Pathology content is authored from cited sources and human-reviewable — never invented at runtime.
 
 > **Never used Claude Code?** Start at [jaredrhod.com](https://jaredrhod.com): pick your situation and it routes you to the right path.
 
@@ -89,6 +93,8 @@ Free to use, and always will be. If this helped you out, you can buy me a coffee
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/jaredrhod)
 
 ## License
+
+This fork remains **AGPL-3.0-or-later**, as upstream requires. Upstream code is Copyright (c) 2026 Jared Rhodenizer; the medical layer's additions carry their own copyright under the same license, with source published as the AGPL requires. Anatomical 3D models are separate data works under their own licenses (typically CC-BY-SA) — each model folder in `media/models/` ships a `LICENSE.md` with attribution and modification notes.
 
 Copyright (c) 2026 Jared Rhodenizer.
 

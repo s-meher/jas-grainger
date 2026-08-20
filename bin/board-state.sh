@@ -63,6 +63,26 @@ for i in items:
         ex = i.get("ex") or 0
         if ex > 0.02:
             desc += f", EXPLODED {round(ex * 100)}%"
+        # anatomy-education fork: cut/iso/hid/lb are all optional — absent
+        # on an un-modified client's items, so this degrades to a no-op
+        cut = i.get("cut")
+        if isinstance(cut, dict):
+            plane = cut.get("plane")
+            pct = cut.get("t")
+            pct = f" {round(pct * 100)}%" if isinstance(pct, (int, float)) else ""
+            if isinstance(plane, str):
+                desc += f", CUT {plane}{pct}"
+            elif plane:
+                desc += f", CUT custom plane{pct}"
+        iso = i.get("iso")
+        if iso:
+            desc += f", ISOLATED: {iso}"
+        hid = i.get("hid") or []
+        if hid:
+            desc += f", hidden: [{len(hid)} ids]"
+        lb = i.get("lb") or []
+        if lb:
+            desc += f", labels: {lb}"
     elif t == "panel":
         desc = f'open note "{title}"'
     elif t == "browser":
@@ -89,4 +109,10 @@ for i in items:
     if flags:
         line += "  [" + ", ".join(flags) + "]"
     print(line)
+
+# anatomy-education fork: top-level "pt" (what the cursor is pointing at),
+# absent on an un-modified client's state — degrades to no extra output
+pt = d.get("pt")
+if isinstance(pt, dict) and pt.get("structure"):
+    print(f"POINTING AT: {pt['structure']} (on {pt.get('model', '?')})")
 PY
