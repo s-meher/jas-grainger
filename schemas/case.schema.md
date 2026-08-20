@@ -43,7 +43,7 @@ has `"id": "cardiomyopathy-1"`).
 |---|---|---|---|
 | `schema` | string | yes | must be exactly `"barehands-case/1"` |
 | `id` | string | yes | matches `^[a-z0-9-]{1,64}$` and the filename |
-| `model` | string | yes | path (relative to `media/models/`) to the base GLB |
+| `model` | string | yes | airlock-relative path to the base GLB (e.g. `"models/heart/heart.glb"`) — usable directly as a stage `src` |
 | `variant_model` | string or `null` | no | an alternate GLB showing the lesion's gross appearance, if one exists |
 | `difficulty` | string | yes | e.g. `"intro"`, `"intermediate"`, `"advanced"` — free text, no enforced enum |
 | `vignette` | string | yes | the clinical stem the learner reads |
@@ -61,7 +61,7 @@ has `"id": "cardiomyopathy-1"`).
 | `id` | string | yes | matches `^[a-z0-9_]{1,64}$` |
 | `structure` | string | yes | a structure id that must exist in the model's `anatomy.json` |
 | `finding` | string | yes | the clinical/pathological finding text — **answer-bearing** |
-| `render` | object | yes | `{"kind": "tint"\|"decal"\|"variant", ...kind-specific fields}` — how the client visually marks this lesion. `tint`: `{color, intensity}`. `decal`: `{texture, uv?}`. `variant`: `{model}` (points at a mesh/sub-model swap) |
+| `render` | object | yes | `{"kind": "tint"\|"decal"\|"variant", ...kind-specific fields}` — how the client visually marks this lesion. `tint`: `{color, intensity, spread?}` — `spread` is an optional list of additional structure ids the tint bleeds onto (e.g. the infarcted wall downstream of an occluded artery). `decal`: `{texture, uv?}`. `variant`: `{model}` (points at a mesh/sub-model swap) |
 
 ## What `/case-render` exposes vs. keeps private
 
