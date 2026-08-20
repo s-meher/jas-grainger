@@ -1,0 +1,68 @@
+{
+  "schema": "barehands-case/1",
+  "id": "heart-anterior-stemi-01",
+  "model": "models/heart/heart.glb",
+  "variant_model": null,
+  "difficulty": "1",
+  "vignette": "A 58-year-old man with hypertension, hyperlipidemia, and a 35-pack-year smoking history is brought to the emergency department by his wife. Two mornings ago, while carrying boxes up a flight of stairs, he developed sudden crushing substernal chest pressure radiating to his left arm and jaw, with heavy sweating and nausea. He took antacids, blamed a large meal, and went to bed. The pressure never fully went away, and over the last day and a half he has become progressively short of breath, worse when lying flat, and too winded to walk to the mailbox. He has not seen a physician since the pain began. On arrival he is pale and diaphoretic. Vitals: HR 104 and regular, BP 132/84, RR 22, SpO2 91% on room air, temperature 37.8 C. Exam: JVP elevated, bibasilar crackles, an S3 gallop, no murmur, no pericardial rub. ECG shows ST-segment elevation with developing Q waves and T-wave inversion in leads V1 through V4, with reciprocal ST depression inferiorly. High-sensitivity troponin is markedly elevated and has plateaued rather than risen across two draws. On the board is his heart, opened at autopsy after he arrested during admission, roughly 48 hours after his symptoms began.",
+  "lesions": [
+    {
+      "id": "lad_occlusion",
+      "structure": "left_coronary_artery",
+      "finding": "The left anterior descending branch, opened longitudinally about 2 cm distal to its origin, is completely occluded by a firm dark red-brown thrombus overlying a ruptured, partly calcified atherosclerotic plaque. Downstream, at roughly 48 hours after symptom onset, the anterior left ventricular free wall, the anterior interventricular septum, and the apex show dusky red-brown mottling with an early yellow-tan center and a congested, darker rim -- the 1-to-3-day gross stage of a transmural infarct. The infarcted muscle is not yet soft; there is no wall thinning, rupture, aneurysm, or mural thrombus. Note two honest limits of this model: its left coronary artery is a single undivided mesh covering the left main, LAD, and circumflex, so the tint marks the whole left coronary tree rather than the LAD alone; and its left ventricle is a single mesh with no anterior wall, septum, or apex sub-structure, so the spread tint colors the entire chamber even though the real infarct is regional.",
+      "render": {
+        "kind": "tint",
+        "color": "#4d1414",
+        "intensity": 0.85,
+        "spread": ["left_ventricle"]
+      }
+    }
+  ],
+  "diagnosis": {
+    "correct": "Acute anterior (anteroseptal) myocardial infarction of the left ventricle, roughly 1 to 3 days old, caused by thrombotic occlusion of the left anterior descending coronary artery",
+    "accept": [
+      "anterior MI",
+      "anterior myocardial infarction",
+      "acute anterior myocardial infarction",
+      "anterior wall MI",
+      "anterior wall myocardial infarction",
+      "anterior STEMI",
+      "acute anterior ST-elevation myocardial infarction",
+      "anteroseptal MI",
+      "anteroseptal myocardial infarction",
+      "anteroapical myocardial infarction",
+      "LAD infarct",
+      "LAD territory infarct",
+      "LAD territory myocardial infarction",
+      "left anterior descending artery occlusion with anterior wall infarction",
+      "myocardial infarction of the anterior left ventricle",
+      "infarction of the anterior wall and anterior septum of the left ventricle",
+      "coronary thrombosis of the LAD with anterior infarction",
+      "acute MI, LAD distribution",
+      "subacute anterior myocardial infarction",
+      "anterior myocardial infarction approximately 2 days old",
+      "1 to 3 day old anterior myocardial infarction",
+      "48-hour-old anterior wall infarct"
+    ],
+    "distractors": [
+      "Acute inferior myocardial infarction from right coronary artery occlusion",
+      "Acute fibrinous pericarditis",
+      "Acute aortic dissection involving the ascending aorta",
+      "Massive pulmonary embolism with right ventricular strain"
+    ]
+  },
+  "grading_rubric": "FULL CREDIT: names myocardial infarction AND localizes it to the anterior/anteroseptal left ventricle or to the LAD territory, and cites at least one supporting observation -- the occlusive thrombus in the left coronary artery, the mottled yellow-tan-centered anterior wall, or the precordial V1-V4 ST elevation. Credit is not reduced for omitting the age of the infarct, but a learner who also dates it to roughly 1-3 days from the yellow-tan center with a congested rim (rather than from the vignette alone) has earned an explicit commendation. PARTIAL CREDIT: names myocardial infarction but does not localize it -- 'MI', 'heart attack', 'coronary thrombosis' with no territory. Also partial: correct territory reasoned only from the ECG with no reference to the gross specimen, since the point of the exercise is reading the tissue. NO CREDIT: any distractor-level answer (inferior/RCA territory, pericarditis, aortic dissection, pulmonary embolism), any non-ischemic cardiomyopathy, or a purely descriptive answer that names a color change without committing to a diagnosis. AUTOMATIC DEDUCTION: dating the infarct as hyperacute (under 12 hours) -- at that age there would be no gross change at all, so the visible lesion contradicts it.",
+  "teaching": "Start with the vessel, then follow the blood. The left coronary artery is occluded by a dark red-brown thrombus sitting on a ruptured atherosclerotic plaque -- plaque disruption with superimposed thrombosis is how the large majority of acute infarcts begin. Everything downstream of that clot lost its supply: with the LAD occluded, that means the anterior wall of the left ventricle, the anterior two-thirds of the interventricular septum, and the apex. Contractility in that muscle failed within about a minute of the occlusion; myocyte death began at roughly 20 to 40 minutes and advanced as a wavefront from the subendocardium outward. Now read the clock in the tissue. Under about 12 hours an infarct is grossly invisible -- the muscle looks normal to the naked eye. Dark mottling appears around 12 to 24 hours. A yellow-tan center inside a still-congested, darker rim is the 1-to-3-day appearance, and that is what is on the board: about 48 hours old. It matches his story exactly -- the crushing chest pressure two mornings ago that he treated with antacids, and a troponin that has already plateaued rather than climbed, because he is a late presenter whose enzyme peak is behind him. The ECG agrees: ST elevation confined to V1 through V4 is the anterior precordial pattern, and the Q waves and T-wave inversion are an infarct that has been evolving for a day or more, not one that started this morning. His breathlessness, elevated JVP, crackles, and S3 are the pump failing under a large anterior infarct, which is the average anterior MI -- the LAD supplies more myocardium than either other vessel, which is why anterior infarcts are the largest and carry the worst prognosis. His low-grade fever is the systemic echo of the inflammatory response clearing the necrotic muscle, not an infection. Now the part worth remembering clinically: what you are NOT yet seeing. At 48 hours the necrotic muscle is not yet at its softest. Three to seven days out, when the specimen turns bright-red-bordered and the yellow center becomes frankly soft, is the mechanical rupture window -- free wall rupture into the pericardium, rupture of the anterior septum into a new left-to-right shunt. Later still come the apical mural thrombus with its embolic stroke risk, and the thin, scarred, bulging apical aneurysm; by two to eight weeks this red-brown mottling would have become a gray-white scar with a thinned wall. He arrested before any of that. Finally, two limits of this model to keep you honest: its left coronary artery is one undivided mesh, so the highlighted vessel is the whole left coronary tree, not anatomically the LAD; and its left ventricle is one mesh with no anterior wall or septum of its own, so the spread tint colors the entire chamber even though the real infarct is regional. On a true specimen the boundary between infarcted and spared myocardium would be sharply visible, and finding that boundary is half the exercise.",
+  "sources": [
+    "pathology/anterior-mi.md (this repo) -- the authored pathology document behind this case; review status: draft",
+    "Kumar V, Abbas AK, Aster JC. Robbins & Cotran Pathologic Basis of Disease, 10th ed. Elsevier, 2021 -- ch. 12, The Heart: Ischemic Heart Disease and Myocardial Infarction (gross evolution of infarct morphology, culprit-vessel distribution, complications)",
+    "Bansal K, Gore M, Afzal M, Shams P, Nalabothu P. Anterior Myocardial Infarction. StatPearls [Internet]. StatPearls Publishing; updated 12 Feb 2024. https://www.ncbi.nlm.nih.gov/books/NBK562234/ -- LAD territory, presentation and vitals, precordial ECG patterns, complications",
+    "Engelen DJ, Gorgels AP, Cheriex EC, et al. Value of the electrocardiogram in localizing the occlusion site in the left anterior descending coronary artery in acute anterior myocardial infarction. J Am Coll Cardiol. 1999;34(2):389-395 -- proximal vs. distal LAD occlusion and precordial lead patterns"
+  ],
+  "review": {
+    "status": "draft",
+    "verified_by": null,
+    "date": null,
+    "artifact": null
+  }
+}
