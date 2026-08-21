@@ -165,6 +165,16 @@ The remaining sections, in this order:
   the citation.
 - **Distinguish what you read from what you recall.** Anything you did
   not open during authoring goes in the uncertainty notes, flagged.
+- **REPAIRING a citation is when fabrication actually happens.** This
+  rule is not hypothetical — it has already been violated in this repo
+  and caught by review. The trap: a reviewer hands you a bare identifier
+  ("those figures are in NBK537228"), you retag the claim, and you dress
+  the reference with a plausible title and author list you never looked
+  at. The identifier is right, so the fix *feels* verified; the byline is
+  invented. **Fetch the source and copy its real title, authors, and date
+  before writing any reference — including one you are only correcting,
+  and especially when a review told you the number is right.** A one-line
+  bibliographic fix gets the same treatment as a new citation.
 - **Match style to `anatomy.json`'s `teach.sources`** so the board's AI
   can quote either interchangeably.
 

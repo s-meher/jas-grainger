@@ -14,7 +14,9 @@
         "kind": "tint",
         "color": "#4d1414",
         "intensity": 0.85,
-        "spread": ["left_ventricle"]
+        "spread": [
+          "left_ventricle"
+        ]
       }
     }
   ],
@@ -59,9 +61,13 @@
     "Engelen DJ, Gorgels AP, Cheriex EC, et al. Value of the electrocardiogram in localizing the occlusion site in the left anterior descending coronary artery in acute anterior myocardial infarction. J Am Coll Cardiol. 1999;34(2):389-395 -- proximal vs. distal LAD occlusion and precordial lead patterns"
   ],
   "review": {
-    "status": "draft",
-    "verified_by": null,
-    "date": null,
-    "artifact": null
+    "status": "verified",
+    "verified_by": "independent review agents, separate context from the author; no reviewer held write access to pathology/ or cases/",
+    "date": "2026-08-20",
+    "artifact": [
+      "review/heart-anterior-stemi-01.md",
+      "review/heart-anterior-stemi-01-recheck.md",
+      "review/heart-anterior-stemi-01-citation-confirm.md"
+    ]
   }
 }

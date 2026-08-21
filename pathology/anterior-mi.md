@@ -3,9 +3,9 @@
 **Education only.** This file is teaching content for a 3D anatomy board.
 It is not a diagnostic aid, not clinical guidance, and never a statement
 about a real person's body. Nothing below is asserted from an author's
-memory: every factual section carries a citation, and the file is a
-**draft until an independent reviewer verifies it** (see the review status
-line at the bottom).
+memory: every factual section carries a citation, and the file was a
+**draft until an independent reviewer verified it** — which it now has (see
+the review status line at the bottom, and the three artifacts in `review/`).
 
 ---
 
@@ -262,4 +262,18 @@ Flagged honestly so the reviewer knows where to look hardest:
 
 ---
 
-**review status: draft — pending independent verification**
+**review status: VERIFIED — 2026-08-20, by independent review in a separate
+context from the author (no reviewer held write access to `pathology/` or
+`cases/`).** Three passes are on record in `review/`:
+`heart-anterior-stemi-01.md` (full adversarial fact-check: the section 3
+morphology timeline confirmed row-for-row against four independent pathology
+references, the timing claims against Reimer & Jennings 1977, the StatPearls
+attributions fetched and compared — returned FAIL with two corrections),
+`heart-anterior-stemi-01-recheck.md` (corrections confirmed applied; caught a
+fabricated author byline introduced by the correction itself), and
+`heart-anterior-stemi-01-citation-confirm.md` (that reference re-fetched and
+matched element-for-element).
+
+One item remains open and is deliberately not claimed as verified: the section
+3 table was confirmed against four independent references but **not** against
+the printed Robbins 10th ed. table it cites. See the uncertainty notes.
