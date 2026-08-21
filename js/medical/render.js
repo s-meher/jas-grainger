@@ -24,6 +24,8 @@ import { kin } from "./core.js";
 
 const CSS_ID = "medical-css";
 const FADE_A = 0.06;           // a below-depth layer, faded not gone
+const CAP_DIM = 0.72;          // the cut face sits a shade under the lit skin
+const CAP_FLESH = 0x9a6a66;    // fallback when a material carries no colour
 
 // scratch — reused every frame so a 45Hz tick allocates nothing
 let _v, _m1, _m2, _b1, _b2;
@@ -65,6 +67,7 @@ function setPlanes(mat, planes) {
 
 function restore(sc) {
   const M = sc.med;
+  capsOff(sc);
   M.orig.forEach((mat, m) => { m.material = mat; setPlanes(mat, null); });
   M.vis0.forEach((v, m) => { m.visible = v; });
   M.clones.forEach(c => { try { c.dispose(); } catch (e) {} });
@@ -132,7 +135,7 @@ function localBox(sc) {
   const inv = new THREE.Matrix4().copy(sc.group.matrixWorld).invert();
   const b = new THREE.Box3(), t = new THREE.Box3(), mm = new THREE.Matrix4();
   sc.group.traverse(n => {
-    if (!n.isMesh || !n.geometry) return;
+    if (!n.isMesh || !n.geometry || n.userData.medCap) return;   // not our own caps
     if (!n.geometry.boundingBox) n.geometry.computeBoundingBox();
     if (!n.geometry.boundingBox) return;
     t.copy(n.geometry.boundingBox);
@@ -149,12 +152,10 @@ function localBox(sc) {
  *  (M.planeL) plus its live world twin (M.plane, refreshed every tick).
  *  Returns the world plane, or null when nothing is cut.
  *
- *  THE CAP SEAM — this is a CLIP-ONLY cut today: the model reads hollow
- *  where the plane passes through it. The "solid ink" / stencil cap pass
- *  slots in right here, at the end of this function: everything a cap
- *  needs is in scope (the world plane, sc.renderer, sc.scene, and the
- *  clipped meshes are exactly those paint() gave clippingPlanes to).
- *  Nothing else in this file has to move for caps to land. */
+ *  THE CAP SEAM — the cut is no longer clip-only: caps() below fills the
+ *  cut face. It does NOT run from here, because a cap has to know which
+ *  meshes paint() actually left solid (isolate/hide/layer/x-ray all have
+ *  a say), so paint() calls it once the visibility pass has settled. */
 export function applyCut(sc, st) {
   const M = sc.med, THREE = sc.THREE;
   const cut = st.cut;
@@ -195,6 +196,146 @@ export function applyCut(sc, st) {
   return M.plane;
 }
 
+// ------------------------------------------------------------- the caps
+// Tear the cap rig down. Called from restore() — so paint() always rebuilds
+// from nothing and stays idempotent — and from dispose() through it.
+function capsOff(sc) {
+  const M = sc.med;
+  if (!M.cap) return;
+  for (const n of M.cap.nodes) if (n.parent) n.parent.remove(n);
+  for (const d of M.cap.junk) { try { d.dispose(); } catch (e) {} }
+  M.cap = null;
+}
+
+/** THE CAP PASS — a cut organ has to read SOLID, not like a shell someone
+ *  scooped out. Classic scene-graph stencil (three's webgl_clipping_stencil),
+ *  but run PER STRUCTURE rather than once for the whole model: each
+ *  structure gets its own quad, so the cut face can carry that structure's
+ *  own colour (a lesion tint included) and a hidden/isolated-away structure
+ *  simply never gets one.
+ *
+ *  Per structure, three passes: front faces DECREMENT the stencil, back
+ *  faces INCREMENT it, both clipped by the cut plane and writing no colour
+ *  and no depth — so any pixel where the eye ray entered more solid than it
+ *  left ends up non-zero, i.e. inside the material. Then one quad lying ON
+ *  the plane paints exactly those pixels and writes 0 back everywhere it
+ *  covers, which hands the next structure a clean buffer for free.
+ *
+ *  This is exact ONLY for closed manifolds. media/models/heart/heart.glb is
+ *  16 watertight parts, so it is exact here; a future model with holes in a
+ *  shell would leave the count unbalanced and its cap would bleed across the
+ *  silhouette. If that day comes, the fallback is per-structure: test the
+ *  geometry for open edges at index time and leave the leaky ones clip-only.
+ *
+ *  `solids` is structure id -> the meshes paint() left opaque. */
+function caps(sc, solids) {
+  const M = sc.med, THREE = sc.THREE;
+  if (!M.planeL || !M.plane || !solids.size) return;
+  // The bloom path renders the scene into WebGLRenderTargets, and those
+  // carry no stencil attachment — the writers would count into nothing and
+  // every cap would flood the silhouette. Holo and glow-lift models keep
+  // the clip-only cut; medical solids render straight to the canvas.
+  if (sc.post) return;
+  try {
+    const a = sc.renderer.getContext().getContextAttributes();
+    if (!a || !a.stencil) return;          // a renderer with no stencil buffer
+  } catch (e) { return; }
+
+  const lb = localBox(sc);
+  // one quad geometry for every structure: the bbox diagonal is the widest
+  // any cross-section can be, so it always covers the silhouette (the
+  // stencil, not the quad's edge, is what shapes the cap)
+  const d = lb.getSize(new THREE.Vector3()).length() * 1.05;
+  const geo = new THREE.PlaneGeometry(d || 1, d || 1);
+  const cap = { nodes: [], junk: [geo] };
+  M.cap = cap;
+
+  // everything below is GROUP-LOCAL, where M.planeL lives: the quads hang
+  // off sc.group and the writers off the meshes themselves, so the turning
+  // hologram (and an explode) carries the whole rig without a per-frame fix
+  sc.group.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(sc.group.matrixWorld).invert();
+  const q = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 0, 1), M.planeL.normal);
+  const org = M.planeL.projectPoint(lb.getCenter(new THREE.Vector3()),
+                                    new THREE.Vector3());
+  const bb = new THREE.Box3(), mm = new THREE.Matrix4();
+  const writer = new THREE.MeshBasicMaterial({
+    colorWrite: false, depthWrite: false,
+    depthTest: false,              // count EVERY face, not just visible ones
+    stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc,
+  });
+
+  let i = 0;
+  for (const [, meshes] of solids) {
+    // a structure the plane misses entirely has no cut face to fill
+    const cross = meshes.filter(m => {
+      if (!m.geometry) return false;
+      if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+      if (!m.geometry.boundingBox) return false;
+      bb.copy(m.geometry.boundingBox);
+      mm.multiplyMatrices(inv, m.matrixWorld);
+      bb.applyMatrix4(mm);
+      return M.planeL.intersectsBox(bb);
+    });
+    if (!cross.length) continue;
+
+    // writers first, then this structure's quad, then the next structure —
+    // the whole trick is that ordering. Model meshes sit at renderOrder 0
+    // and so lay down depth before any of it.
+    const ro = 2 + i * 2;
+    let col = null;
+    for (const m of cross) {
+      for (const [side, op] of [[THREE.FrontSide, THREE.DecrementWrapStencilOp],
+                                [THREE.BackSide, THREE.IncrementWrapStencilOp]]) {
+        const mat = writer.clone();
+        mat.side = side;
+        mat.clippingPlanes = [M.plane];    // the live world plane, by reference
+        mat.stencilFail = mat.stencilZFail = mat.stencilZPass = op;
+        const w = new THREE.Mesh(m.geometry, mat);
+        w.renderOrder = ro;
+        w.userData.medCap = 1;
+        w.raycast = () => {};              // "what is this?" must not hit it
+        // parented to the mesh with an identity transform: exactly coincident,
+        // and it inherits .visible, so hide/isolate can never desync
+        m.add(w);
+        cap.nodes.push(w); cap.junk.push(mat);
+      }
+      if (!col) {
+        // the CURRENT material, not the shipped one — a lesion tint should
+        // show on the cut face too
+        const b = asArr(m.material)[0];
+        if (b && b.color) col = b.color.clone();
+      }
+    }
+    if (!col) col = new THREE.Color(CAP_FLESH);
+    col.multiplyScalar(CAP_DIM);
+    const cm = new THREE.MeshBasicMaterial({
+      color: col, side: THREE.DoubleSide,
+      // NotEqual 0 paints only inside-the-solid pixels; Replace with ref 0
+      // then zeroes every pixel the quad covered, pass or fail
+      stencilWrite: true, stencilRef: 0, stencilFunc: THREE.NotEqualStencilFunc,
+      stencilFail: THREE.ReplaceStencilOp, stencilZFail: THREE.ReplaceStencilOp,
+      stencilZPass: THREE.ReplaceStencilOp,
+      // the quad is exactly coplanar with the clipped rim; without this the
+      // two z-fight into a dotted black outline around the whole section
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+      // NOT clipped by the cut plane — it IS the cut plane
+      clippingPlanes: null,
+    });
+    const pm = new THREE.Mesh(geo, cm);
+    pm.quaternion.copy(q);
+    pm.position.copy(org);
+    pm.renderOrder = ro + 1;
+    pm.userData.medCap = 1;
+    pm.raycast = () => {};
+    sc.group.add(pm);
+    cap.nodes.push(pm); cap.junk.push(cm);
+    i++;
+  }
+  writer.dispose();
+}
+
 // -------------------------------------------------------------- paint
 /** Full repaint from sc.med.st. Restore-then-apply, so it is idempotent
  *  and the order verbs arrived in can never matter. */
@@ -224,6 +365,15 @@ export function paint(sc) {
   }
   const gm = st.xray ? ghost(sc) : null;
   if (gm) setPlanes(gm, planes);
+  // what the cap pass gets to fill: structure -> the meshes left OPAQUE.
+  // A ghosted or faded-back mesh is deliberately see-through; a solid lid
+  // on its cut face would just undo the effect.
+  const solids = plane ? new Map() : null;
+  const solid = (s, m) => {
+    if (!solids || !s) return;             // an orphan mesh caps nothing
+    if (!solids.has(s)) solids.set(s, []);
+    solids.get(s).push(m);
+  };
 
   for (const m of M.idx.meshes) {
     if (!M.orig.has(m)) M.orig.set(m, m.material);   // the shipped material
@@ -241,6 +391,7 @@ export function paint(sc) {
     const gz = !!st.xray && !(focus && s && focus.has(s));
     const tint = !!(les && s && les.has(s));
     if (gz) { m.material = gm; continue; }           // x-ray beats the rest
+    if (!deep) solid(s, m);
     if (!deep && !tint && !planes) continue;         // untouched: restore() left it
 
     const base = M.orig.get(m);
@@ -260,6 +411,9 @@ export function paint(sc) {
     });
     m.material = Array.isArray(base) ? out : out[0];
   }
+  // after the visibility pass, so the cut face only ever gets filled where
+  // something is actually on screen (and with its post-tint colour)
+  if (solids) { try { caps(sc, solids); } catch (e) { console.warn("[medical] caps", e); } }
   labels(sc);
 }
 
@@ -365,6 +519,7 @@ export function dispose(sc) {
   try { if (M.ghost) M.ghost.dispose(); } catch (e) {}
   try { if (M.lbox) M.lbox.remove(); } catch (e) {}
   try { sc.renderer.localClippingEnabled = false; } catch (e) {}
-  M.ghost = null; M.lbox = null; M.plane = null; M.planeL = null;
+  try { capsOff(sc); } catch (e) {}       // belt + braces if restore() threw
+  M.ghost = null; M.lbox = null; M.plane = null; M.planeL = null; M.cap = null;
   M.labels.clear(); M.anchors.clear();
 }
