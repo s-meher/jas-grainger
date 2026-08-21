@@ -85,13 +85,37 @@ running server; codes are 204 (accepted) unless noted.
 **`cut`** — slice the model along a plane. `plane` is a preset
 (`"sagittal"`/`"coronal"`/`"axial"`) or a custom `{"o":[x,y,z],"n":[x,y,z]}`
 plane in model space; `t` (0..1) scrubs how far along the axis the cut
-sits; `arm:1` primes the cut-plane gesture handle for the user to grab;
-`off:1` turns cutting off.
+sits; `off:1` turns cutting off. The presets are truly anatomical: they
+resolve through the model's `axes` block in `anatomy.json`, so "coronal"
+means front-from-back on *that* organ however its exporter oriented it.
 ```
 board.sh '{"a":"cut","plane":"sagittal","t":0.5}'                        # 204
-board.sh '{"a":"cut","plane":{"o":[0,0,0],"n":[0,0,1]},"arm":1}'         # 204
+board.sh '{"a":"cut","plane":{"o":[0,0,0],"n":[0,0,1]}}'                 # 204
 board.sh '{"a":"cut","off":1}'                                            # 204
 ```
+
+**`cut` with `arm:1` — handing the knife to the user.** This is the one
+verb that changes what the user's *hands* do, so understand it before
+you send it. Arming puts the model into cut mode: a flat-palm swipe
+across it commits the palm's own plane as the incision, and an
+index-plus-middle spread scrubs how deep the cut runs.
+
+While cut mode is armed, that hand **cannot grab, throw, or explode-scrub
+the model** — the grab vocabulary is deliberately suspended so a cutting
+hand never flings the organ across the room. The clap is disqualified
+too, so nobody wipes the board mid-incision.
+
+```
+board.sh '{"a":"cut","arm":1}'    # "here — cut it open yourself"
+board.sh '{"a":"cut","arm":0}'    # hand the normal gestures back
+```
+
+Arm it when the user asks to cut it open *themselves*. Cut it for them
+with a preset when they ask to *see* a particular section. Say which one
+you did — "go ahead, swipe a flat palm across it" versus "here's a
+sagittal section" — because the user cannot tell by looking that their
+grab gesture has been suspended. Cut mode disarms itself after ~20
+seconds of no cutting, and `off:1` disarms it immediately.
 
 **`isolate`** — show only one structure, dim/hide the rest.
 ```
@@ -215,8 +239,13 @@ sidecar is the source of truth for this session, not your training data.
 > **You:** `board.sh '{"a":"present","title":"Heart","src":"models/heart/heart.glb"}'`
 > then: "Up on the board — full heart, center stage."
 
-> **User cuts it open with their hands** (no action from you needed —
-> that's their gesture on the cut-plane handle).
+> **User:** "Let me cut it open myself."
+> **You:** `board.sh '{"a":"cut","arm":1}'`
+> then say what changed: "It's armed — swipe a flat palm across it and
+> that's your incision plane; spread index and middle to go deeper.
+> Grabbing is off while you're cutting."
+
+> **User cuts.** No further action from you — the plane is theirs.
 
 > **User points at a structure:** "What's this?"
 > **You:**
