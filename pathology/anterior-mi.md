@@ -218,12 +218,17 @@ necrotic tissue is softest and the gross specimen is yellow.
    anterior descending coronary artery in acute anterior myocardial
    infarction. *J Am Coll Cardiol*. 1999;34(2):389–395 — proximal vs.
    distal LAD occlusion and the corresponding precordial lead patterns.
-4. Akbar H, Foth C, Kahloon RA, Mountfort S. *Acute ST-Elevation
-   Myocardial Infarction*. StatPearls [Internet]. Treasure Island (FL):
-   StatPearls Publishing. https://www.ncbi.nlm.nih.gov/books/NBK537228/
-   — the culprit-vessel frequency distribution (LAD 40–50%, RCA 30–40%,
-   LCx 15–20%), verified verbatim against this source during independent
-   review.
+4. Ludhwani D, Chhabra L, Goyal A, Quintanilla Rodriguez BS, Gupta N.
+   *Lateral Wall Myocardial Infarction*. StatPearls [Internet]. Treasure
+   Island (FL): StatPearls Publishing; last updated 29 October 2024.
+   https://www.ncbi.nlm.nih.gov/books/NBK537228/ — the culprit-vessel
+   frequency distribution, stated there verbatim: "The LCx is involved in
+   approximately 15% to 20% of all myocardial infarctions. The LAD is
+   involved more frequently, in around 40% to 50% of myocardial
+   infarctions, while the right coronary artery is responsible for 30% to
+   40%." (The chapter's own subject is the lateral wall; it is cited here
+   only for this epidemiological distribution, which it gives for
+   infarcts as a whole. Title and authors confirmed against the page.)
 
 ## 8. Author's uncertainty notes (read these, Verifier)
 
