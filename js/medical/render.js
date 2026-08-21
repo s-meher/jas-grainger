@@ -148,6 +148,26 @@ function localBox(sc) {
   return (M.lb3 = b);
 }
 
+// The anatomical axis a preset cuts across, as a unit vector in model space.
+// The plane NORMAL for each preset is the axis the cut separates along:
+// sagittal separates left from right, coronal anterior from posterior, axial
+// superior from inferior. Signs don't matter to a plane's orientation, but
+// they do decide which half `t` slides toward, so they are honored.
+const DEFAULT_AXES = { superior: "+y", left: "+x", anterior: "+z" };
+const PRESET_AXIS = { sagittal: "left", coronal: "anterior", axial: "superior" };
+
+function axisVec(THREE, M, preset) {
+  const named = (M.doc && M.doc.axes) || DEFAULT_AXES;
+  const spec = String(named[PRESET_AXIS[preset]] ||
+                      DEFAULT_AXES[PRESET_AXIS[preset]] || "+y").toLowerCase();
+  const s = spec[0] === "-" ? -1 : 1;
+  const k = spec.replace(/^[-+]/, "");
+  const v = new THREE.Vector3(k === "x" ? s : 0, k === "y" ? s : 0,
+                              k === "z" ? s : 0);
+  if (v.lengthSq() === 0) v.set(0, 1, 0);      // a malformed axes block
+  return v;
+}
+
 /** Build the clip plane for the current cut state, in model-local space
  *  (M.planeL) plus its live world twin (M.plane, refreshed every tick).
  *  Returns the world plane, or null when nothing is cut.
@@ -166,12 +186,14 @@ export function applyCut(sc, st) {
   let n, pt;
   const p = cut.plane;
   if (typeof p === "string") {
-    // the preset planes map to MODEL-local axes: sagittal splits left from
-    // right (x), coronal front from back (z), axial top from bottom (y)
-    n = new THREE.Vector3(p === "sagittal" ? 1 : 0,
-                          p === "axial" ? 1 : 0,
-                          p === "coronal" ? 1 : 0);
-    if (n.lengthSq() === 0) n.set(0, 1, 0);
+    // The preset planes are ANATOMICAL, so they can only be resolved against
+    // the model's own orientation — sagittal splits left from right, coronal
+    // front from back, axial top from bottom, whatever axes those happen to
+    // be. The sidecar's `axes` states them (schemas/anatomy.schema.md); a
+    // model that omits it is assumed to follow the glTF Y-up convention,
+    // which segmented medical exports usually do NOT (this heart is Z-up
+    // with anterior at -Y, so hardcoding Y-up cut it in the wrong places).
+    n = axisVec(THREE, M, p);
     // t = 0..1 slides the plane across the model's own extent; 0.5 = center
     const lo = c.clone().sub(h).dot(n), hi = c.clone().add(h).dot(n);
     const t = cut.t == null ? 0.5 : Math.max(0, Math.min(1, cut.t));
@@ -493,6 +515,7 @@ export function tick(sc) {
   const now = performance.now();
   if (now - M.anchorT > 200) { M.anchorT = now; anchors(sc, mw); }
   const v = _v || (_v = new THREE.Vector3());
+  const live = [];
   for (const [id, d] of M.labels) {
     const p = M.anchors.get(id);
     if (!p) { d.style.display = "none"; continue; }
@@ -502,10 +525,32 @@ export function tick(sc) {
       d.style.display = "none"; continue;
     }
     d.style.display = "";
+    live.push({ id, d, x: v.x * 0.5 + 0.5, y: -v.y * 0.5 + 0.5, z: v.z });
+  }
+  // DE-COLLISION: structures nest inside each other, so their bbox centers
+  // project almost on top of one another — three tags stacked on the same
+  // pixel is worse than no tags. Nearest-first (a tag in front wins its
+  // spot), then push each colliding tag DOWN the minimum distance that
+  // clears the ones already placed. Vertical only: the leader line is
+  // implicit, and sideways drift would break the tag away from its
+  // structure entirely.
+  live.sort((a, b) => a.z - b.z);
+  const GAP = 0.052;                     // ~one tag height in card fractions
+  const placed = [];
+  for (const t of live) {
+    let y = t.y;
+    for (let pass = 0; pass < live.length; pass++) {
+      const hit = placed.find(q => Math.abs(q.y - y) < GAP &&
+                                   Math.abs(q.x - t.x) < 0.42);
+      if (!hit) break;
+      y = hit.y + GAP;
+    }
+    t.y = y;
+    placed.push(t);
     // percentages, not px — the card scales and the tags ride it for free
-    d.style.left = ((v.x * 0.5 + 0.5) * 100).toFixed(2) + "%";
-    d.style.top = ((-v.y * 0.5 + 0.5) * 100).toFixed(2) + "%";
-    d.classList.toggle("on", M.ptS === id);       // pointed-at tag lights up
+    t.d.style.left = (t.x * 100).toFixed(2) + "%";
+    t.d.style.top = (y * 100).toFixed(2) + "%";
+    t.d.classList.toggle("on", M.ptS === t.id);   // pointed-at tag lights up
   }
 }
 

@@ -63,6 +63,7 @@ hardcoding mesh names.
 | `model` | string | yes | GLB filename (or relative path) alongside this file |
 | `source` | object | yes | `{name, url, license, modifications}` — all strings; provenance for the asset |
 | `system` | string | yes | free text, e.g. `"cardiovascular"`, `"skeletal"` |
+| `axes` | object | no | how the model sits in its own space: `{"superior": "+z", "left": "+x", "anterior": "-y"}`. Each value is a signed axis (`+x`/`-x`/`+y`/`-y`/`+z`/`-z`). **This is what makes the `cut` presets anatomical**: sagittal cuts perpendicular to `left`, coronal to `anterior`, axial to `superior`. Omit it and the client assumes the glTF Y-up convention (`superior:+y, left:+x, anterior:+z`), which is wrong for most segmented medical datasets — measure your model and state it. |
 | `structures` | object | yes | keyed by **snake_case id**, `^[a-z0-9_]{1,64}$` — see below |
 | `aliases` | object | yes (may be `{}`) | `{"<free-text alias>": "<structure id>"}` |
 

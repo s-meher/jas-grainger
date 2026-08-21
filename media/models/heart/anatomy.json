@@ -8,229 +8,391 @@
     "modifications": "Selected 16 FMA concepts for the heart from BodyParts3D's partof_BP3D_4.0_obj_99.zip, combined each concept's element OBJ files into one named mesh per part, converted to glTF binary, welded coincident vertices, simplified from 171,314 to 130,464 triangles (border-locked), and pruned unused data. No textures or materials added, geometry unaltered from source. See media/models/heart/LICENSE.md for full provenance."
   },
   "system": "cardiovascular",
+  "axes": {
+    "superior": "+z",
+    "left": "+x",
+    "anterior": "-y"
+  },
   "structures": {
     "right_atrium": {
       "name": "Right Atrium",
-      "meshes": ["right_atrium", "right_atrium-Mesh"],
+      "meshes": [
+        "right_atrium",
+        "right_atrium-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:7096",
       "teach": {
         "function": "Receives deoxygenated systemic venous blood from the superior vena cava, inferior vena cava, and coronary sinus, and passes it through the tricuspid valve into the right ventricle. Its wall near the SVC junction houses the sinoatrial node, the heart's primary pacemaker.",
-        "connects": ["superior_vena_cava", "inferior_vena_cava", "coronary_sinus", "tricuspid_valve"],
+        "connects": [
+          "superior_vena_cava",
+          "inferior_vena_cava",
+          "coronary_sinus",
+          "tricuspid_valve"
+        ],
         "diseased_appearance": "Chronic volume overload from tricuspid regurgitation or long-standing atrial fibrillation causes atrial dilation and wall thinning; right heart failure or pulmonary hypertension produces marked chamber enlargement visible grossly.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "left_atrium": {
       "name": "Left Atrium",
-      "meshes": ["left_atrium", "left_atrium-Mesh"],
+      "meshes": [
+        "left_atrium",
+        "left_atrium-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:7097",
       "teach": {
         "function": "Receives oxygenated blood from the pulmonary veins and delivers it through the mitral valve into the left ventricle. It forms most of the heart's posterior surface (the base).",
-        "connects": ["mitral_valve"],
+        "connects": [
+          "mitral_valve"
+        ],
         "diseased_appearance": "Mitral stenosis or regurgitation, and chronic atrial fibrillation, cause progressive dilation and wall thinning; the dilated, stagnant chamber (particularly its appendage) is a common site of thrombus formation.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "right_ventricle": {
       "name": "Right Ventricle",
-      "meshes": ["right_ventricle", "right_ventricle-Mesh"],
+      "meshes": [
+        "right_ventricle",
+        "right_ventricle-Mesh"
+      ],
       "parent": null,
-      "children": ["tricuspid_valve", "pulmonary_valve"],
+      "children": [
+        "tricuspid_valve",
+        "pulmonary_valve"
+      ],
       "layer": 0,
       "fma": "FMA:7098",
       "teach": {
         "function": "Receives blood from the right atrium via the tricuspid valve and pumps it through the pulmonary valve into the pulmonary trunk toward the lungs. It is thin-walled and crescent-shaped in cross-section compared to the left ventricle, reflecting the lower-pressure pulmonary circuit.",
-        "connects": ["tricuspid_valve", "pulmonary_valve", "right_atrium"],
+        "connects": [
+          "tricuspid_valve",
+          "pulmonary_valve",
+          "right_atrium"
+        ],
         "diseased_appearance": "Pressure overload from pulmonary hypertension or pulmonic stenosis produces free-wall hypertrophy; volume overload or arrhythmogenic right ventricular cardiomyopathy causes dilation, wall thinning, and fatty or fibrous replacement of myocardium.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "left_ventricle": {
       "name": "Left Ventricle",
-      "meshes": ["left_ventricle", "left_ventricle-Mesh"],
+      "meshes": [
+        "left_ventricle",
+        "left_ventricle-Mesh"
+      ],
       "parent": null,
-      "children": ["mitral_valve", "aortic_valve"],
+      "children": [
+        "mitral_valve",
+        "aortic_valve"
+      ],
       "layer": 0,
       "fma": "FMA:7101",
       "teach": {
         "function": "Receives oxygenated blood from the left atrium via the mitral valve and ejects it through the aortic valve into the aorta and systemic circulation. Its thick, circumferentially arranged myocardium generates the high pressures needed for systemic perfusion.",
-        "connects": ["mitral_valve", "aortic_valve", "left_atrium"],
+        "connects": [
+          "mitral_valve",
+          "aortic_valve",
+          "left_atrium"
+        ],
         "diseased_appearance": "Chronic hypertension or aortic stenosis produces concentric hypertrophy with a thickened wall and reduced cavity size; prior myocardial infarction leaves regional wall thinning and fibrous scarring; dilated cardiomyopathy produces a globular, thin-walled, enlarged chamber.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "ascending_aorta": {
       "name": "Ascending Aorta",
-      "meshes": ["ascending_aorta", "ascending_aorta-Mesh"],
+      "meshes": [
+        "ascending_aorta",
+        "ascending_aorta-Mesh"
+      ],
       "parent": null,
-      "children": ["right_coronary_artery", "left_coronary_artery"],
+      "children": [
+        "right_coronary_artery",
+        "left_coronary_artery"
+      ],
       "layer": 0,
       "fma": "FMA:3736",
       "teach": {
         "function": "Carries oxygenated blood from the left ventricle, beginning at the aortic valve, and gives rise to the right and left coronary arteries from the aortic sinuses before continuing as the aortic arch.",
-        "connects": ["aortic_valve", "left_ventricle", "right_coronary_artery", "left_coronary_artery", "aortic_arch"],
+        "connects": [
+          "aortic_valve",
+          "left_ventricle",
+          "right_coronary_artery",
+          "left_coronary_artery",
+          "aortic_arch"
+        ],
         "diseased_appearance": "Aneurysmal dilation occurs with chronic hypertension, bicuspid aortic valve disease, and connective tissue disorders such as Marfan syndrome; intimal tearing produces aortic dissection with a false lumen visible on gross or imaging exam.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "aortic_arch": {
       "name": "Aortic Arch",
-      "meshes": ["aortic_arch", "aortic_arch-Mesh"],
+      "meshes": [
+        "aortic_arch",
+        "aortic_arch-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:3768",
       "teach": {
         "function": "Continues from the ascending aorta, curving posteriorly over the pulmonary trunk's bifurcation, and gives rise to the brachiocephalic trunk, left common carotid artery, and left subclavian artery before continuing as the descending thoracic aorta.",
-        "connects": ["ascending_aorta"],
+        "connects": [
+          "ascending_aorta"
+        ],
         "diseased_appearance": "Atherosclerotic plaque commonly accumulates along the arch's inner curvature and branch origins; chronic hypertension promotes ectasia and aneurysm formation, and the arch is a frequent site for extension of aortic dissection.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "pulmonary_trunk": {
       "name": "Pulmonary Trunk",
-      "meshes": ["pulmonary_trunk", "pulmonary_trunk-Mesh"],
+      "meshes": [
+        "pulmonary_trunk",
+        "pulmonary_trunk-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:8612",
       "teach": {
         "function": "Carries deoxygenated blood from the right ventricle, beginning at the pulmonary valve, and bifurcates into the right and left pulmonary arteries, which carry blood to the lungs for gas exchange.",
-        "connects": ["pulmonary_valve", "right_ventricle"],
+        "connects": [
+          "pulmonary_valve",
+          "right_ventricle"
+        ],
         "diseased_appearance": "Chronic pulmonary hypertension causes wall thickening and dilation; acute massive pulmonary embolism may be visible lodged at the bifurcation, a so-called saddle embolus.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "superior_vena_cava": {
       "name": "Superior Vena Cava",
-      "meshes": ["superior_vena_cava", "superior_vena_cava-Mesh"],
+      "meshes": [
+        "superior_vena_cava",
+        "superior_vena_cava-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:4720",
       "teach": {
         "function": "Returns deoxygenated blood from the head, neck, upper limbs, and thorax into the right atrium.",
-        "connects": ["right_atrium"],
+        "connects": [
+          "right_atrium"
+        ],
         "diseased_appearance": "Extrinsic compression or invasion by a mediastinal mass (e.g., lung cancer, lymphoma) or intraluminal thrombosis can narrow or occlude the vessel, producing superior vena cava syndrome with upstream venous distension.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "inferior_vena_cava": {
       "name": "Inferior Vena Cava",
-      "meshes": ["inferior_vena_cava", "inferior_vena_cava-Mesh"],
+      "meshes": [
+        "inferior_vena_cava",
+        "inferior_vena_cava-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:10951",
       "teach": {
         "function": "Returns deoxygenated blood from the lower limbs, pelvis, and abdomen into the right atrium.",
-        "connects": ["right_atrium"],
+        "connects": [
+          "right_atrium"
+        ],
         "diseased_appearance": "Thrombosis, extrinsic compression, or tumor invasion (e.g., renal cell carcinoma with tumor thrombus extending cephalad) can narrow or occlude the lumen; chronic right heart failure causes distension and hepatic venous congestion.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "right_coronary_artery": {
       "name": "Right Coronary Artery",
-      "meshes": ["right_coronary_artery", "right_coronary_artery-Mesh"],
+      "meshes": [
+        "right_coronary_artery",
+        "right_coronary_artery-Mesh"
+      ],
       "parent": "ascending_aorta",
       "children": [],
       "layer": 0,
       "fma": "FMA:50039",
       "teach": {
         "function": "Arises from the right aortic sinus and travels in the right atrioventricular groove, typically supplying the right atrium, right ventricle, and, in most people, the sinoatrial and atrioventricular nodes and the inferior wall of the left ventricle.",
-        "connects": ["ascending_aorta", "right_atrium", "right_ventricle"],
+        "connects": [
+          "ascending_aorta",
+          "right_atrium",
+          "right_ventricle"
+        ],
         "diseased_appearance": "Atherosclerotic plaque narrows the lumen and predisposes to thrombotic occlusion, producing inferior or right ventricular myocardial infarction; the vessel may appear calcified and irregular on gross or imaging exam.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "left_coronary_artery": {
       "name": "Left Coronary Artery",
-      "meshes": ["left_coronary_artery", "left_coronary_artery-Mesh"],
+      "meshes": [
+        "left_coronary_artery",
+        "left_coronary_artery-Mesh"
+      ],
       "parent": "ascending_aorta",
       "children": [],
       "layer": 0,
       "fma": "FMA:50040",
       "teach": {
         "function": "Arises from the left aortic sinus as the left main coronary artery and divides into the left anterior descending (LAD) and circumflex branches, which together supply most of the left ventricle, the interventricular septum, and the left atrium. This model represents the left coronary artery as a single mesh encompassing its LAD and circumflex branches rather than splitting them into separate structures.",
-        "connects": ["ascending_aorta", "left_atrium", "left_ventricle"],
+        "connects": [
+          "ascending_aorta",
+          "left_atrium",
+          "left_ventricle"
+        ],
         "diseased_appearance": "Atherosclerotic narrowing, particularly of the proximal LAD, is the leading cause of anterior and anteroseptal myocardial infarction; plaque rupture with superimposed thrombosis produces acute luminal occlusion.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "coronary_sinus": {
       "name": "Coronary Sinus",
-      "meshes": ["coronary_sinus", "coronary_sinus-Mesh"],
+      "meshes": [
+        "coronary_sinus",
+        "coronary_sinus-Mesh"
+      ],
       "parent": null,
       "children": [],
       "layer": 0,
       "fma": "FMA:4706",
       "teach": {
         "function": "Collects most of the heart's venous drainage, via the great, middle, and small cardiac veins, and empties it into the right atrium. It runs in the posterior atrioventricular groove.",
-        "connects": ["right_atrium"],
+        "connects": [
+          "right_atrium"
+        ],
         "diseased_appearance": "Dilation occurs with elevated right atrial pressure, a persistent left superior vena cava draining into it, or a coronary arteriovenous fistula; it can also be a site of thrombosis related to indwelling pacing leads.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "tricuspid_valve": {
       "name": "Tricuspid Valve",
-      "meshes": ["tricuspid_valve", "tricuspid_valve-Mesh"],
+      "meshes": [
+        "tricuspid_valve",
+        "tricuspid_valve-Mesh"
+      ],
       "parent": "right_ventricle",
       "children": [],
       "layer": 1,
       "fma": "FMA:7234",
       "teach": {
         "function": "A three-leaflet (anterior, posterior, septal) atrioventricular valve that permits one-way blood flow from the right atrium into the right ventricle and prevents backflow during ventricular systole.",
-        "connects": ["right_atrium", "right_ventricle"],
+        "connects": [
+          "right_atrium",
+          "right_ventricle"
+        ],
         "diseased_appearance": "Regurgitation causes leaflet malcoaptation with a widened annulus, most often functional and secondary to right ventricular dilation; rheumatic disease or infective endocarditis (notably associated with intravenous drug use) can produce leaflet thickening, vegetations, or perforation.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "mitral_valve": {
       "name": "Mitral Valve",
-      "meshes": ["mitral_valve", "mitral_valve-Mesh"],
+      "meshes": [
+        "mitral_valve",
+        "mitral_valve-Mesh"
+      ],
       "parent": "left_ventricle",
       "children": [],
       "layer": 1,
       "fma": "FMA:7235",
       "teach": {
         "function": "A two-leaflet (anterior, posterior) atrioventricular valve, anchored by chordae tendineae to the papillary muscles, that permits one-way blood flow from the left atrium into the left ventricle and prevents backflow during systole.",
-        "connects": ["left_atrium", "left_ventricle"],
+        "connects": [
+          "left_atrium",
+          "left_ventricle"
+        ],
         "diseased_appearance": "Myxomatous degeneration causes leaflet thickening and prolapse; rheumatic disease produces leaflet fibrosis, commissural fusion, and a narrowed, fish-mouth-shaped orifice; infective endocarditis can produce friable vegetations and leaflet perforation.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "aortic_valve": {
       "name": "Aortic Valve",
-      "meshes": ["aortic_valve", "aortic_valve-Mesh"],
+      "meshes": [
+        "aortic_valve",
+        "aortic_valve-Mesh"
+      ],
       "parent": "left_ventricle",
       "children": [],
       "layer": 1,
       "fma": "FMA:7236",
       "teach": {
         "function": "A three-cusp (right, left, posterior/noncoronary) semilunar valve at the junction of the left ventricle and ascending aorta that permits one-way ejection of blood into the aorta and prevents diastolic backflow.",
-        "connects": ["left_ventricle", "ascending_aorta"],
+        "connects": [
+          "left_ventricle",
+          "ascending_aorta"
+        ],
         "diseased_appearance": "Degenerative calcific stenosis produces thickened, calcified, restricted cusps in older adults; a congenitally bicuspid valve calcifies earlier in life; rheumatic disease or endocarditis can cause cusp fibrosis, fusion, or vegetations with regurgitation.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     },
     "pulmonary_valve": {
       "name": "Pulmonary Valve",
-      "meshes": ["pulmonary_valve", "pulmonary_valve-Mesh"],
+      "meshes": [
+        "pulmonary_valve",
+        "pulmonary_valve-Mesh"
+      ],
       "parent": "right_ventricle",
       "children": [],
       "layer": 1,
       "fma": "FMA:7246",
       "teach": {
         "function": "A three-cusp semilunar valve at the junction of the right ventricle and pulmonary trunk that permits one-way ejection of blood toward the lungs and prevents diastolic backflow.",
-        "connects": ["right_ventricle", "pulmonary_trunk"],
+        "connects": [
+          "right_ventricle",
+          "pulmonary_trunk"
+        ],
         "diseased_appearance": "Congenital pulmonary stenosis produces thickened, doming, fused cusps typically present from birth; carcinoid heart disease can cause thickened, retracted, fixed cusps with regurgitation or stenosis; endocarditis is comparatively uncommon at this valve outside intravenous drug use.",
-        "sources": ["Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels", "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"]
+        "sources": [
+          "Gray's Anatomy, 42nd ed., Thorax: The Heart and Great Vessels",
+          "Netter's Atlas of Human Anatomy, 8th ed., Thorax: Heart plates"
+        ]
       }
     }
   },
