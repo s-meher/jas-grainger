@@ -75,7 +75,13 @@ Hand tracking by [Google MediaPipe](https://developers.google.com/mediapipe) (Ap
 
 ## Updating
 
-barehands improves continuously, and gesture fixes ship often. To update, double-click the `Update` icon setup left on your Desktop, or run `./update.sh` (`update.bat` on Windows) in this folder: either shows you what changed before applying it. Saying **"pull the latest barehands and tell me what changed"** to your agent works too. Your config, your notes, and your media stay untouched: they live outside the tracked files. Installed through fullstack-agent? `./fullstack-agent/update.sh` updates every piece at once and prints what changed.
+Upstream barehands improves continuously, and gesture fixes ship often — this fork wants those. But **a fork cannot simply pull them**: upstream's updater fast-forwarded `main` onto jaredrhod/barehands, which on divergent history either refuses or, if forced, buries the medical layer.
+
+So `./update.sh` (`update.bat` on Windows) never merges anything. It fetches upstream, prints what's new, and tells you which files upstream touched that this fork has *also* modified — the honest collision forecast. Then you merge deliberately with `git merge upstream/main`.
+
+That report is usually short, by design. `js/medical/`, `schemas/`, `pathology/`, `cases/`, `review/` and `skills/` are ours alone and can never conflict; the shared surface is `stage.html` (which this fork touches only through single, marked `MEDICAL HOOK` lines) and `server.py` (one contiguous block). If a hook line does conflict, keep both sides: upstream's rewritten line plus the hook beside it.
+
+Your config, notes, and media stay untouched throughout — they live outside the tracked files.
 
 ## The rest of it
 
