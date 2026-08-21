@@ -38,7 +38,17 @@ function needRender() {
   return _rp;
 }
 
-function toast(msg, ms = 2500) {
+// ./gesture.js — the cutting HAND. Lazier still than render.js: a board
+// that never arms a cut never loads a line of hand math.
+let G = null, _gp = null;
+function needGesture() {
+  if (G || _gp) return;
+  _gp = import("./gesture.js")
+    .then(m => (G = m))
+    .catch(e => { console.warn("[medical] gesture.js failed to load", e); });
+}
+
+export function toast(msg, ms = 2500) {
   if (IS_RENDER) return;
   try {
     const t = document.getElementById("toast");
@@ -235,7 +245,14 @@ export function onModelLoaded(sc, src) {
 export function tick(sc) {
   try {
     const M = sc && sc.med;
-    if (!M || !M.idx || !R) return;
+    if (!M || !M.idx) return;
+    // THE IDLE DISARM — checked here (not in gestureFrame) because it has
+    // to fire with NO hands in frame: that is exactly the case it exists
+    // for, a mode someone armed and walked away from.
+    if (M.st.cut && M.st.cut.arm &&
+        performance.now() - (M.cutT || 0) > ARM_IDLE_MS)
+      disarmCut(sc, "cut mode timed out — say the word to arm it again");
+    if (!R) return;
     const base = M.src.split("/").pop();
     M.ptS = PT.pub && PT.pub.model === base ? PT.pub.structure : null;
     R.tick(sc);
@@ -256,10 +273,64 @@ export function onDispose(sc) {
   } catch (e) {}
 }
 
-/** The Gesture track fills this in from its own module (the armed
- *  cut-plane handle). The hook exists now so stage.html never needs a
- *  second edit for it. */
-export function gestureFrame() {}
+// ------------------------------------------------------- ARMED CUT MODE
+// The hand only ever cuts a model that was EXPLICITLY ARMED
+// ({"a":"cut","arm":1} — the assistant says "let's cut it open"). That one
+// bit is the whole false-positive defense: while armed, the grab
+// vocabulary is suspended over that model (gesture.js's SUSPENSION LAW),
+// so a cutting hand cannot also throw the organ across the room. Nothing
+// here stacks a threshold to tell cutting from grabbing; the mode does it.
+const ARM_IDLE_MS = 20000;     // a forgotten armed mode must not eat
+                               // gestures forever — ~20s of no cut
+                               // activity and the board takes it back
+
+/** The scene whose cut is armed, or null. Topmost wins if two ever are
+ *  (same "latest among #behind's children" rule pick() uses). */
+export function armedScene() {
+  let best = null, z = -1;
+  for (const s of SCENES) {
+    const M = s.med;
+    if (!M || !M.idx || !M.st.cut || !M.st.cut.arm) continue;
+    const e = s.canvas && s.canvas.parentElement;
+    if (!e || !e.isConnected) continue;
+    const d = e.parentElement
+      ? Array.prototype.indexOf.call(e.parentElement.children, e) : 0;
+    if (d > z) { z = d; best = s; }
+  }
+  return best;
+}
+
+/** gesture.js's ONLY write path — it never touches sc.med.st itself, so
+ *  every cut (agent's or hand's) lands through the same verb. */
+export function cutFromGesture(sc, patch) {
+  try {
+    if (!sc || !sc.med) return;
+    sc.med.cutT = performance.now();          // the idle clock, reset
+    applyVerb(sc, Object.assign({ a: "cut" }, patch));
+  } catch (e) { console.warn("[medical] cutFromGesture", e); }
+}
+
+/** Hand activity that isn't itself a cut edit (a swipe forming, a scrub
+ *  engaging) still counts as "someone is using this" for the idle clock. */
+export function noteCutActivity(sc) {
+  if (sc && sc.med) sc.med.cutT = performance.now();
+}
+
+export function disarmCut(sc, why) {
+  try {
+    const st = sc && sc.med && sc.med.st;
+    if (!st || !st.cut || !st.cut.arm) return;
+    st.cut.arm = 0;                            // the plane STAYS; only the
+    if (why) toast(why, 2000);                 // hands let go of it
+  } catch (e) {}
+}
+
+/** Per cursor per frame, from cursorFrame below — the raw landmarks come
+ *  with it because palm geometry can't be read off a cursor dot. All the
+ *  hand math lives in gesture.js; this is only the doorway. */
+export function gestureFrame(cur, i, lms) {
+  try { if (G && lms) G.gestureFrame(cur, i, lms); } catch (e) {}
+}
 
 // ------------------------------------------------------------- the verbs
 /** applyCmds' medical branch. ctx = {items, findItem} — the same targeting
@@ -293,7 +364,16 @@ function applyVerb(sc, c) {
       const cut = st.cut || { plane: "axial", t: 0.5, arm: 0 };
       if (c.plane != null) cut.plane = c.plane;   // server already normalized {o,n}
       if (c.t != null) cut.t = c.t;
-      if (c.arm != null) cut.arm = c.arm ? 1 : 0;
+      if (c.arm != null) {
+        const was = cut.arm;
+        cut.arm = c.arm ? 1 : 0;
+        M.cutT = performance.now();               // arm/disarm restarts the clock
+        if (cut.arm && !was) {
+          needGesture();                          // the hand math loads HERE
+          toast("cut armed — flat-palm swipe across it to slice; " +
+                "two fingers spread to scrub the depth", 3600);
+        } else if (!cut.arm && was) toast("cut mode off", 1400);
+      }
       st.cut = cut;
       break;
     }
@@ -459,9 +539,13 @@ const CAST_MS = 40;            // ~25Hz per cursor — a raycast is not free
 const HOLD_MS = 150;           // stability before it reaches the bus
 let _rc = null;
 
-/** One tracker cursor, once per frame, AFTER its pinch state settles. */
-export function cursorFrame(cur, i) {
+/** One tracker cursor, once per frame, AFTER its pinch state settles.
+ *  `lms` = that hand's raw MediaPipe landmarks (stage.html line ~2215) —
+ *  the cutting hand needs palm geometry, not just the cursor dot. */
+export function cursorFrame(cur, i, lms) {
   try {
+    gestureFrame(cur, i, lms);   // armed cut mode may suspend the pinch —
+                                 // so it runs BEFORE pointing reads it
     const now = performance.now();
     let h = HITS.get(i);
     if (!h) HITS.set(i, (h = { v: null, t: 0, seen: now }));

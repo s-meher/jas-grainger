@@ -2212,7 +2212,7 @@ async function boot() {
         if (cur.pinched) cur.lastPinchT = now;   // v3.9: clap disqualifier
         cur.el.classList.toggle("pinched", cur.pinched);
         cur.el.style.left = cur.x + "px"; cur.el.style.top = cur.y + "px";
-        MED.cursorFrame(cur, i);   // MEDICAL HOOK
+        MED.cursorFrame(cur, i, lms);   // MEDICAL HOOK
 
         // ---- THE PALM ENGINE — a gesture set designed for imperfect,
         // real-world hands: every trigger is finger EXTENSION
@@ -2736,7 +2736,8 @@ async function boot() {
         const A = cursors[cids[0]], B = cursors[cids[1]];
         const recentPinch = A.pinched || B.pinched ||
           now - Math.max(A.lastPinchT || 0, B.lastPinchT || 0) < 800;
-        if (!items.some(k => k.grabbedBy.length) && !recentPinch) {
+        if (!items.some(k => k.grabbedBy.length) && !recentPinch &&
+            !MED.armedScene()) {   // MEDICAL HOOK: an armed cut disqualifies the clap
           // v3.9.7 — THE PRAYER LAW (Jared's final spec: "my two palms
           // must make contact and my fingers must be pointed UP").
           // Pose-first, motion-demoted: fingertip touches leave the
