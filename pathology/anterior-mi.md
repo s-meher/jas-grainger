@@ -22,10 +22,10 @@ it. [1][2]
 The three coronary vessels are not equally guilty. In the classic
 distribution of culprit lesions, the LAD is the single most common —
 roughly 40–50% of infarcts — followed by the right coronary artery
-(~30–40%) and the left circumflex (~15–20%). Anterior MI is therefore the
+(~30–40%) and the left circumflex (~15–20%). [4] Anterior MI is therefore the
 most common infarct territory *and* the one with the largest average
 infarct size and the poorest prognosis, because the LAD feeds more
-myocardium than either of the others. [1][2]
+myocardium than either of the others. [1]
 
 ## 2. Pathophysiology: occlusion → ischemia → necrosis
 
@@ -147,7 +147,9 @@ myocardium at risk and higher mortality. [2][3]
 is why a *late-presenting* patient — someone who sat on their chest pain
 for a day or two — still has a strikingly abnormal troponin at the time
 they finally arrive. That late presenter is the patient whose heart shows
-the 1–3 day gross appearance in section 3. [2]
+the 1–3 day gross appearance in section 3. (The multi-day persistence of
+troponin is general cardiology background, not a claim from [2]; it is
+stated here without a specific citation rather than mis-attributed.)
 
 Atypical presentations (dyspnea alone, epigastric pain, syncope, or
 silent infarction) are well described, particularly in older adults,
@@ -216,6 +218,12 @@ necrotic tissue is softest and the gross specimen is yellow.
    anterior descending coronary artery in acute anterior myocardial
    infarction. *J Am Coll Cardiol*. 1999;34(2):389–395 — proximal vs.
    distal LAD occlusion and the corresponding precordial lead patterns.
+4. Akbar H, Foth C, Kahloon RA, Mountfort S. *Acute ST-Elevation
+   Myocardial Infarction*. StatPearls [Internet]. Treasure Island (FL):
+   StatPearls Publishing. https://www.ncbi.nlm.nih.gov/books/NBK537228/
+   — the culprit-vessel frequency distribution (LAD 40–50%, RCA 30–40%,
+   LCx 15–20%), verified verbatim against this source during independent
+   review.
 
 ## 8. Author's uncertainty notes (read these, Verifier)
 
@@ -228,16 +236,21 @@ Flagged honestly so the reviewer knows where to look hardest:
   number. The interval boundaries and the color descriptions should be
   checked against the printed table, and the citation upgraded from
   chapter-level to table-level once confirmed.
-- **The culprit-vessel frequencies** (LAD ~40–50%, RCA ~30–40%, LCX
-  ~15–20%) are the classic Robbins figures from memory of that chapter;
-  verify the exact percentage ranges.
-- **"Myocyte death begins at 20–40 minutes"** and **"transmural infarct
-  largely complete within ~6 hours (experimental)"** are the standard
-  Robbins figures but were not read from the source text during
-  authoring; confirm both numbers and the species/model caveat.
-- **Chapter number 12 for "The Heart"** in the 10th edition is asserted
-  from secondary sources, not from a table of contents the author read
-  directly. Confirm before this file leaves draft.
+- ~~**The culprit-vessel frequencies**~~ — RESOLVED by independent
+  review (`review/heart-anterior-stemi-01.md`): the ranges are exact and
+  appear verbatim in StatPearls NBK537228, now cited as [4].
+- ~~**"Myocyte death begins at 20–40 minutes"** / **"transmural infarct
+  largely complete within ~6 hours"**~~ — RESOLVED by independent review
+  against primary literature (Reimer & Jennings, *Circulation*
+  1977;56:786: 38% transmural necrosis at 40 min → 71% at 6 h → 85% at
+  24 h, canine), which also confirms the collateral-flow caveat.
+- ~~**Chapter number 12 for "The Heart"**~~ — confirmed by independent
+  review from secondary sources; still not read from a printed table of
+  contents, but no longer blocking.
+- **The section 3 morphology table remains the one open item**: every
+  interval and color descriptor was confirmed row-for-row against four
+  independent pathology references during review, but not against the
+  printed Robbins 10th ed. table itself.
 - Everything in **section 5** and the complication list in **section 6**
   that is tagged [2] was read directly from the StatPearls page during
   authoring and is the most solidly grounded material in the file.
