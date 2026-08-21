@@ -36,9 +36,15 @@ the identification loop (section 4) possible.
 
 **The airlock law** (inherited from upstream, unchanged): only files
 really inside `media/` can ever be staged. Give `src` as the path relative
-to `media/` — either the exact subpath (`models/heart/heart.glb`) or just
-a unique basename anywhere under the airlock (`heart.glb`); either
-resolves. Zero or multiple matches on a bare basename still 400s.
+to `media/` — either the exact subpath (`models/heart/heart.glb`) or a
+unique basename anywhere under the airlock. Zero or multiple matches on a
+bare basename 400s.
+
+**For organs, always give the subpath.** The bare-basename shortcut is
+useless here and will 400 every time: every organ deliberately exists
+twice, once in `models/<organ>/` and once in `holo/<organ>/` (see the scan
+view below), so `heart.glb` matches two files and resolves to neither.
+`models/heart/heart.glb` says which reality you want.
 
 Three verbs put a model on the board, at three different levels of intimacy:
 

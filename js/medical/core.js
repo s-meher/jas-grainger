@@ -219,6 +219,28 @@ function buildIndex(sc) {
   return { meshes, meshSid, byStruct, nodeSid };
 }
 
+// THE MISSING-NORMALS FIX. Segmented medical exports routinely ship
+// POSITION and nothing else — the BodyParts3D-derived heart does. glTF says
+// render a normal-less primitive flat, and three's GLTFLoader obliges by
+// flat-shading the standard material, so the SOLID view looks perfectly
+// fine and the gap stays invisible. A custom shader does not get that
+// courtesy: it reads the `normal` attribute, receives zeroes, and
+// normalize(vec3(0)) is NaN — which is why the x-ray ghost drew literally
+// nothing (zero non-white pixels) until this ran. Compute them once, at
+// load, for any medical model that arrives without them.
+function ensureNormals(sc) {
+  let fixed = 0;
+  sc.scene.traverse(n => {
+    const g = n.isMesh && n.geometry;
+    if (!g || !g.attributes || !g.attributes.position) return;
+    if (g.attributes.normal) return;
+    try { g.computeVertexNormals(); fixed++; } catch (e) {}
+  });
+  if (fixed)
+    console.info(`[medical] computed vertex normals for ${fixed} mesh(es) in ` +
+                 `${sc.med.src} — the file shipped none`);
+}
+
 // ----------------------------------------------------------- entry points
 export function handles(a) { return VERBS.has(a); }
 
@@ -233,6 +255,7 @@ export function onModelLoaded(sc, src) {
     const el = sc.canvas.parentElement;
     if (el) BY_EL.set(el, sc);
     SCENES.add(sc);
+    ensureNormals(sc);          // before any custom shader can read them
     M.ready = loadSidecar(sc, src)
       .catch(e => { console.warn("[medical] sidecar", e); return null; });
     return M.ready;

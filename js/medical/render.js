@@ -536,20 +536,29 @@ export function tick(sc) {
   // structure entirely.
   live.sort((a, b) => a.z - b.z);
   const GAP = 0.052;                     // ~one tag height in card fractions
+  const LO = 0.03, HI = 0.97;            // stay on the card
   const placed = [];
+  const free = (y, t) => !placed.some(q => Math.abs(q.y - y) < GAP &&
+                                           Math.abs(q.x - t.x) < 0.42);
   for (const t of live) {
     let y = t.y;
-    for (let pass = 0; pass < live.length; pass++) {
-      const hit = placed.find(q => Math.abs(q.y - y) < GAP &&
-                                   Math.abs(q.x - t.x) < 0.42);
-      if (!hit) break;
-      y = hit.y + GAP;
+    for (let pass = 0; pass < live.length && !free(y, t); pass++)
+      y = placed.find(q => Math.abs(q.y - y) < GAP &&
+                           Math.abs(q.x - t.x) < 0.42).y + GAP;
+    // pushing down is the default, but a crowded model (label "all" on the
+    // heart is a dozen nested structures) cascades straight off the bottom
+    // edge, and a tag you cannot read is worse than one slightly out of
+    // place. Past the edge, walk back UP from the anchor instead.
+    if (y > HI) {
+      y = t.y;
+      for (let pass = 0; pass < live.length && !free(y, t); pass++)
+        y -= GAP;
     }
-    t.y = y;
+    t.y = Math.max(LO, Math.min(HI, y));
     placed.push(t);
     // percentages, not px — the card scales and the tags ride it for free
     t.d.style.left = (t.x * 100).toFixed(2) + "%";
-    t.d.style.top = (y * 100).toFixed(2) + "%";
+    t.d.style.top = (t.y * 100).toFixed(2) + "%";
     t.d.classList.toggle("on", M.ptS === t.id);   // pointed-at tag lights up
   }
 }
