@@ -319,9 +319,13 @@ export function onDispose(sc) {
 // vocabulary is suspended over that model (gesture.js's SUSPENSION LAW),
 // so a cutting hand cannot also throw the organ across the room. Nothing
 // here stacks a threshold to tell cutting from grabbing; the mode does it.
-const ARM_IDLE_MS = 20000;     // a forgotten armed mode must not eat
-                               // gestures forever — ~20s of no cut
-                               // activity and the board takes it back
+// A forgotten armed mode must not eat gestures forever — but 20s was set
+// by guesswork and field use killed it immediately: a learner lines up a
+// cut, thinks, adjusts the organ, and the mode is gone before the first
+// swipe, with no way back except asking the agent to re-arm. Three minutes
+// is long enough to actually work and still short enough that a walked-away
+// board returns to normal on its own.
+const ARM_IDLE_MS = 180000;
 
 /** The scene whose cut is armed, or null. Topmost wins if two ever are
  *  (same "latest among #behind's children" rule pick() uses). */
