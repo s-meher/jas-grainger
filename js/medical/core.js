@@ -676,7 +676,15 @@ export function applyRemote(sc, it) {
 const HITS = new Map();        // cursor index -> {v, t, seen}
 const PT = { candKey: "", candT: 0, cand: null, pubKey: "", pub: null };
 const CAST_MS = 40;            // ~25Hz per cursor — a raycast is not free
-const HOLD_MS = 150;           // stability before it reaches the bus
+// THE DWELL. 150ms of "same structure" was the original gate, and it was
+// the wrong question: a hand sweeping across the organ stays on one big
+// structure for the whole sweep, so moving your hand around narrated
+// everything it brushed past. The real signal that someone is ASKING about
+// a structure is that the hand STOPS on it. So the cursor must also hold
+// still — the drift re-anchor idiom stage.html already uses for its
+// hold-to-rotate latch.
+const HOLD_MS = 600;           // stillness before it reaches the bus
+const STILL_PX = 26;           // drift past this and the dwell restarts
 let _rc = null;
 
 /** One tracker cursor, once per frame, AFTER its pinch state settles.
@@ -695,14 +703,21 @@ export function cursorFrame(cur, i, lms) {
     let h = HITS.get(i);
     if (!h) HITS.set(i, (h = { v: null, t: 0, seen: now }));
     h.seen = now;
+    // the dwell anchor: any real movement restarts it, so only a hand that
+    // has come to rest can name anything
+    if (cur && (h.sx === undefined ||
+                Math.hypot(cur.x - h.sx, cur.y - h.sy) > STILL_PX)) {
+      h.sx = cur.x; h.sy = cur.y; h.still = now;
+    }
     // a pinched hand is GRABBING, not asking — pointing is the open hand
-    if (closed) { h.v = null; h.t = now; }
+    if (closed) { h.v = null; h.t = now; h.still = now; }
     else if (now - h.t >= CAST_MS) { h.v = pick(cur); h.t = now; }
+    h.settled = !closed && now - (h.still ?? now) >= HOLD_MS;
 
     let merged = null;
     for (const [k, e] of HITS) {
       if (now - e.seen > 400) { HITS.delete(k); continue; }   // hand left frame
-      if (e.v && !merged) merged = e.v;
+      if (e.v && e.settled && !merged) merged = e.v;
     }
     const key = merged
       ? merged.model + "|" + merged.structure + "|" + merged.mesh : "";
