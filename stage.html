@@ -285,7 +285,7 @@ setTimeout(function () {
 <video id="cam" autoplay playsinline muted></video>
 <div id="behind"></div>
 <div id="boot">BAREHANDS<br><span style="color:#a8d8cf;font-size:12px;letter-spacing:0.22em">by jaredrhod</span><br><span style="color:#a8d8cf;font-size:13px">loading hand tracker… allow the camera when asked</span></div>
-<div id="hint">tap the RING = orbs · tap an orb = its tree · TAP a card = open · pinch-drag = move · hold still ~1s = 3D rotate · two hands = scale · TAP an open item = close · CLAP (palms together, fingers up) = ring center-stage · CLAW: flash open, claw, aim, hold the strain 2s, SNAP = force pull · empty pinch dragged sideways = explode scrub · R respawn / C camera / D debug</div>
+<div id="hint">tap the RING = orbs · tap an orb = its tree · TAP a card = open · pinch-drag = move · hold still ~1s = 3D rotate · two hands = scale · TAP an open item = close · CLAP (palms together, fingers up) = ring center-stage · CLAW: flash open, claw, aim, hold the strain 2s, SNAP = force pull · empty pinch dragged sideways = explode scrub · <!-- MEDICAL HOOK -->X = arm the CUT (flat palm swipes the plane, scissors spread it)<!-- /MEDICAL HOOK --> · R respawn / C camera / D debug</div>
 <div id="debug"></div>
 <div id="toast"></div>
 
@@ -1593,6 +1593,7 @@ addEventListener("keydown", e => {
   if (e.key === "r" || e.key === "R") loadTree().then(() => spawnStage());
   if (e.key === "d" || e.key === "D") dbg.style.display = dbg.style.display === "block" ? "none" : "block";
   if (e.key === "c" || e.key === "C") cycleCam();
+  if (e.key === "x" || e.key === "X") MED.toggleArm?.();   // MEDICAL HOOK
   if (e.key === "p" || e.key === "P") {
     SAMPLER = { until: performance.now() + 4000, r: [], h8: [], h12: [], h16: [], h20: [], s: [], a: [] };
     toast("OMNI sampler: hold the pose for 4 seconds…", 4000);

@@ -359,6 +359,37 @@ export function noteCutActivity(sc) {
   if (sc && sc.med) sc.med.cutT = performance.now();
 }
 
+/** Toggle cut mode from the keyboard (X on the tracker). Arming used to
+ *  require the agent to POST a command, which is a preposterous thing to
+ *  need mid-gesture — you are standing with your hands in the air. This is
+ *  the same idiom R / C / D / P already use, and it carries zero
+ *  false-positive risk, which no new hand pose could promise: the obvious
+ *  candidate, holding a flat palm at the organ, is the POINTING pose, so it
+ *  would arm the cut every time someone asked what a structure was. */
+export function toggleArm() {
+  try {
+    const on = armedScene();
+    if (on) { disarmCut(on, "cut disarmed — grab is yours again"); return; }
+    // the freshest medical model on the board, matching how the verbs target
+    let sc = null, z = -1;
+    for (const s of SCENES) {
+      if (!s.med || !s.med.idx) continue;
+      const e = s.canvas && s.canvas.parentElement;
+      if (!e || !e.isConnected) continue;
+      const d = e.parentElement
+        ? Array.prototype.indexOf.call(e.parentElement.children, e) : 0;
+      if (d > z) { z = d; sc = s; }
+    }
+    if (!sc) { toast("no anatomy model on the board to cut", 2400); return; }
+    const st = sc.med.st;
+    st.cut = st.cut || { plane: "axial", t: 0.5, arm: 0 };
+    st.cut.arm = 1;
+    noteCutActivity(sc);
+    toast("cut ARMED — flat palm swipes the plane, scissors spread it", 3000);
+    paint(sc);
+  } catch (e) {}
+}
+
 export function disarmCut(sc, why) {
   try {
     const st = sc && sc.med && sc.med.st;
