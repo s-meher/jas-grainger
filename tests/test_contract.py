@@ -5,7 +5,7 @@ Exercises every medical verb's valid and invalid argument classes against the
 live server, the airlock, the answer-stripping endpoint, the sidecar
 validator, and board-state.sh's rendering. Pure pass/fail, no eyeballs.
 """
-import json, subprocess, sys, urllib.request, urllib.error
+import json, subprocess, sys, time, urllib.request, urllib.error
 from pathlib import Path
 
 REPO = str(Path(__file__).resolve().parent.parent)
@@ -188,6 +188,28 @@ state = {"cursors": [], "items": [{
     "hid": ["right_atrium", "left_atrium"], "lb": ["aortic_valve"]}],
     "pt": {"model": "heart.glb", "structure": "mitral_valve", "mesh": "mitral_valve-Mesh"}}
 post("/state", state)
+# A CONNECTED TRACKER OWNS THIS BUS. It posts its own scene ~45x/sec, so a
+# synthetic state injected here survives about 22ms — these checks can only
+# run against an idle board. Detect that rather than reporting phantom
+# failures: an app that is running is not a broken app.
+time.sleep(0.4)   # board-state.sh is a subprocess: give the bus the same
+                  # window it will see, or the guard checks too early
+back = json.loads(get("/state")[1] or "{}")
+if (back.get("pt") or {}).get("structure") != "mitral_valve":
+    print("  SKIPPED — a tracker page is connected and overwriting /state.")
+    print("  Close or background the barehands tab to run these five checks.")
+    for _ in range(3):
+        post("/state", {"cursors": [], "items": []})
+    print()
+    print("=" * 72)
+    failed = [r for r in results if not r[0]]
+    for ok, name, detail in results:
+        if not ok:
+            print(f"  FAIL  {name}  ({detail})")
+    print(f"{len(results) - len(failed)}/{len(results)} passed "
+          f"(board-state checks skipped — tracker connected)")
+    print("=" * 72)
+    sys.exit(1 if failed else 0)
 out = subprocess.run([f"{REPO}/bin/board-state.sh"], capture_output=True, text=True).stdout
 for frag in ("CUT coronal 40%", "ISOLATED: left_ventricle", "hidden: [2 ids]",
              "aortic_valve", "POINTING AT: mitral_valve"):

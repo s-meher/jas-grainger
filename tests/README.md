@@ -53,6 +53,12 @@ is meaningful. Two caveats learned the hard way:
   disagrees with an otherwise-reproducible reference is usually a capture
   transient; confirm by re-rendering the same state rather than assuming a
   state leak.
+- **A connected tracker owns the state bus.** It posts its own scene
+  ~45x/sec, so a synthetic state injected by a test survives about 22ms.
+  The board-state checks detect this and report SKIPPED rather than
+  failing — close or background the barehands tab to run them. The same
+  applies to any manual `curl` against `/state`, and it is why you cannot
+  simulate a pointing hit while the board is open.
 - **Use hardware ANGLE, not SwiftShader.** SwiftShader cannot compile the
   cut's stencil programs inside the screenshot budget and silently renders
   an uncut model. Just omit `--use-angle=swiftshader`.

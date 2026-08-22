@@ -583,14 +583,19 @@ let _rc = null;
  *  the cutting hand needs palm geometry, not just the cursor dot. */
 export function cursorFrame(cur, i, lms) {
   try {
-    gestureFrame(cur, i, lms);   // armed cut mode may suspend the pinch —
-                                 // so it runs BEFORE pointing reads it
+    // THE PHYSICAL pinch, read BEFORE the gesture layer can clear it.
+    // Armed cut mode suspends the pinch so the grab vocabulary lets go of
+    // the organ — but a suspended pinch is still a CLOSED hand, and
+    // pointing must not read it as an open one asking "what is this?"
+    // (field-caught: with a cut armed, every pinch triggered narration).
+    const closed = !cur || cur.pinched;
+    gestureFrame(cur, i, lms);   // may suspend the pinch — runs after the read
     const now = performance.now();
     let h = HITS.get(i);
     if (!h) HITS.set(i, (h = { v: null, t: 0, seen: now }));
     h.seen = now;
     // a pinched hand is GRABBING, not asking — pointing is the open hand
-    if (!cur || cur.pinched) { h.v = null; h.t = now; }
+    if (closed) { h.v = null; h.t = now; }
     else if (now - h.t >= CAST_MS) { h.v = pick(cur); h.t = now; }
 
     let merged = null;
