@@ -86,6 +86,11 @@ const SWIPE_MAX_MS = 1600;     // PROVISIONAL — past this the anchor
                                // re-seats: a slow drift is not an incision
 const POSE_GRACE_MS = 200;     // one-frame pose dropouts don't kill a
                                // swipe (the claw's fp.lost 300ms idiom)
+// A hand that pinched this recently cannot cut. Borrowed verbatim from the
+// clap's own disqualifier (stage.html: "any hand that pinched in the last
+// 800ms is disqualified outright"), for the same reason: the tail of one
+// gesture must not become the head of another.
+const PINCH_GUARD_MS = 800;
 const CUT_COOL_MS = 700;       // PROVISIONAL — no second incision inside
                                // this window (the clap's cooldown idiom)
 
@@ -349,7 +354,20 @@ export function gestureFrame(cur, i, lms) {
     } else h.sus = false;
 
     // ---- THE INCISION: a flat-palm swipe across the organ.
-    if (flat) {
+    // THE RELEASE GUARD (field-caught: "when I explode scrub it's getting
+    // cut"). A scrub ENDS by opening the hand, and the hand is still
+    // travelling sideways as it opens — a flat palm crossing the organ,
+    // which is exactly an incision. The scrub's own follow-through was
+    // cutting the heart. Upstream solved the same shape of problem for the
+    // clap by disqualifying any hand that pinched recently; the pinch clock
+    // it uses (cur.lastPinchT) is already on the cursor, so borrow it.
+    const justPinched = cur && (cur.pinched ||
+      now - (cur.lastPinchT || -1e9) < PINCH_GUARD_MS);
+    // drop any stroke in progress, but do NOT touch the commit cooldown:
+    // the guard's job is to reject this stroke, not to fine the next one
+    if (justPinched) h.ph = 0;
+
+    if (flat && !justPinched) {
       h.lost = 0;
       if (h.ph === 2) {
         // spent: this stroke already cut. It has to leave the card (or

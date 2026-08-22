@@ -205,6 +205,7 @@ console.log("\n3. plane origin, spread metric, pose metrics");
        G.originFor(unit([1, 1, 1]), t).every(v => Math.abs(v) <= 1 + 1e-9)));
 
   const flat = hand({ u: [0, 1, 0], w: [1, 0, 0] });
+  const CUT_COOL_MS_TEST = 800;   // mirrors gesture.js CUT_COOL_MS (700) + margin
   const sciNarrow = hand({ u: [0, 1, 0], w: [1, 0, 0], fold: [13, 17], splay: 0 });
   const sciWide = hand({ u: [0, 1, 0], w: [1, 0, 0], fold: [13, 17], splay: 0.30 });
   const fist = hand({ u: [0, 1, 0], w: [1, 0, 0], fold: [5, 9, 13, 17] });
@@ -259,6 +260,7 @@ console.log("\n4. armed/disarmed state machine (synthetic driver)");
     }
   };
   const flat = hand({ u: [0, 1, 0], w: [1, 0, 0] });
+  const CUT_COOL_MS_TEST = 800;   // mirrors gesture.js CUT_COOL_MS (700) + margin
 
   // --- disarmed: the same swipe must do nothing at all
   await swipe(flat);
@@ -321,6 +323,32 @@ console.log("\n4. armed/disarmed state machine (synthetic driver)");
      JSON.stringify(sc.med.st.cut.plane.o) !== JSON.stringify(p.o));
   ok("SCRUB: it did not re-orient the plane",
      JSON.stringify(sc.med.st.cut.plane.n) === JSON.stringify(p.n));
+
+  // --- THE RELEASE GUARD: a scrub ends by opening the hand while it is
+  // still travelling, which is shaped exactly like an incision. Field bug:
+  // "when I explode scrub it's getting cut".
+  {
+    const before = JSON.stringify(sc.med.st.cut);
+    cur.pinched = true;                       // the scrub grip
+    CORE.cursorFrame(cur, 0, flat); await sleep(15);
+    cur.pinched = false;                      // released, hand opens flat...
+    cur.lastPinchT = performance.now();       // ...and stage.html stamps this
+    await swipe(flat);                        // ...and keeps travelling
+    ok("RELEASE GUARD: a scrub's follow-through does not cut",
+       JSON.stringify(sc.med.st.cut) === before);
+    // and once the guard window passes, cutting works again. Reset to a
+    // PRESET plane first: an identical pose over an identical path writes an
+    // identical custom plane, so "the value changed" cannot see the cut.
+    sc.med.st.cut.plane = "axial";
+    await sleep(CUT_COOL_MS_TEST);            // let the previous commit's
+                                              // cooldown expire, or the
+                                              // stroke cannot even arm
+    cur.lastPinchT = performance.now() - 2000;
+    await swipe(flat);
+    const p2 = sc.med.st.cut.plane;
+    ok("RELEASE GUARD: a real swipe still cuts after the window",
+       !!(p2 && p2.n && p2.o), "plane = " + JSON.stringify(p2));
+  }
 
   // --- the idle disarm
   // just under the idle window: must still be armed (a cut being lined up
