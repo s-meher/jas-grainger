@@ -241,6 +241,22 @@ function ensureNormals(sc) {
                  `${sc.med.src} — the file shipped none`);
 }
 
+/** True for a model this layer owns (one that found an anatomy sidecar).
+ *  stage.html's idle spin asks before turning: upstream drifts every model
+ *  a slow +0.12 rad/s because "a hologram that sits dead-still reads as a
+ *  picture" — right for a prop, wrong for a specimen. You cannot point at a
+ *  structure that is sliding out from under the cursor (the pointing gate
+ *  wants the same structure held for 150ms, which a drifting model never
+ *  gives), and a cross-section you are studying should stay where you cut
+ *  it. Only the constant idle drift is removed — spin it by hand and the
+ *  momentum still coasts down exactly as upstream does. */
+export function stillModel(it) {
+  try {
+    const sc = it && it.el && BY_EL.get(it.el);
+    return !!(sc && sc.med && sc.med.idx);
+  } catch (e) { return false; }
+}
+
 // ----------------------------------------------------------- entry points
 export function handles(a) { return VERBS.has(a); }
 

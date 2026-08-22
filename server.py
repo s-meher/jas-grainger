@@ -249,7 +249,12 @@ class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):
         # no-store on the page itself so a plain reload always serves
         # current code (Chrome happily caches through reloads otherwise)
-        if self.path.split("?")[0].endswith("stage.html"):
+        p = self.path.split("?")[0]
+        # ...and the same for the medical ES modules the page imports: they
+        # are code exactly like stage.html is, and a cached core.js behind a
+        # freshly-reloaded page is a debugging trap (you edit, you reload,
+        # nothing changes, you doubt the edit).
+        if p.endswith("stage.html") or p.startswith("/js/medical/"):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

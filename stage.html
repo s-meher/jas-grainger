@@ -1998,7 +1998,8 @@ function physics(dt) {
       // idle pauses during the gimbal grip too — it was creeping the
       // yaw while Jared held a precise two-hand pose.)
       c.rvy = (c.rvy || 0) * Math.pow(0.15, dt);
-      c.ry = (c.ry || 0) + ((c.rvy || 0) + 0.12) * dt;
+      c.ry = (c.ry || 0) +
+        ((c.rvy || 0) + (MED.stillModel(c) ? 0 : 0.12)) * dt;   // MEDICAL HOOK
     }
     c.el.style.setProperty("--ch", c.hch || 0);   // hover charge glow
     const w = c.el.offsetWidth, h = c.el.offsetHeight;
