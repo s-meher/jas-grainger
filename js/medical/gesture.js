@@ -67,10 +67,19 @@ const STAB_DOT = 0.93;
 // PROVISIONAL 0.97 (≈14° in 33ms).
 const FRAME_DOT = 0.97;
 
-// Genuine travel: the swipe must cross a real fraction of the model's own
-// card, so the fraction is scale-proof (the clap's fractions-of-innerWidth
-// idiom, applied to the card instead of the window). PROVISIONAL 0.55.
-const TRAVEL_FRAC = 0.55;
+// Genuine travel: the swipe must cross a real fraction of the organ. The
+// first version measured that against the card alone and called it
+// "scale-proof" — it was the opposite. The card scales WITH the model, so a
+// heart blown up to 6x demanded ~1580px of hand travel, wider than the
+// screen: the cut silently became impossible exactly when the organ was
+// big enough to work on comfortably. FIELD-CAUGHT.
+// The span is now the card clamped to something a hand can actually cross,
+// with a floor so a shrunken model cannot fire on a twitch.
+const TRAVEL_FRAC = 0.55;      // PROVISIONAL
+const TRAVEL_MAX_FRAC = 0.6;   // ...of the window: past this you are inside
+                               // the organ, and "across it" stops meaning
+                               // anything a shoulder can do
+const TRAVEL_FLOOR = 140;      // px, so a tiny card still needs a stroke
 const SWIPE_MIN_MS = 120;      // PROVISIONAL — ~4 frames at 30fps: below
                                // this it is a tracking pop, not a stroke
 const SWIPE_MAX_MS = 1600;     // PROVISIONAL — past this the anchor
@@ -364,7 +373,8 @@ export function gestureFrame(cur, i, lms) {
           if (now - h.t0 > SWIPE_MAX_MS) {        // a drift, not a stroke
             h.ax = cur.x; h.ay = cur.y; h.t0 = now;
             h.nm = n.slice();
-          } else if (travel > TRAVEL_FRAC * r.width &&
+          } else if (travel > TRAVEL_FRAC * Math.max(TRAVEL_FLOOR,
+                       Math.min(r.width, innerWidth * TRAVEL_MAX_FRAC)) &&
                      now - h.t0 > SWIPE_MIN_MS) {
             if (prayerNearby(i, h)) {
               // the other hand is closing in — this is a clap forming,
