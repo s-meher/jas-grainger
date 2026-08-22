@@ -257,6 +257,72 @@ export function stillModel(it) {
   } catch (e) { return false; }
 }
 
+// THE GRAB SHRINK. A model card is a fixed 480px square whatever the organ
+// inside it looks like, and the heart fills less than half of it — so most
+// of the grab area is empty air, and it grows with scale: blown up 6x, the
+// card claims a ~2880px zone with an organ floating in the middle of it.
+// Field consequence: you cannot pinch NEAR the heart without seizing it,
+// which is exactly the empty pinch the explode scrub needs. So hit-testing
+// a medical model uses the organ's own projected silhouette instead of its
+// card. Recomputed on a short TTL because explode moves the parts.
+const HIT_TTL = 250, HIT_PAD = 14;
+
+function modelBox(sc) {
+  const M = sc.med, THREE = sc.THREE, now = performance.now();
+  if (M.hitBox !== undefined && now - (M.hitBoxT || 0) < HIT_TTL) return M.hitBox;
+  M.hitBoxT = now;
+  const b = new THREE.Box3(), t = new THREE.Box3(), mm = new THREE.Matrix4();
+  sc.group.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(sc.group.matrixWorld).invert();
+  for (const m of M.idx.meshes) {
+    if (!m.visible || !m.geometry) continue;
+    if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+    if (!m.geometry.boundingBox) continue;
+    t.copy(m.geometry.boundingBox);
+    mm.multiplyMatrices(inv, m.matrixWorld);
+    t.applyMatrix4(mm);
+    b.union(t);
+  }
+  return (M.hitBox = b.isEmpty() ? null : b);
+}
+
+/** The organ's silhouette in screen space, or null to fall back to the card
+ *  (stage.html's hitTest asks). Null for anything non-medical, so upstream
+ *  props keep their generous card-sized grab exactly as before. */
+export function hitRect(it) {
+  try {
+    const sc = it && it.el && BY_EL.get(it.el);
+    const M = sc && sc.med;
+    if (!M || !M.idx || !sc.canvas) return null;
+    const el = sc.canvas.parentElement;
+    if (!el || !el.isConnected) return null;
+    const r = el.getBoundingClientRect();
+    const b = modelBox(sc);
+    if (!b) return null;
+    const THREE = sc.THREE, v = new THREE.Vector3();
+    sc.group.updateMatrix();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (let i = 0; i < 8; i++) {          // the box's own eight corners
+      v.set(i & 1 ? b.max.x : b.min.x,
+            i & 2 ? b.max.y : b.min.y,
+            i & 4 ? b.max.z : b.min.z);
+      v.applyMatrix4(sc.group.matrix).project(sc.camera);
+      x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x);
+      y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y);
+    }
+    const sx = n => r.left + (n * 0.5 + 0.5) * r.width;
+    const sy = n => r.top + (-n * 0.5 + 0.5) * r.height;
+    // clamped to the card: a projection can run off it, and a grab zone
+    // larger than the card would be worse than the thing we are fixing
+    return {
+      left: Math.max(r.left, sx(x0) - HIT_PAD),
+      right: Math.min(r.right, sx(x1) + HIT_PAD),
+      top: Math.max(r.top, sy(y1) - HIT_PAD),
+      bottom: Math.min(r.bottom, sy(y0) + HIT_PAD),
+    };
+  } catch (e) { return null; }
+}
+
 // ----------------------------------------------------------- entry points
 export function handles(a) { return VERBS.has(a); }
 

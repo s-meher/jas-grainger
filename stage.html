@@ -1636,7 +1636,9 @@ function dropCursor(i) {
 
 function hitTest(cur) {
   for (let i = items.length - 1; i >= 0; i--) {
-    const c = items[i], r = c.el.getBoundingClientRect();
+    const c = items[i];
+    // MEDICAL HOOK: an organ is grabbed by its silhouette, not its card
+    const r = MED.hitRect?.(c) || c.el.getBoundingClientRect();
     if (cur.x > r.left - 24 && cur.x < r.right + 24 &&
         cur.y > r.top - 24 && cur.y < r.bottom + 24) return c;
   }
