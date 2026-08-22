@@ -357,6 +357,21 @@ export function tick(sc) {
     if (M.st.cut && M.st.cut.arm &&
         performance.now() - (M.cutT || 0) > ARM_IDLE_MS)
       disarmCut(sc, "cut mode timed out — say the word to arm it again");
+    // KEEP AN EXPLODED ASSEMBLY IN FRAME. Parts fly outward by ~0.55x the
+    // model's own size while the camera stays put at a fixed distance, so
+    // past roughly half explode the outer pieces cross the edge of the
+    // canvas and are simply cropped — and because these meshes are open
+    // shells, a cropped part shows its inside, which reads exactly like a
+    // cut face. That is what "it's getting cut when I scrub" actually was;
+    // no cutting was involved. Dolly back as it opens, ease in and out so
+    // the scrub still feels like one continuous motion.
+    if (sc.camera) {
+      if (M.camZ0 === undefined) M.camZ0 = sc.camera.position.z;
+      const ex = Math.max(0, Math.min(1, sc.exC || 0));
+      const want = M.camZ0 * (1 + 0.8 * ex);
+      const z = sc.camera.position.z;
+      if (Math.abs(want - z) > 0.001) sc.camera.position.z = z + (want - z) * 0.12;
+    }
     if (!R) return;
     const base = M.src.split("/").pop();
     M.ptS = PT.pub && PT.pub.model === base ? PT.pub.structure : null;
