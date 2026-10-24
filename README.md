@@ -1,14 +1,12 @@
-# barehands — anatomy edition
+# NOVA
+
+**Hand-tracked 3D anatomy, built on barehands.**
 
 **Hold a 3D heart in your bare hands, cut it open, point at a structure and
 hear what it is, then work a sourced pathology case.** All you need is a
-webcam and Chrome.
+webcam and Chrome. No headset, no controllers, nothing to install.
 
-This is a fork of [jaredrhod/barehands](https://github.com/jaredrhod/barehands)
-by Jared Rhodenizer, the hand-tracked glass interface. Upstream provides the
-body: hand tracking, glass cards, 3D props, gestures. This fork adds an
-anatomy and pathology teaching layer on top and keeps everything else
-merge-clean, so upstream gesture fixes keep flowing in.
+<!-- TODO: add a screenshot or short GIF of the heart on the board here -->
 
 > **Education and training only.** This is not a medical device. It doesn't
 > diagnose real patients, and nothing it shows is clinical judgment about a
@@ -24,30 +22,38 @@ merge-clean, so upstream gesture fixes keep flowing in.
 |---|---|
 | **Stage an organ** | A 16-part anatomical heart (chambers, great vessels, coronaries, all four valves), each part a separately named mesh. |
 | **Explode it** | An empty pinch dragged sideways pulls the parts apart; the camera backs off so nothing leaves the frame. |
-| **Cut it open** | Press **X** to arm, then swipe a flat palm across the organ: your palm's plane becomes the incision. Spread two fingers to scrub the cut deeper. Cut faces render solid. Anatomical presets are available too: sagittal, coronal, axial. |
+| **Cut it open** | Press **X** to arm, then swipe a flat palm across the organ: your palm's plane becomes the incision. Spread two fingers to scrub the cut deeper. Cut faces render solid. Anatomical presets too: sagittal, coronal, axial. |
 | **Point and ask** | Rest a hand on a structure. The board publishes what you're pointing at, and `bin/narrate.sh` says its name aloud (add `--teach` to hear what it does). |
-| **Isolate, hide, label, x-ray, peel** | Seven validated board verbs your AI can call. |
+| **Isolate, hide, label, x-ray, peel** | Board verbs any script or AI can call. |
 | **Take a case** | The examiner skill runs a graded session: read the vignette, explore the lesion with your hands, commit to a diagnosis, get graded against a rubric, then a debrief. |
 
-## Run it
+## Quick start
+
+You need Python 3.9+, Chrome, and a webcam.
 
 ```
+git clone https://github.com/GITHUB_USER/NOVA.git
+cd NOVA
+cp barehands.json.example barehands.json
 python3 server.py
 ```
 
 (`python server.py` on Windows.) Open **http://127.0.0.1:8794/stage.html** in
-**Chrome**, allow the camera, and wave. The server uses only the Python
-standard library. On first load the page pulls MediaPipe and three.js from
-CDNs, then caches them.
+**Chrome**, allow the camera, and wave a hand. A cursor ring should follow
+your fingers.
 
-Your config is `barehands.json`, and it's untracked: copy
-`barehands.json.example`. The first time, you can open the repo in Claude
-Code and say *"read barehands.md and set me up"* to have the setup done for
-you.
+Then **tap the ring → tap the Props orb → open `models/heart/heart.glb`.**
 
-Then tap the ring → tap the **Props** orb → open `models/heart/heart.glb`.
+The server uses only the Python standard library. On first load the page
+pulls hand tracking (MediaPipe) and 3D (three.js) from CDNs, then caches
+them. If the wrong camera opens, press **C**. More fixes are in
+[`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
 
-### Tracker keys
+**Using Claude Code?** Open the repo folder and say *"read barehands.md and
+set me up"*. It checks everything runs, writes your config, and walks you
+through the gestures.
+
+### Keys
 
 | key | does |
 |---|---|
@@ -57,14 +63,14 @@ Then tap the ring → tap the **Props** orb → open `models/heart/heart.glb`.
 | **D** | debug overlay |
 | **P** / **G** | pose sampler / cut-gesture sampler (for tuning) |
 
-> While a cut is armed, that hand can't grab, throw or explode-scrub the
-> organ, and the clap won't clear the board. This is intentional: two flat
-> hands is the incision pose. Press **X** again to get normal gestures back.
+> While a cut is armed, that hand can't grab, throw or explode the organ, and
+> a clap won't clear the board: two flat hands is the incision pose. Press
+> **X** again to get normal gestures back.
 
-## Drive it with an AI
+## Drive it with a script or an AI
 
-Any program that can curl localhost can drive the board, no AI required.
-Two scripts give it hands and eyes on the board:
+Anything that can curl localhost can drive the board. Two scripts are its
+hands and eyes:
 
 ```
 bin/board.sh '{"a":"label","structures":["left_ventricle","mitral_valve"]}'
@@ -87,8 +93,8 @@ The server validates every argument (enums, ranges, id patterns) and rejects
 anything malformed with a 400. The full contract is in
 [`schemas/verbs.md`](schemas/verbs.md).
 
-**Agent skills** live in `skills/`. Load the matching one before doing the
-task:
+**Agent skills** in `skills/` are step-by-step procedures an AI assistant
+loads before a task:
 
 | skill | for |
 |---|---|
@@ -99,68 +105,59 @@ task:
 | [`gesture-tuning`](skills/gesture-tuning/SKILL.md) | fitting the cut-gesture thresholds to a real hand |
 
 **Helper scripts:** `bin/narrate.sh [--teach] [--dwell N] [--voice V]`
-(macOS `say`) and `bin/point-watch.sh`, which watches the pointing loop live
-and tells a tracking failure (`hands 0`) apart from a pointing failure
-(`pt none`).
+speaks what you point at (macOS `say`), and `bin/point-watch.sh` watches the
+pointing loop live, telling a tracking failure (`hands 0`) apart from a
+pointing failure (`pt none`).
 
-## What's in the box
+## What's included
 
 | organ | structures | cases |
 |---|---|---|
 | Heart (BodyParts3D, CC-BY 4.0) | 16 | `heart-anterior-stemi-01`: anterior MI at 48 h, **verified** |
 
-Adding an organ means three things: a GLB with named meshes, an
-`anatomy.json` sidecar that maps meshes to structures (with teaching text and
-sources), and a `LICENSE.md` that credits the source. Adding a case means a
-cited pathology doc, a case file, and independent review.
-`schemas/validate.py` checks both:
+### Adding content
+
+An organ needs three things: a GLB with named meshes, an `anatomy.json`
+sidecar that maps meshes to structures (with teaching text and sources), and
+a `LICENSE.md` that credits the source. A case needs a cited pathology doc, a
+case file, and an independent review. `schemas/validate.py` checks both:
 
 ```
 python3 schemas/validate.py media/models/heart/anatomy.json media/models/heart/heart.glb
 python3 schemas/validate.py --case cases/heart-anterior-stemi-01.json media/models/heart/anatomy.json
 ```
 
-## Layout
+## Project layout
 
 ```
+stage.html       the board: hand tracking, glass cards, 3D props
+server.py        localhost server (stdlib only): config, media, /cmd, /state
 js/medical/      core.js (sidecars, verbs, pointing) · render.js (cuts, caps, x-ray, labels) · gesture.js (hand-driven cut)
 schemas/         anatomy + case schemas, verb contract, validate.py
 media/models/    organs + anatomy.json sidecars + LICENSE.md      (media/holo/: hologram copies)
-pathology/       cited teaching docs — the source of truth for each disease
+pathology/       cited teaching docs, the source of truth for each disease
 cases/           playable, graded cases
-review/          independent review artifacts for each case
+review/          independent review records for each case
 skills/          agent procedures (see above)
+bin/             board.sh, board-state.sh, narrate.sh, point-watch.sh
 tests/           contract, gesture, and visual acceptance suites
-KNOWLEDGE.md     the knowledge ledger: laws, verified facts, lessons, open items
+KNOWLEDGE.md     what the project has learned: rules, verified facts, bug history, open items
 ```
-
-Everything else (`stage.html`, `server.py`, `barehands.md`, `sample-notes/`)
-is upstream barehands. `stage.html` changes only through single, marked
-`MEDICAL HOOK` lines, and every hook is an optional call, so a broken
-medical module falls back to plain barehands instead of freezing tracking.
 
 ## Tests
 
-The contract and visual suites need the server running; the gesture suite doesn't:
+The contract and visual suites need the server running; the gesture suite doesn't.
 
 ```
-python3 tests/test_contract.py    # 77 assertions, ~5 s — verbs, airlock, answer isolation, sidecar
-node    tests/test_gesture.mjs    # 54 assertions — cut-gesture math and guards
+python3 tests/test_contract.py    # 77 assertions, ~5 s: verbs, airlock, answer isolation, sidecar
+node    tests/test_gesture.mjs    # 54 assertions: cut-gesture math and guards
 python3 tests/test_visual.py      # 17 renders → tests/_shots/heart-visual-matrix.png, ~5 min
 ```
 
-Close the barehands tab before running the board-state checks. An open
-tracker owns the state bus, so those checks report SKIPPED rather than fail.
-Pointing accuracy and gesture thresholds can only be verified by a person at
-the webcam. See [`tests/README.md`](tests/README.md).
-
-## Knowledge ledger
-
-[`KNOWLEDGE.md`](KNOWLEDGE.md) records what this fork has learned and why:
-the rules that can't be broken, measured facts about the assets and runtime,
-every field bug with its real cause, the review status of each piece of
-content, and what's still unverified. Read it before changing the medical
-layer, and add to it when you learn something.
+Close the board tab before running the board-state checks. An open tracker
+owns the state bus, so those checks report SKIPPED rather than fail. Pointing
+accuracy and gesture thresholds can only be checked by a person at the
+webcam. See [`tests/README.md`](tests/README.md).
 
 ## Safety rules
 
@@ -172,37 +169,30 @@ layer, and add to it when you learn something.
   or teaching, and the examiner never labels the structure a lesion sits on.
 - **Unverified cases don't run.** The examiner refuses any case whose
   `review.status` isn't `verified`.
-- **Everything is local.** Nothing leaves the machine.
+- **Everything is local.** Nothing leaves your machine.
 
-## Updating from upstream
+## Contributing
 
-A fork can't just pull. Upstream's updater fast-forwards `main`, which either
-fails on this fork's history or, if forced, buries the medical layer. So
-`./update.sh` (`update.bat` on Windows) **never merges**. It fetches upstream,
-shows what's new, and lists the files that upstream *and* this fork have both
-changed. You then merge deliberately:
+Read [`KNOWLEDGE.md`](KNOWLEDGE.md) before changing the medical layer: it
+records why things are the way they are and which bugs have already been
+fixed. Medical code lives in `js/medical/`. `stage.html` changes only
+through single, marked `MEDICAL HOOK` lines, and each hook is an optional
+call, so a broken medical module falls back to the plain board instead of
+freezing hand tracking.
 
-```
-./update.sh
-git merge upstream/main
-```
+## Built on barehands
 
-Conflicts can only happen in the handful of upstream files this fork has
-edited: mainly `stage.html`, `server.py` and `README.md`, plus
-`bin/board-state.sh`, the updaters, `.gitignore` and `CLAUDE.md`. If a
-`MEDICAL HOOK` line conflicts, keep both: upstream's new line plus the hook.
-If `README.md` conflicts, keep this fork's version. Your config, notes and
-media are untracked and never touched.
-
-For everything upstream (the full gesture set, notes orbs, wiring the ring to
-your assistant, OBS/streaming mode, gesture troubleshooting), see
-[upstream barehands](https://github.com/jaredrhod/barehands),
-[`barehands.md`](barehands.md) and [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
+The hand-tracked board (gestures, glass cards, notes orbs, the assistant
+ring) is [barehands](https://github.com/jaredrhod/barehands) by Jared
+Rhodenizer. NOVA adds the anatomy and pathology layer on top and is
+independent of the original. For the full gesture set and the general board
+features, see [`barehands.md`](barehands.md) and the
+[original project](https://github.com/jaredrhod/barehands).
 
 ## Credits
 
-- **barehands** by [Jared Rhodenizer](https://jaredrhod.com) (@jaredrhod):
-  the hand-tracked interface this fork is built on.
+- **barehands** by [Jared Rhodenizer](https://jaredrhod.com): the
+  hand-tracked interface this is built on.
 - **Heart model:** [BodyParts3D](https://lifesciencedb.jp/bp3d/), © The
   Database Center for Life Science (DBCLS), CC-BY 4.0. Modifications are
   listed in `media/models/heart/LICENSE.md`.
@@ -213,11 +203,10 @@ your assistant, OBS/streaming mode, gesture troubleshooting), see
 
 ## License
 
-**AGPL-3.0-or-later**, as upstream requires. Upstream code is Copyright (c)
-2026 Jared Rhodenizer; this fork's medical additions are released under the
-same license, with source published as the AGPL requires. If you distribute
-this or run a modified version as a service, your version must ship under the
-same license with its source available. Anatomical models are separate data
-works under their own licenses. Each model folder in `media/models/` has a
-`LICENSE.md`. Full terms are in [LICENSE](LICENSE). For closed-source
-commercial licensing of upstream barehands, email license@jaredrhod.com.
+**AGPL-3.0-or-later**, inherited from barehands. The original barehands code
+is Copyright (c) 2026 Jared Rhodenizer; NOVA's additions are released
+under the same license. If you distribute this or run a modified version as
+a service, your version must ship under the same license with its source
+available. Anatomical models are separate data works under their own
+licenses; each model folder in `media/models/` has a `LICENSE.md`. Full
+terms are in [LICENSE](LICENSE).

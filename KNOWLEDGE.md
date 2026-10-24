@@ -1,6 +1,6 @@
-# Knowledge ledger — barehands, anatomy edition
+# Knowledge ledger — NOVA
 
-What this fork has **learned, decided, and verified**, with the evidence for
+What NOVA has **learned, decided, and verified**, with the evidence for
 each line. Code shows *what* the project does; this file records *why*, and
 which lessons cost a field report to learn. Read it before changing the
 medical layer, so you don't re-learn something already paid for.

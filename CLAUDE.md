@@ -1,13 +1,13 @@
 # CLAUDE.md — working inside this repo
 
-This is **barehands, anatomy edition**: a fork of upstream
-[jaredrhod/barehands](https://github.com/jaredrhod/barehands) that turns
+This is **NOVA**: hand-tracked anatomy built on
+[jaredrhod/barehands](https://github.com/jaredrhod/barehands). It turns
 the hand-tracked glass board into an anatomy and pathology education
 tool — stage a 3D organ, cut it open, point at a structure and have an AI
 name and teach it, work a sourced pathology case. The medical layer lives
 in `js/medical/`, `schemas/`, `pathology/`, `cases/`, and `skills/`;
-everything else stays upstream barehands so gesture fixes keep merging
-cleanly. **Education and training only:** not a medical device, no
+everything else stays as barehands shipped it, so its gesture fixes can
+still be merged cleanly. **Education and training only:** not a medical device, no
 diagnosis of real patients, never used or presented as clinical judgment
 about a real person. Pathology content is authored from cited sources
 and human-reviewable, never invented at runtime.
