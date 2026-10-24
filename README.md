@@ -32,7 +32,7 @@ webcam and Chrome. No headset, no controllers, nothing to install.
 You need Python 3.9+, Chrome, and a webcam.
 
 ```
-git clone https://github.com/GITHUB_USER/NOVA.git
+git clone https://github.com/AbdulMueedd/NOVA.git
 cd NOVA
 cp barehands.json.example barehands.json
 python3 server.py
