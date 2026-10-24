@@ -5,12 +5,24 @@ Exercises every medical verb's valid and invalid argument classes against the
 live server, the airlock, the answer-stripping endpoint, the sidecar
 validator, and board-state.sh's rendering. Pure pass/fail, no eyeballs.
 """
-import json, subprocess, sys, time, urllib.request, urllib.error
+import json, os, subprocess, sys, time, urllib.request, urllib.error
 from pathlib import Path
 
 REPO = str(Path(__file__).resolve().parent.parent)
 BASE = "http://127.0.0.1:8794"
 results = []
+
+
+def board_state():
+    script = f"{REPO}/bin/board-state.sh"
+    command = [script]
+    if sys.platform == "win32":
+        # Use Git Bash (set BASH when Git is installed elsewhere).
+        bash = os.environ.get("BASH", "C:/Program Files/Git/bin/bash.exe")
+        command = [bash, script]
+    env = dict(os.environ, PYTHON=sys.executable.replace("\\", "/"))
+    return subprocess.run(command, capture_output=True, text=True,
+                          encoding="utf-8", env=env, check=True).stdout
 
 
 def post(path, payload):
@@ -210,7 +222,7 @@ if (back.get("pt") or {}).get("structure") != "mitral_valve":
           f"(board-state checks skipped — tracker connected)")
     print("=" * 72)
     sys.exit(1 if failed else 0)
-out = subprocess.run([f"{REPO}/bin/board-state.sh"], capture_output=True, text=True).stdout
+out = board_state()
 for frag in ("CUT coronal 40%", "ISOLATED: left_ventricle", "hidden: [2 ids]",
              "aortic_valve", "POINTING AT: mitral_valve"):
     check(f"board-state reports {frag!r}", frag in out, True)
@@ -220,7 +232,7 @@ plain = {"cursors": [], "items": [{"id": 2, "type": "model", "title": "heart",
          "src": "/media/models/heart/heart.glb", "mm": "solid",
          "x": 0.5, "y": 0.5, "scale": 1, "g": 0, "op": 1, "ch": 0}]}
 post("/state", plain)
-out2 = subprocess.run([f"{REPO}/bin/board-state.sh"], capture_output=True, text=True).stdout
+out2 = board_state()
 check("board-state: no medical noise when absent",
       ("CUT" in out2 or "ISOLATED" in out2 or "POINTING" in out2), False)
 

@@ -21,12 +21,13 @@
 # line per item so an assistant can answer "what's on the board?" from
 # truth instead of memory. Reaches nothing but localhost; changes nothing.
 set -euo pipefail
+PYTHON="${PYTHON:-python3}"
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PORT=$(python3 -c "import json;print(json.load(open('$DIR/barehands.json')).get('port',8794))" 2>/dev/null || echo 8794)
+PORT=$("$PYTHON" -c "import json;print(json.load(open('$DIR/barehands.json')).get('port',8794))" 2>/dev/null || echo 8794)
 STATE=$(curl -sS --max-time 3 "http://127.0.0.1:$PORT/state" 2>/dev/null) || {
     echo "The board is dark — the barehands server isn't running."; exit 1; }
 export STATE
-python3 <<'PY'
+"$PYTHON" <<'PY'
 import json, os
 
 try:

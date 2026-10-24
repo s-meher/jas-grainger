@@ -6,17 +6,16 @@
  * (it copies js/medical/*.js into tests/cutgest/ so the relative imports
  * and the lazy import("./gesture.js") resolve, then drives a synthetic hand.)
  */
-import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, writeFileSync, mkdirSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, "..", "js", "medical");
 const BOX = join(HERE, "cutgest");   // generated sandbox, gitignored
 mkdirSync(BOX, { recursive: true });
 for (const f of ["core.js", "gesture.js"])
-  execSync(`cp ${JSON.stringify(join(SRC, f))} ${JSON.stringify(join(BOX, f))}`);
+  copyFileSync(join(SRC, f), join(BOX, f));
 // render.js is imported lazily by paint(); a no-op stand-in keeps the
 // console quiet without dragging three.js into node
 writeFileSync(join(BOX, "render.js"),

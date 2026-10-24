@@ -1,5 +1,10 @@
 # tests — the heart acceptance suite
 
+For Windows prerequisites and commands, see
+[`docs/nova-integration.md`](../docs/nova-integration.md#validation).
+The visual suite accepts a `CHROME` executable override; the contract suite
+accepts a `BASH` executable override on Windows.
+
 Two scripts, no dependencies beyond the stdlib (plus Pillow for the visual
 one). **The server must be running** (`python3 server.py`); both drive the
 live board on 127.0.0.1:8794 and drain the state bus when they finish.

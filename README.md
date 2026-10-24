@@ -1,5 +1,9 @@
 # NOVA
 
+This is the NOVA baseline integrated into [JAS Grainger](https://github.com/s-meher/jas-grainger).
+See [the integration notes](docs/nova-integration.md) for provenance, preserved
+JAS documents, Windows setup, and validation limits.
+
 **Hand-tracked 3D anatomy, built on barehands.**
 
 **Hold a 3D heart in your bare hands, cut it open, point at a structure and
@@ -32,8 +36,8 @@ webcam and Chrome. No headset, no controllers, nothing to install.
 You need Python 3.9+, Chrome, and a webcam.
 
 ```
-git clone https://github.com/AbdulMueedd/NOVA.git
-cd NOVA
+git clone https://github.com/s-meher/jas-grainger.git
+cd jas-grainger
 cp barehands.json.example barehands.json
 python3 server.py
 ```

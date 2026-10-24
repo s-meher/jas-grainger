@@ -6,14 +6,24 @@ synthetic heartbeats, screenshots each, and assembles one contact sheet.
 Also proves TEARDOWN numerically: apply every verb, turn every verb off,
 and the frame must come back pixel-identical to the untouched baseline.
 """
-import json, subprocess, sys, urllib.request, hashlib
+import json, os, shutil, subprocess, sys, urllib.request, hashlib
 from pathlib import Path
 from PIL import Image, ImageDraw
 
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "tests" / "_shots"
 OUT.mkdir(exist_ok=True)
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME = os.environ.get("CHROME") or shutil.which("google-chrome") or shutil.which("chromium")
+if not CHROME:
+    candidates = [
+        Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+        Path(os.environ.get("PROGRAMFILES", "C:/Program Files")) / "Google/Chrome/Application/chrome.exe",
+        Path(os.environ.get("PROGRAMFILES(X86)", "C:/Program Files (x86)")) / "Google/Chrome/Application/chrome.exe",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/Application/chrome.exe",
+    ]
+    CHROME = next((str(p) for p in candidates if p.is_file()), None)
+if not CHROME:
+    sys.exit("Chrome not found. Set CHROME to the browser executable path.")
 URL = "http://127.0.0.1:8794/stage.html?role=render&cursors=0"
 W = H = 620
 
