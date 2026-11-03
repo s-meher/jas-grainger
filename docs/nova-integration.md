@@ -8,6 +8,12 @@ The `integrate-nova-baseline` branch merges NOVA's `main` at
 There were no overlapping paths or file conflicts. NOVA lives at the repository
 root so its relative asset paths, server, scripts, and documentation keep working.
 
+This import was merged into JAS `main` through
+[PR #1](https://github.com/s-meher/jas-grainger/pull/1), merge commit `08a8fa1`,
+on 2026-10-24. The import branch is historical. For new development, follow the
+[current branch and PR guide](development/version-control.md) and start from
+refreshed `origin/main`.
+
 The existing JAS files remain unchanged:
 
 - `Ideation.md`
@@ -37,7 +43,7 @@ Open http://127.0.0.1:8794/stage.html in Chrome and allow the camera.
 The personal `barehands.json` config is ignored by Git. Frontend dependencies
 load from public CDNs; the first browser load needs internet access.
 
-While reviewing the PR, clone this branch explicitly if needed:
+To inspect the historical integration branch explicitly:
 
 ```powershell
 git clone --branch integrate-nova-baseline https://github.com/s-meher/jas-grainger.git

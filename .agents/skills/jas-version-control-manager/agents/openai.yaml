@@ -1,0 +1,4 @@
+interface:
+  display_name: "JAS Version Control Manager"
+  short_description: "Manage JAS branches, PRs and repository navigation"
+  default_prompt: "Use $jas-version-control-manager to inspect JAS Git state and carry out the requested version-control task."

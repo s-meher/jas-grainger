@@ -4,6 +4,13 @@ This is the NOVA baseline integrated into [JAS Grainger](https://github.com/s-me
 See [the integration notes](docs/nova-integration.md) for provenance, preserved
 JAS documents, Windows setup, and validation limits.
 
+**Developing JAS NOVA:** start at the [project hub](docs/README.md) for the
+[project plan](docs/project/plan.md), [system architecture](docs/architecture/system.md),
+and [Git/branch navigation guide](docs/development/version-control.md).
+Call `$jas-version-control-manager` in project chats for the reusable Git manager role.
+Patient-specific preoperative and intraoperative workflows are roadmap goals;
+the current application retains its educational scope.
+
 **Hand-tracked 3D anatomy, built on barehands.**
 
 **Hold a 3D heart in your bare hands, cut it open, point at a structure and
