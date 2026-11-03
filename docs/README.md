@@ -8,6 +8,7 @@ Start here for development of hand-tracked 3D anatomy on barehands.
 | Original supplied task map, preserved verbatim | [Source task map](project/project_task_map.md) |
 | Current and proposed system, diagrams, interfaces | [System architecture](architecture/system.md) |
 | Branches, PRs, Git commands, new chats | [Version-control navigation](development/version-control.md) |
+| Explain every PR and every changed file; author/reviewer steps | [PR handoff guide](development/pr-handoff.md) |
 | Clinical validation stages and release evidence | [Validation strategy](validation/strategy.md) |
 | Architecture decisions | [Decision log](decisions/README.md) |
 | NOVA import history and existing Windows setup | [Integration notes](nova-integration.md) |

@@ -1,15 +1,60 @@
-## Problem and resulting behavior
+<!-- Follow docs/development/pr-handoff.md. Replace prompts with actual details;
+     use N/A with a reason where appropriate. Never attach patient data or secrets. -->
 
-Describe the task and what a reviewer/user can now do. Link task IDs, Issues
-and relevant architecture decisions. Distinguish implemented work from proposals.
+## What this PR does
 
-## Validation
+Describe the problem, resulting behavior and scope. Distinguish implemented
+behavior from proposed design.
 
-List checks actually run and their results. Name skipped/manual checks and
-remaining limits. For geometry changes, link the non-sensitive QA evidence and
-bundle/fixture revision. Never attach patient data to this public PR.
+Tasks / Issues:
+Prerequisite PRs / ADRs:
 
-## Integration and follow-up
+## How to explore it
 
-State dependencies, migration/rollback considerations when applicable, and which
-plan/architecture documents changed. A merge is not clinical-use authorization.
+Start here: link the entry point, demo or main document.
+
+1. Link the first file to review and explain why it comes first.
+2. Link the next file/component and explain how it connects.
+
+Review focus / specialist reviewer needed:
+
+## Every changed file
+
+One row per changed file, matching the complete Files changed list. Link files
+to the reviewed commit/diff; show old and new paths for renames. Include config,
+tests, documentation and binary assets. Describe contents as well as the change.
+
+| File | Change | Contents and purpose of this change |
+| --- | --- | --- |
+| Link to file | Added / Modified / Deleted / Renamed | Responsibility, actual change and reason |
+
+## How to verify
+
+Working directory / environment / prerequisites:
+
+Exact commands or manual steps and expected outcomes:
+
+| Check | Actual result | Evidence / remaining work |
+| --- | --- | --- |
+| Name the check | Passed / Failed / Skipped / Not run | Command output, safe artifact link or reason |
+
+For geometry changes, link non-sensitive QA and bundle/fixture revisions.
+Do not present historical test runs as newly performed checks.
+
+## Integration, limitations and rollback
+
+Base branch -> head branch:
+Compatibility / setup / migration:
+Known limitations / follow-up task IDs:
+Rollback approach (or why no special steps are needed):
+
+## Ready for review
+
+- [ ] The summary and review route match the latest push.
+- [ ] The file map covers every entry in Files changed.
+- [ ] Actual validation results and remaining manual checks are documented.
+- [ ] Related plan, architecture and decision records are updated as needed.
+- [ ] No patient data, credentials or unintended generated outputs are included.
+
+A software PR merge does not authorize clinical use. Request review; merging
+and auto-merge require separate authorization.

@@ -135,8 +135,10 @@ git push -u origin HEAD
 
 Open a PR from your task branch into `main`. In the body include the problem,
 resulting behavior, task/Issue IDs, relevant ADRs, exact validation outcomes and
-remaining limitations. The repository [PR template](../../.github/pull_request_template.md)
-provides this structure. Do not label the old baseline tests as newly run.
+remaining limitations. Follow the [PR handoff guide](pr-handoff.md) and fill the
+repository [PR template](../../.github/pull_request_template.md), including a
+review route and one explanatory row for every changed file. Refresh that map
+after each push. Do not label the old baseline tests as newly run.
 
 Use the connected GitHub tools, GitHub web UI, or `gh pr create` if GitHub CLI
 is installed and authenticated. `gh` is optional; it was not installed during

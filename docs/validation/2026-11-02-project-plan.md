@@ -51,3 +51,14 @@ Application suites and webcam/clinical evaluation were not re-run for this
 documentation change. Mermaid source diagrams were reviewed for structure but
 not rendered in a browser during this check. No branch rules, clinical approval,
 dataset access or issue assignments were provisioned by the documentation.
+
+## PR handoff follow-up
+
+The PR handoff guide and expanded author template were added after the initial
+planning commit. The root instructions and manager role now require a review
+route and a complete per-file explanation. Follow-up checks passed: 35 relative
+document links resolve, code fences are balanced, the revised skill passes
+Skill Creator validation, the installed manager matches the repository source,
+and the diff has no whitespace errors. The published PR description is built
+from the actual base-to-head file list and checked for one row per changed file.
+No application tests were re-run for this documentation-only follow-up.

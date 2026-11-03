@@ -43,6 +43,10 @@ identify which human or agent performed an action.
   and keep commits/PR descriptions tied to task IDs and actual evidence. Update
   plan/architecture/ADRs when the change affects them. Never claim old tests ran.
 - Push task branches and open/update reviewable PRs when authorized by the task.
+  Follow `docs/development/pr-handoff.md`: provide an entry point/review route,
+  verification steps and a linked file map with one explanatory row for every
+  changed file. Compare it against the actual base-to-head PR inventory after
+  the final push and update the description when the branch changes.
   Do not infer permission to merge, enable auto-merge, deploy, rewrite shared
   history or discard work from permission to prepare a PR. Obtain specific
   authorization for those actions; existing explicit authorization still applies.

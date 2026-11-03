@@ -46,3 +46,8 @@ changes, check links, diff hygiene and skill validity; do not run unrelated
 runtime suites just to repeat historical results. Runtime changes need relevant
 existing tests plus meaningful new acceptance evidence. Run contract and visual
 suites sequentially against an idle server; report webcam checks as manual.
+
+For every PR, follow `docs/development/pr-handoff.md` and fill the PR template.
+Give a review route and one row per changed file explaining its contents and
+the change. Compare the map against the actual PR file list after the last push;
+keep the description current rather than leaving the explanation only in chat.
