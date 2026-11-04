@@ -10,13 +10,14 @@ one). **The server must be running** (`python3 server.py`); both drive the
 live board on 127.0.0.1:8794 and drain the state bus when they finish.
 
 ```
-python3 tests/test_contract.py     # 77 assertions, ~5 seconds
+python3 tests/test_contract.py     # ~97 assertions, ~5 seconds
 python3 tests/test_visual.py       # 17 renders + a contact sheet, ~5 minutes
 ```
 
 ## test_contract.py — everything that can be judged without eyes
 
-Exit code 0 means all 77 passed. It covers:
+Exit code 0 means every assertion passed (97 when a local `barehands.json`
+exists; one config check is skipped otherwise). It covers:
 
 - **Every medical verb's valid forms** (204) and **every malformed argument
   class** (400): bad enums, a zero-length plane normal, an out-of-range
@@ -31,6 +32,11 @@ Exit code 0 means all 77 passed. It covers:
   of the private *field names* but for the absence of the answer *text* —
   every accepted diagnosis phrasing, the vignette, and each lesion's
   `finding` are grepped for in the response body.
+- **Asset serving (1.7)**: `.glb`/`.json`/`.nrrd` content types, and the
+  git-ignored research areas (`data/`, `artifacts/`, `private-data/`), `.git/`
+  and `barehands.json` 404 for GET and HEAD under every URL spelling tried
+  (`..`, `%2e%2e`, `//`, query strings). Real probe files are created and
+  removed so a 404 means refused, not absent.
 - **The sidecar**: `validate.py` on both the anatomy/GLB pair and the case,
   plus structural checks the validator doesn't make — no dangling
   parent/child/`connects` references, every alias resolving, every
