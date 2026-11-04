@@ -35,7 +35,7 @@ flowchart LR
     Core[js/medical/core.js<br/>sidecar, picking, point dwell]
     Gest[js/medical/gesture.js]
     Rend[js/medical/render.js]
-    Bundle["js/medical/bundle.js (2.3/2.4, planned)"]
+    Bundle["js/medical/bundle.js (2.3/2.4)"]
   end
   Drive --> Fetch --> Reg
   Drive --> P1 --> Canon --> Surf --> Opt --> Exp
@@ -74,7 +74,8 @@ marked hooks; every `MED` call optional (`MED.fn?.()`).
 **Already built (extend, don't rewrite):** GLB loading/centering/scaling (2.3/2.4
 baseline), pinch (3.4), point (3.5), rotate/scale/move (3.6). **Not built:**
 volume→mesh pipeline (1.4–1.6), bundle manifest, scale-preserving transform
-with inverse to mm, `.nrrd` serving.
+with inverse to mm, `.nrrd` serving. *(Update: 1.4–1.6 in `pipeline/` (PR B),
+the bundle gate and mm transform in `js/medical/bundle.js` (PR D).)*
 
 ## 3. Data nodes
 

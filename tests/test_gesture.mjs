@@ -14,7 +14,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, "..", "js", "medical");
 const BOX = join(HERE, "cutgest");   // generated sandbox, gitignored
 mkdirSync(BOX, { recursive: true });
-for (const f of ["core.js", "gesture.js"])
+for (const f of ["core.js", "gesture.js", "bundle.js"])   // bundle.js: core.js imports it (2.3/2.4)
   copyFileSync(join(SRC, f), join(BOX, f));
 // render.js is imported lazily by paint(); a no-op stand-in keeps the
 // console quiet without dragging three.js into node

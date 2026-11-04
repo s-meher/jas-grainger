@@ -58,9 +58,12 @@ authority.
 | provenance | `dataset`, `license`, `citation`, `tool_versions`, `pipeline_config`, `segmentation: {source, reviewer_state}`, `created` |
 | validation | per structure: `max_displacement_mm`, `volume_change_pct`, `watertight`, findings (`warning` / `error`) |
 
-The viewer (2.4) computes **one** centre-and-scale transform for the whole
-bundle from `bounds_mm` and keeps its inverse, so scene coordinates can be
-mapped back to mm. It never centres structures one at a time.
+The viewer (2.4) uses **one** centre-and-scale transform for the whole
+bundle and keeps its inverse, so scene coordinates can be mapped back to mm.
+It never centres structures one at a time. As built (PR D, D-P2-09), this is
+stage.html's existing whole-scene box, centre and fit, with the bbox cache
+keyed by `revision`. `mmToScene`/`sceneToMm` read the live three.js node
+matrices. `bounds_mm` is kept for validation and future measuring tools.
 
 ## Consequences
 

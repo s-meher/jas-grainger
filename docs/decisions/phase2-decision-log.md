@@ -141,3 +141,25 @@ flowchart TD
 ```
 
 Only `media/models/phantom/` (synthetic) is committed.
+
+## D-P2-09 How the board loads a scan bundle
+
+2026-11-04 · tasks 2.3, 2.4 · proposed · ADR [0002](0002-bundle-manifest-and-patient-space.md)
+
+```mermaid
+flowchart TD
+  Q{How does stage.html load a jas-bundle/1 GLB<br/>and keep true mm?}
+  Q --> A[New bundle viewer / scene graph]
+  Q --> B[Load as a plain GLB, check the manifest afterwards]
+  Q --> C[Verify first, parse the verified bytes;<br/>reuse the existing whole-scene centre + fit]
+  A -->|plan.md 2.3/2.4: extend, don't duplicate;<br/>would lose cut/isolate/label/explode| AX[Rejected]
+  B -->|a tampered or partial model is already on screen<br/>when the check fails; second fetch can differ| BX[Rejected]
+  C --> C1{One transform for all structures? Inverse exact?<br/>Plain models untouched?}
+  C1 -->|existing code already centres gltf.scene once and fit-scales one group;<br/>mmToScene/sceneToMm via node matrices: 1.8e-15 mm round trip,<br/>tumour landmark 0.2 mm under a rotated pose; no manifest = null = upstream path| CY[Chosen]
+```
+
+Consequences:
+- The stage.html change is limited to two marked hooks: the parse source and
+  the bbox cache key, which now includes the manifest revision.
+- The bundle code lives in `js/medical/bundle.js`.
+- core.js's `onModelLoaded` attaches the transform.
