@@ -82,3 +82,18 @@ at the webcam can verify:
 2. **The gesture thresholds** — every number in `js/medical/gesture.js` is
    provisional, fitted to no real hand. `skills/gesture-tuning/SKILL.md`
    runs the live clinic.
+
+## test_pinch_point.mjs: verifying the existing pinch, point and manipulation (3.4–3.6)
+
+```
+node tests/test_pinch_point.mjs    # no server, no browser, ~10 s (pointing dwells in real time)
+```
+
+It slices the exact pinch-classifier, rotate and stretch code out of
+`stage.html` between fixed anchor lines, so there is no copy to drift. If an
+anchor moves, the suite fails. It drives that code with synthetic 21-point
+hands (open, OK-sign, fist; scaled, moved, tilted, mirrored, sideways).
+Pointing goes through `core.js`'s real `cursorFrame` against a stub scene.
+`XFAIL` lines are **known gaps**, recorded in
+`docs/validation/2026-11-04-3-4-3-6-gestures.md`. They don't fail the run,
+and a fix shows up as `XPASS`.
