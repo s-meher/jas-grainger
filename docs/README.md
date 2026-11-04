@@ -11,6 +11,9 @@ Start here for development of hand-tracked 3D anatomy on barehands.
 | Explain every PR and every changed file; author/reviewer steps | [PR handoff guide](development/pr-handoff.md) |
 | Clinical validation stages and release evidence | [Validation strategy](validation/strategy.md) |
 | Architecture decisions | [Decision log](decisions/README.md) |
+| Phase 2 map: code, data, environment, rules | [Phase 2 knowledge graph](project/phase2-knowledge-graph.md) |
+| Phase 2 decision trees | [Phase 2 decision log](decisions/phase2-decision-log.md) |
+| Dataset registry (no scans in Git) | [Datasets](../datasets/README.md) |
 | NOVA import history and existing Windows setup | [Integration notes](nova-integration.md) |
 | AI contributor entry point | [Repository instructions](../AGENTS.md) |
 | Reusable version-control manager | [Manager skill](../.agents/skills/jas-version-control-manager/SKILL.md) |

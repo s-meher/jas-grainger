@@ -18,3 +18,12 @@ than rewriting the historical decision. A proposed design is not accepted code.
 
 These are decision topics, not six accepted ADRs. Add actual records as their
 implementation spikes establish evidence.
+
+## Records
+
+| ID | Title | Status |
+| --- | --- | --- |
+| [0002](0002-bundle-manifest-and-patient-space.md) | Bundle manifest and patient-space export axes | proposed |
+
+Phase 2 also logs each smaller choice as a decision tree in the
+[Phase 2 decision log](phase2-decision-log.md).
