@@ -100,3 +100,44 @@ flowchart TD
 
 Consequence: `anatomy.json` `axes` for exported bundles is
 `{superior:+z, left:-x, anterior:+y}` (RAS+: +x is patient right).
+
+## D-P2-06 Decimation algorithm, aggression and step order
+
+2026-11-04 · tasks 1.5, G2 · proposed
+
+```mermaid
+flowchart TD
+  Q{How do we cut face counts<br/>without breaking the surface?}
+  Q --> A[trimesh.simplify_quadric_decimation default]
+  Q --> B[fast_simplification agg=0, smooth THEN decimate]
+  Q --> C[fast_simplification agg=0, decimate THEN smooth]
+  A -->|phantom liver: 4 non-manifold edges,<br/>watertight lost, Euler 4 to 7| AX[Rejected by QA gate]
+  B -->|liver_39: 534k to 529k faces only;<br/>smoothed surface resists collapse| BX[Rejected: no real reduction]
+  C --> C1{Topology kept? Displacement within bound?}
+  C1 -->|liver_39 liver 534k to 172k, Euler -46 kept, 0.0 mm;<br/>tumor 92k to 80k, 0.94 mm| CY[Chosen]
+```
+
+Open (needs G2): liver_39's liver stays above the 80k budget, because going
+lower means removing small handles caused by voxel noise, and that is a
+topology change. Taubin smoothing on the decimated liver exceeded the 1 mm
+placeholder bound, so the liver ships unsmoothed. Whether a topology change
+or more displacement is acceptable is an imaging-reviewer call, not a
+performance call.
+
+## D-P2-07 Where real-scan bundles are written
+
+2026-11-04 · tasks 1.6, 1.7, G1 · proposed
+
+```mermaid
+flowchart TD
+  Q{Where does build.py write bundles<br/>made from real scans?}
+  Q --> A[media/models/ like the heart]
+  Q --> B[artifacts/ only]
+  Q --> C[ignored media/local/ + artifacts/ + data/]
+  A -->|tracked path: one git add publishes<br/>patient-derived assets; IRCADb ND license| AX[Rejected]
+  B -->|outside the media airlock:<br/>the board cannot stage it| BX[Rejected]
+  C --> C1{Board can load it locally? Git can't see it?}
+  C1 -->|inside the airlock, gitignored;<br/>build.py refuses any other in-repo path| CY[Chosen]
+```
+
+Only `media/models/phantom/` (synthetic) is committed.

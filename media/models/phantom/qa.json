@@ -1,0 +1,207 @@
+{
+  "liver": {
+    "structure_id": "liver",
+    "steps": [
+      {
+        "step": "taubin",
+        "iterations": 10,
+        "max_displacement_mm": 1.534,
+        "bound_mm": 1.0,
+        "volume_change_pct": 2.63,
+        "watertight": true,
+        "euler": 4,
+        "pass": false,
+        "findings": [
+          "displacement 1.53 mm > 1.00 mm"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 5,
+        "max_displacement_mm": 1.015,
+        "bound_mm": 1.0,
+        "volume_change_pct": 1.28,
+        "watertight": true,
+        "euler": 4,
+        "pass": false,
+        "findings": [
+          "displacement 1.02 mm > 1.00 mm"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 2,
+        "max_displacement_mm": 0.532,
+        "bound_mm": 1.0,
+        "volume_change_pct": 0.48,
+        "watertight": true,
+        "euler": 4,
+        "pass": true,
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "original": {
+      "faces": 9560,
+      "watertight": true,
+      "euler": 4
+    },
+    "final": {
+      "faces": 9560,
+      "max_displacement_mm": 0.532,
+      "bound_mm": 1.0,
+      "volume_change_pct": 0.48,
+      "watertight": true,
+      "euler": 4,
+      "pass": true,
+      "findings": []
+    },
+    "tolerances": {
+      "max_displacement_mm": 1.0,
+      "max_displacement_voxel_frac": 0.5,
+      "max_volume_change_pct": 5.0
+    }
+  },
+  "liver_tumor": {
+    "structure_id": "liver_tumor",
+    "steps": [
+      {
+        "step": "taubin",
+        "iterations": 10,
+        "max_displacement_mm": 1.157,
+        "bound_mm": 1.0,
+        "volume_change_pct": 27.23,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "displacement 1.16 mm > 1.00 mm",
+          "volume change 27.2% > 5.0%"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 5,
+        "max_displacement_mm": 0.782,
+        "bound_mm": 1.0,
+        "volume_change_pct": 15.04,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "volume change 15.0% > 5.0%"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 2,
+        "max_displacement_mm": 0.442,
+        "bound_mm": 1.0,
+        "volume_change_pct": 6.62,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "volume change 6.6% > 5.0%"
+        ]
+      }
+    ],
+    "findings": [
+      "smoothing skipped: no setting within tolerance"
+    ],
+    "original": {
+      "faces": 820,
+      "watertight": true,
+      "euler": 2
+    },
+    "final": {
+      "faces": 820,
+      "max_displacement_mm": 0.0,
+      "volume_change_pct": 0.0,
+      "watertight": true,
+      "euler": 2,
+      "pass": true,
+      "findings": []
+    },
+    "tolerances": {
+      "max_displacement_mm": 1.0,
+      "max_displacement_voxel_frac": 0.5,
+      "max_volume_change_pct": 5.0
+    }
+  },
+  "hepatic_vessel": {
+    "structure_id": "hepatic_vessel",
+    "steps": [
+      {
+        "step": "taubin",
+        "iterations": 10,
+        "max_displacement_mm": 2.285,
+        "bound_mm": 1.0,
+        "volume_change_pct": 99.98,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "displacement 2.29 mm > 1.00 mm",
+          "volume change 100.0% > 5.0%"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 5,
+        "max_displacement_mm": 1.333,
+        "bound_mm": 1.0,
+        "volume_change_pct": 98.53,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "displacement 1.33 mm > 1.00 mm",
+          "volume change 98.5% > 5.0%"
+        ]
+      },
+      {
+        "step": "taubin",
+        "iterations": 2,
+        "max_displacement_mm": 0.483,
+        "bound_mm": 1.0,
+        "volume_change_pct": 81.99,
+        "watertight": true,
+        "euler": 2,
+        "pass": false,
+        "findings": [
+          "volume change 82.0% > 5.0%"
+        ]
+      }
+    ],
+    "findings": [
+      "smoothing skipped: no setting within tolerance"
+    ],
+    "original": {
+      "faces": 208,
+      "watertight": true,
+      "euler": 2
+    },
+    "final": {
+      "faces": 208,
+      "max_displacement_mm": 0.0,
+      "volume_change_pct": 0.0,
+      "watertight": true,
+      "euler": 2,
+      "pass": true,
+      "findings": []
+    },
+    "tolerances": {
+      "max_displacement_mm": 1.0,
+      "max_displacement_voxel_frac": 0.5,
+      "max_volume_change_pct": 5.0
+    }
+  },
+  "portal_vein": {
+    "structure_id": "portal_vein",
+    "steps": [],
+    "findings": [
+      "empty structure: nothing to optimize"
+    ]
+  }
+}

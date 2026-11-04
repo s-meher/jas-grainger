@@ -20,3 +20,6 @@ tests/cutgest/
 /data/
 /artifacts/
 /private-data/
+# scan-derived bundles you build locally (pipeline/build.py --out media/local/...):
+# inside the media airlock so the board can stage them, never committed
+/media/local/

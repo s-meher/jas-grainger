@@ -1,0 +1,49 @@
+{
+  "schema": "barehands-anatomy/1",
+  "model": "model.glb",
+  "source": {
+    "name": "synthetic:asymmetric-phantom-v1 via jas-grainger pipeline",
+    "url": "https://github.com/s-meher/jas-grainger",
+    "license": "CC-BY-4.0 (this repository's generated fixture)",
+    "modifications": "marching cubes per label in RAS+ mm; bounded Taubin smoothing and quadric decimation gated by QA (see manifest.json validation)"
+  },
+  "system": "hepatobiliary",
+  "axes": {
+    "superior": "+z",
+    "left": "-x",
+    "anterior": "+y"
+  },
+  "structures": {
+    "liver": {
+      "name": "Liver",
+      "meshes": [
+        "liver"
+      ],
+      "parent": null,
+      "children": [
+        "liver_tumor",
+        "hepatic_vessel"
+      ],
+      "layer": 0
+    },
+    "liver_tumor": {
+      "name": "Liver tumor",
+      "meshes": [
+        "liver_tumor"
+      ],
+      "parent": "liver",
+      "children": [],
+      "layer": 1
+    },
+    "hepatic_vessel": {
+      "name": "Hepatic vessels",
+      "meshes": [
+        "hepatic_vessel"
+      ],
+      "parent": "liver",
+      "children": [],
+      "layer": 1
+    }
+  },
+  "aliases": {}
+}
