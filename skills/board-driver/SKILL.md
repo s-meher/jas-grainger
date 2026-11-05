@@ -191,6 +191,9 @@ This is the core interaction. When the user asks **"what is this?"** or
    - **If there is no `POINTING AT` line:** say plainly that you can't see
      them pointing at anything right now, and ask them to hold a finger
      still on the structure they mean. Do not guess a structure.
+   - **If you see `POINTING: ambiguous between a, b`:** both hands are resting
+     on different structures. Name the candidates and ask which one they
+     mean, or ask them to lower one hand. Never pick one yourself.
 3. **Open `media/models/<model-dir>/anatomy.json`** for that model (the
    `<model>` value is the GLB's src; derive the model folder from it).
 4. **Find `<structure>` in `structures`.** Answer with its `name` first —

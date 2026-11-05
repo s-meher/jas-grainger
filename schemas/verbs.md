@@ -72,7 +72,7 @@ deliberately short. The Renderer track publishes these on the state JSON;
 
 | field | shape | meaning |
 |---|---|---|
-| `pt` | `{"model": "<src>", "structure": "<structure id>", "mesh": "<raw mesh name>"}` | what the user's cursor is currently pointing at, across the whole scene (not per-item) |
+| `pt` | `{"model": "<src>", "structure": "<structure id>", "mesh": "<raw mesh name>"}`, or `{"model": "<src>", "ambiguous": true, "candidates": ["<id>", …]}` | what the user's cursor is currently pointing at, across the whole scene (not per-item). The ambiguous form (3.5-2) means two resting hands point at different structures. It has no `structure`, so consumers must not name one. `pt` is dropped about 400 ms after the last hand leaves the frame (G3-2). |
 
 All four per-item fields and the top-level `pt` are optional — an item
 with none of them present renders exactly as it does today.

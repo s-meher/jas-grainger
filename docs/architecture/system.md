@@ -174,6 +174,31 @@ A patient-review panel instead shows active dataset/series/revision, orientation
 review state, annotation provenance and source-image comparison. Clinical identity
 confirmation belongs inside the authorized private workflow, not public Git.
 
+## Interaction contract as built (3.4–3.6, verified 2026-11-04)
+
+This section describes the **existing** stage.html / core.js behaviour as
+`tests/test_pinch_point.mjs` measures it. It is not the proposed state machine
+above. It is the baseline the proposed action adapter has to map onto. The
+numbers are the code's current constants, not tuned recommendations.
+[Findings](../validation/2026-11-04-3-4-3-6-gestures.md).
+
+| Input | Rule (current code) | Output to the board |
+| --- | --- | --- |
+| Cursor position | Midpoint of the thumb tip (4) and index tip (8), mirrored to screen px, EMA 0.45 per frame. **(3.5-1, fixed)** Cursor identity is MediaPipe handedness (Left = 0, Right = 1), falling back to list order if the labels collide. | `cur.x/y` |
+| Pinch enter | gap/span < 0.32 (frontal) or < 0.38 (palm aspect < 2), **and** a signature: contrast law (back-finger arch − index arch > 0.18 and back arch > 1.30) or the profile rule (thumb–ring-knuckle > 0.95 span). The signature must hold 2 consecutive frames or an EMA > 0.55; a hand already holding something is exempt. Span = wrist→middle knuckle, so the rule is hand-size and distance invariant. | `cur.pinched` |
+| Pinch hold / release | Hysteresis: release at gap/span ≥ 0.55. A fast hand (> 800 px/s) needs ≥ 0.70 on 2 frames running. Probation: a fresh pinch that loses its signature for 4 frames inside 400 ms is dropped. A palm aspect > 6 (impossible hand) drops immediately. | grab begins/ends |
+| Move | One pinching hand carries the item at a fixed offset | `x, y` |
+| Rotate | Holding still for 1 s (drift ≤ 45 px) latches rotate. Yaw = start + Δx·0.012 rad/px (free for models, ±1.2 for panes); pitch = start + Δy·0.012, clamped ±1.2. Release keeps yaw momentum. | `rx, ry`, `rvy` |
+| Scale | Two hands pinching one item: scale = s0·d/d0, clamped 0.12–12×, centred between the hands. No two-hand roll. | `scale` |
+| Point | An open (unpinched) hand held still (≤ 26 px) for 600 ms, then the same structure for 600 ms, is published. Hidden or cut-away hits and unlisted meshes are skipped. A pinch clears it. **(3.5-2, fixed)** Two resting hands on different structures publish `{ambiguous, candidates}` with no `structure`. | `/state.pt` |
+| Reset / fallback | Keyboard: R respawns the board, C cycles the camera, D shows debug, X arms the cut. **(3.6-1, fixed)** Mouse on a model: drag = move, Shift/right-drag = rotate (0.012 rad/px, pitch ±1.2), wheel = scale (0.12–12×), double-click = reset pose. A model held by a hand ignores the mouse. | `x, y, rx, ry, scale` |
+| Tracking loss | **(G3-1, fixed)** A missing hand is frozen, shown as a dimmed grey cursor, for 500 ms. If it returns it resumes; if not, it is dropped with no fling and no tap. **(G3-2, fixed)** `pt` is cleared about 400 ms after the last hand leaves. | — |
+
+Gaps found on 2026-11-04 and fixed on 2026-11-05 in `js/medical/interaction.js`
+and `core.js`: G3-1, G3-2, 3.5-1, 3.5-2, 3.6-1. Still open: 3.4-1 (a sideways
+fist passed the profile rule in synthetic geometry only). The webcam session in
+[the Phase 2 webcam protocol](../validation/phase2-webcam-session.md) decides it.
+
 ## Delivery, performance and open decisions
 
 - Preserve the current Python/vanilla-JS runtime until an ADR supports a change.

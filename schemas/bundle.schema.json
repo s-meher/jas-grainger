@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/s-meher/jas-grainger/schemas/bundle.schema.json",
+  "title": "jas-bundle/1 manifest (ADR 0002, proposed)",
+  "description": "Scan-derived asset bundle: geometry in RAS+ mm, hashed assets, provenance and QA. Sits beside an unchanged barehands-anatomy/1 sidecar.",
+  "type": "object",
+  "required": ["schema", "bundle_id", "revision", "source_case", "geometry", "assets", "structures", "provenance", "validation"],
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "id": {"type": "string", "pattern": "^[a-z0-9_]{1,64}$"},
+    "mat4": {"type": "array", "minItems": 4, "maxItems": 4,
+             "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}},
+    "vec3": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}
+  },
+  "properties": {
+    "schema": {"const": "jas-bundle/1"},
+    "bundle_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "revision": {"$ref": "#/$defs/sha256"},
+    "source_case": {"type": "string", "minLength": 1},
+    "geometry": {
+      "type": "object",
+      "required": ["units", "axes", "shape", "spacing", "voxel_to_world", "world_to_model", "bounds_mm"],
+      "additionalProperties": false,
+      "properties": {
+        "units": {"const": "mm"},
+        "axes": {"const": "RAS"},
+        "shape": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "integer", "minimum": 1}},
+        "spacing": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number", "exclusiveMinimum": 0}},
+        "voxel_to_world": {"$ref": "#/$defs/mat4"},
+        "world_to_model": {"$ref": "#/$defs/mat4"},
+        "bounds_mm": {"type": "object", "required": ["min", "max"], "additionalProperties": false,
+                      "properties": {"min": {"$ref": "#/$defs/vec3"}, "max": {"$ref": "#/$defs/vec3"}}}
+      }
+    },
+    "assets": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["path", "role", "media_type", "bytes", "sha256"], "additionalProperties": false,
+        "properties": {
+          "path": {"type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]+$"},
+          "role": {"enum": ["mesh", "mesh_original", "sidecar", "volume"]},
+          "media_type": {"type": "string"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "structures": {
+      "type": "object", "minProperties": 1,
+      "propertyNames": {"$ref": "#/$defs/id"},
+      "additionalProperties": {
+        "type": "object", "required": ["label_value", "mesh_node", "voxels", "volume_ml", "status"], "additionalProperties": false,
+        "properties": {
+          "label_value": {"type": "integer", "minimum": 1},
+          "mesh_node": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+          "voxels": {"type": "integer", "minimum": 0},
+          "volume_ml": {"type": "number", "minimum": 0},
+          "status": {"enum": ["present", "empty"]}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["dataset", "license", "citation", "tool_versions", "pipeline_config", "segmentation", "created"],
+      "properties": {
+        "segmentation": {"type": "object", "required": ["source", "reviewer_state"],
+                         "properties": {"reviewer_state": {"enum": ["unreviewed", "dataset_reference", "reviewed", "rejected"]}}},
+        "created": {"type": "string"}
+      }
+    },
+    "validation": {"type": "object", "required": ["structures", "findings"]}
+  }
+}

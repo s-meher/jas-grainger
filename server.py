@@ -245,7 +245,40 @@ _MEDICAL_VERBS = {
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# MEDICAL ASSET SERVING (task 1.7) — static GET hardening for scan bundles.
+# The stdlib handler serves the whole repo folder. That is harmless for
+# tracked code, but the git-ignored research areas can hold real scans and
+# patient-derived outputs, so they are never served, whatever the URL
+# spelling (checked on the translated filesystem path, so encoded "..",
+# doubled slashes and case tricks resolve first). Bundles the board stages
+# still live only under media/ (the airlock is unchanged).
+# ---------------------------------------------------------------------------
+_PRIVATE_TOP = {"data", "artifacts", "private-data", ".git", "barehands.json"}
+_BUNDLE_TYPES = {".glb": "model/gltf-binary", ".gltf": "model/gltf+json",
+                 ".nrrd": "application/octet-stream", ".json": "application/json"}
+# ---------------------------------------------------------------------------
+# end MEDICAL ASSET SERVING
+# ---------------------------------------------------------------------------
+
+
 class Handler(SimpleHTTPRequestHandler):
+    # MEDICAL HOOK (1.7): explicit types so GLTFLoader/fetch never depend on
+    # the host OS mimetypes table (Windows/macOS disagree on .glb)
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map, **_BUNDLE_TYPES}
+
+    def send_head(self):
+        # MEDICAL HOOK (1.7): GET and HEAD both come through here
+        try:
+            rel = Path(self.translate_path(self.path)).resolve().relative_to(HERE)
+            top = rel.parts[0].lower() if rel.parts else ""
+        except ValueError:
+            top = "data"          # outside the repo entirely: refuse too
+        if top in _PRIVATE_TOP:
+            self.send_error(404)
+            return None
+        return super().send_head()
+
     def end_headers(self):
         # no-store on the page itself so a plain reload always serves
         # current code (Chrome happily caches through reloads otherwise)
