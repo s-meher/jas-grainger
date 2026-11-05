@@ -163,3 +163,10 @@ Consequences:
   the bbox cache key, which now includes the manifest revision.
 - The bundle code lives in `js/medical/bundle.js`.
 - core.js's `onModelLoaded` attaches the transform.
+
+## D-P2-08 and D-P2-10 (separate files)
+
+These two were written on branches that didn't include this log, so they
+live as standalone files to avoid append conflicts:
+[D-P2-08 serving scan bundles](phase2/D-P2-08-asset-serving.md) ·
+[D-P2-10 how 3.4–3.6 "Verify" is done](phase2/D-P2-10-gesture-verification.md).
