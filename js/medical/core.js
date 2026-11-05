@@ -25,6 +25,10 @@ import { attach as attachBundle } from "./bundle.js";
 export { bundleFor } from "./bundle.js";
 // gesture-gap fixes (G3-1 tracking loss, 3.5-1 handedness, 3.6-1 mouse)
 export { holdLost, foundCursor, handSlots, installMouse } from "./interaction.js";
+// webcam states (3.3): error explanations + Retry, unplug recovery, picker, preview privacy
+export { bootFailed, watchCamera, cameraMenu, togglePreview } from "./camera.js";
+// tracker scheduling (3.2): GPU->CPU fallback, ?track=worker prototype, ?perf=1 measurement
+export { createLandmarker, wrapTracker } from "./tracking.js";
 
 const VERBS = new Set(["cut", "isolate", "hide", "label", "xray",
                        "lesion", "layer"]);
