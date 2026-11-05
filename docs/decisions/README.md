@@ -23,7 +23,9 @@ implementation spikes establish evidence.
 
 | ID | Title | Status |
 | --- | --- | --- |
+| [0001](0001-frontend-modules-no-bundler.md) | Frontend modules without a bundler or framework | proposed |
 | [0002](0002-bundle-manifest-and-patient-space.md) | Bundle manifest and patient-space export axes | proposed |
+| [0005](0005-tracking-worker.md) | Hand tracking on the main thread vs in a worker | proposed (main-thread default until measured on target hardware) |
 
-Phase 2 also logs each smaller choice as a decision tree in the
-[Phase 2 decision log](phase2-decision-log.md).
+Phases 1 and 2 log each smaller choice as a decision tree:
+[Phase 1](phase1-decision-log.md) · [Phase 2](phase2-decision-log.md).

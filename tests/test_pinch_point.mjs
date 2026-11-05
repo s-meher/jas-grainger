@@ -23,7 +23,7 @@
  */
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { readFileSync, copyFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, copyFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const STAGE = readFileSync(join(HERE, "..", "stage.html"), "utf8");
@@ -267,7 +267,7 @@ console.log("\n3.5 pointing: js/medical/core.js cursorFrame, stub scene");
 const SRC = join(HERE, "..", "js", "medical"), BOX = join(HERE, "cutgest");
 mkdirSync(BOX, { recursive: true });
 // bundle.js only exists once 2.3 lands; copy what's present
-for (const f of ["core.js", "gesture.js", "bundle.js", "interaction.js"]) { try { copyFileSync(join(SRC, f), join(BOX, f)); } catch (e) {} }
+for (const f of readdirSync(SRC).filter(f => f.endsWith(".js"))) copyFileSync(join(SRC, f), join(BOX, f));
 writeFileSync(join(BOX, "render.js"), "export function paint(){} export function tick(){} export function dispose(){}\n");
 writeFileSync(join(BOX, "package.json"), '{"type":"module"}\n');
 Object.assign(globalThis, { location: { search: "" }, document: { getElementById: () => null },

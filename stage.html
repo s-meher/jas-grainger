@@ -285,7 +285,7 @@ setTimeout(function () {
 <video id="cam" autoplay playsinline muted></video>
 <div id="behind"></div>
 <div id="boot">BAREHANDS<br><span style="color:#a8d8cf;font-size:12px;letter-spacing:0.22em">by jaredrhod</span><br><span style="color:#a8d8cf;font-size:13px">loading hand tracker… allow the camera when asked</span></div>
-<div id="hint">tap the RING = orbs · tap an orb = its tree · TAP a card = open · pinch-drag = move · hold still ~1s = 3D rotate · two hands = scale · TAP an open item = close · CLAP (palms together, fingers up) = ring center-stage · CLAW: flash open, claw, aim, hold the strain 2s, SNAP = force pull · empty pinch dragged sideways = explode scrub · <!-- MEDICAL HOOK -->X = arm the CUT (flat palm swipes the plane, scissors spread it)<!-- /MEDICAL HOOK --> · R respawn / C camera / D debug</div>
+<div id="hint">tap the RING = orbs · tap an orb = its tree · TAP a card = open · pinch-drag = move · hold still ~1s = 3D rotate · two hands = scale · TAP an open item = close · CLAP (palms together, fingers up) = ring center-stage · CLAW: flash open, claw, aim, hold the strain 2s, SNAP = force pull · empty pinch dragged sideways = explode scrub · <!-- MEDICAL HOOK -->X = arm the CUT (flat palm swipes the plane, scissors spread it)<!-- /MEDICAL HOOK --> · R respawn / C camera / D debug<!-- MEDICAL HOOK --> / K pick camera / V hide preview<!-- /MEDICAL HOOK --></div>
 <div id="debug"></div>
 <div id="toast"></div>
 
@@ -1569,6 +1569,7 @@ async function startCam(deviceId) {
     if (!stream) throw e;
   }
   cam.srcObject = stream;
+  MED.watchCamera?.(stream, () => pickInitialCam());   // MEDICAL HOOK (3.3): unplug -> banner + auto-recover
   await new Promise(r => cam.onloadedmetadata = r);
   camDevices = (await navigator.mediaDevices.enumerateDevices())
     .filter(d => d.kind === "videoinput");
@@ -1603,6 +1604,10 @@ addEventListener("keydown", e => {
   if (e.key === "d" || e.key === "D") dbg.style.display = dbg.style.display === "block" ? "none" : "block";
   if (e.key === "c" || e.key === "C") cycleCam();
   if (e.key === "x" || e.key === "X") MED.toggleArm?.();   // MEDICAL HOOK
+  // MEDICAL HOOK (3.3): K = choose a camera by name, V = hide/show the camera preview
+  if (e.key === "k" || e.key === "K") MED.cameraMenu?.({ list: () => camDevices, current: () => camIdx,
+    choose: async id => { await startCam(id); localStorage.setItem("stage-cam", id); lastVideoTs = -1; } });
+  if (e.key === "v" || e.key === "V") MED.togglePreview?.(cam);
   if (e.key === "p" || e.key === "P") {
     SAMPLER = { until: performance.now() + 4000, r: [], h8: [], h12: [], h16: [], h20: [], s: [], a: [] };
     toast("OMNI sampler: hold the pose for 4 seconds…", 4000);
@@ -2028,9 +2033,11 @@ function physics(dt) {
 
 async function boot() {
   await pickInitialCam();
+  MED.togglePreview?.(cam, true);   // MEDICAL HOOK (3.3): restore the saved preview-privacy choice
   const vision = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-  landmarker = await HandLandmarker.createFromOptions(vision, {
+  // MEDICAL HOOK (3.2): options named so the tracker can retry on CPU / run in a worker
+  const lmOpts = {
     baseOptions: { modelAssetPath:
       "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
       delegate: "GPU" },
@@ -2046,7 +2053,11 @@ async function boot() {
     // and re-acquisition eats the frames that felt like grab-lag):
     // KEEP-tracking eased to 0.5 so a latched hand rides through blur;
     // fresh DETECTION stays 0.7 — the busy-background ghost wall holds.
-    minHandPresenceConfidence: 0.5 });
+    minHandPresenceConfidence: 0.5 };
+  const mkLm = o => HandLandmarker.createFromOptions(vision, o);
+  landmarker = MED.createLandmarker ? await MED.createLandmarker(mkLm, lmOpts) : await mkLm(lmOpts);
+  landmarker = (await MED.wrapTracker?.(landmarker, lmOpts)) || landmarker;   // ?track=worker, ?perf=1
+  // /MEDICAL HOOK
   document.getElementById("boot").remove();
   await loadTree();
   spawnStage();
@@ -3134,6 +3145,8 @@ if (ROLE === "render") {
   // still needs the camera to boot; no camera = no items to move.)
   MED.installMouse?.(() => items, { hitRect: c => MED.hitRect?.(c) });
   boot().catch(e => {
+    // MEDICAL HOOK (3.3): say WHY (blocked / no camera / in use / offline) + Retry
+    if (MED.bootFailed?.(e, () => location.reload())) return;
     document.getElementById("boot").innerHTML =
       `STAGE FAILED TO BOOT<br><span style="color:#ff6666;font-size:13px">${e.message}</span>`;
   });

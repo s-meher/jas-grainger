@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Phase 2 pipeline CLI: labeled scan -> jas-bundle/1 folder (1.4 -> 1.5 -> 1.6).
+"""Pipeline CLI: labeled scan -> jas-bundle/1 folder.
+Load (1.1 DICOM / 1.2 NIfTI) -> optional resample (1.3) -> 1.4 -> 1.5 -> 1.6.
 
     # synthetic phantom (the only bundle committed to Git)
     python3 -m pipeline.build --phantom --out media/models/phantom
@@ -8,6 +9,8 @@
     export JAS_DATA_ROOT=".../My Drive/NOVA-data"
     python3 -m pipeline.build --dataset msd-liver --case liver_39 --out artifacts/liver_39
     python3 -m pipeline.build --dataset msd-liver --case liver_39 --out media/local/liver_39
+    # IRCADb DICOM: liver + vessels + tumours in one model, checked against IRCAD's meshes
+    python3 -m pipeline.build --dataset ircadb --case 3Dircadb1.13 --out media/local/ircadb_13
 
 Real-data output may only go under ignored folders (artifacts/, data/,
 media/local/). media/local/ is still inside the media airlock, so the
@@ -35,6 +38,9 @@ LICENSES = {
     "msd-hepaticvessel": ("CC-BY-SA-4.0",
                           "Antonelli M. et al., Nat Commun 13, 4128 (2022); Simpson A. et al., "
                           "arXiv:1902.09063 (2019). Hepatic vessel data: Memorial Sloan Kettering Cancer Center."),
+    "ircadb": ("CC-BY-NC-ND-4.0 (no published derivatives)",
+               "Soler L. et al., 3D image reconstruction for comparison of algorithm database: "
+               "a patient-specific anatomical and medical image database, IRCAD, 2010."),
 }
 
 
@@ -77,12 +83,35 @@ def run(ci, out, *, with_volume, created=None, tol=None, plan=None, log=print):
     return m
 
 
+def reference_check(ci, out, case_dir):
+    """IRCADb only: distance from our optimized meshes to IRCAD's own VTK meshes."""
+    import trimesh
+    from pipeline import vtk_ref
+    sc = trimesh.load(Path(out) / "model.glb", force="scene")
+    meshes = {n: (g.vertices, g.faces) for n, g in sc.geometry.items()}
+    folders = {k: v["source_folder"]
+               for k, v in ci.provenance["masks"]["included"].items()}
+    res = vtk_ref.compare_case(case_dir, meshes, folders)
+    qa = json.loads((Path(out) / "qa.json").read_text())
+    qa["_reference_ircad_vtk"] = res
+    (Path(out) / "qa.json").write_text(json.dumps(qa, indent=2, default=float) + "\n")
+    for sid, r in res.items():
+        print(f"  ref {sid:16s} " + (f"mean {r['mean_mm']} mm  p95 {r['p95_mm']} mm  max {r['max_mm']} mm"
+                                     if "mean_mm" in r else r.get("note", "")))
+    return res
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--phantom", action="store_true")
     src.add_argument("--case")
-    ap.add_argument("--dataset", choices=["msd-liver", "msd-hepaticvessel"])
+    ap.add_argument("--dataset", choices=["msd-liver", "msd-hepaticvessel", "ircadb"])
+    ap.add_argument("--include", default="", help="ircadb: extra structure ids, or 'all'")
+    ap.add_argument("--affine-policy", default="auto", choices=["auto", "sform", "qform"],
+                    help="NIfTI: which header affine to trust when they disagree")
+    ap.add_argument("--resample", type=float, help="optional isotropic grid in mm (1.3)")
+    ap.add_argument("--no-reference", action="store_true", help="ircadb: skip the VTK comparison")
     ap.add_argument("--root", default=os.environ.get("JAS_DATA_ROOT"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--with-volume", action="store_true", help="also write volume.nrrd")
@@ -98,15 +127,25 @@ def main(argv=None):
     else:
         if not (a.dataset and a.root):
             ap.error("--case needs --dataset and --root/JAS_DATA_ROOT")
-        from pipeline.nifti_adapter import load_nifti_pair   # placeholder for 1.2
         d = Path(a.root).expanduser() / a.dataset / a.case
-        ci = load_nifti_pair(d / "image.nii.gz", d / "label.nii.gz", a.dataset, a.case,
-                             with_image=a.with_volume)
+        if a.dataset == "ircadb":
+            from pipeline.ircadb import load_case
+            inc = tuple(x.strip() for x in a.include.split(",") if x.strip())
+            ci = load_case(d, include=inc, with_image=True)
+        else:
+            from pipeline.io_nifti import load_pair
+            ci = load_pair(d / "image.nii.gz", d / "label.nii.gz", a.dataset, a.case,
+                           with_image=a.with_volume, policy=a.affine_policy)
         with_volume = a.with_volume
+    if a.resample:
+        from pipeline.resample import resample
+        ci = resample(ci, a.resample)
     print(f"{ci.source_case}: shape {ci.labels.shape}, spacing "
           f"{tuple(round(s, 3) for s in ci.spacing)} mm")
     m = run(ci, out, with_volume=with_volume, created=a.created)
     print(f"wrote {out} revision {m['revision'][:12]}")
+    if not a.phantom and a.dataset == "ircadb" and not a.no_reference:
+        reference_check(ci, out, d)
     from pipeline.verify_bundle import verify
     errs = verify(out)
     for e in errs:

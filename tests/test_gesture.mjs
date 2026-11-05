@@ -8,13 +8,14 @@
  */
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { copyFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, "..", "js", "medical");
 const BOX = join(HERE, "cutgest");   // generated sandbox, gitignored
 mkdirSync(BOX, { recursive: true });
-for (const f of ["core.js", "gesture.js", "bundle.js", "interaction.js"])   // core.js imports bundle.js (2.3/2.4) + interaction.js (gesture gaps)
+// every medical module: core.js statically imports its siblings
+for (const f of readdirSync(SRC).filter(f => f.endsWith(".js")))
   copyFileSync(join(SRC, f), join(BOX, f));
 // render.js is imported lazily by paint(); a no-op stand-in keeps the
 // console quiet without dragging three.js into node
