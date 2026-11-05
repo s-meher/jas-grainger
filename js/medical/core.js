@@ -19,6 +19,11 @@
  *            schemas/anatomy.schema.md (the sidecar).
  */
 
+// scan bundles (2.3/2.4): verification before parse + the mm view transform.
+// Re-exported so stage.html keeps ONE medical import (MED.bundleFor?.()).
+import { attach as attachBundle } from "./bundle.js";
+export { bundleFor } from "./bundle.js";
+
 const VERBS = new Set(["cut", "isolate", "hide", "label", "xray",
                        "lesion", "layer"]);
 // the render page is ON AIR — a toast there is a caption the audience reads
@@ -333,6 +338,7 @@ export function onModelLoaded(sc, src) {
   try {
     if (!sc || !sc.canvas) return null;
     if (sc.med) return sc.med.ready;
+    try { attachBundle(sc, src); } catch (e) { console.warn("[medical] bundle", e); }
     const M = (sc.med = newState(src));
     const el = sc.canvas.parentElement;
     if (el) BY_EL.set(el, sc);

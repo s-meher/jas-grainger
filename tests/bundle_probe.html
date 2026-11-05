@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- tests/bundle_probe.html: browser-side check of tasks 2.3/2.4, driven by
+     tests/test_bundle_browser.py (headless Chrome --dump-dom). It loads the
+     committed phantom bundle through the REAL js/medical/bundle.js and the
+     same three.js build stage.html pins. It applies stage.html's own
+     view transform (centre the whole gltf.scene on its box, fit-scale the
+     one parent group, then rotate it as the board does) and checks that
+     millimetres survive the round trip. Results go into <pre id="out">. -->
+<meta charset="utf-8">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<pre id="out">pending</pre>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { bundleFor, attach } from "../js/medical/bundle.js";
+const out = {};
+try {
+  const src = "/media/models/phantom/model.glb";
+  const bun = await bundleFor(src);
+  out.verified = !!bun;
+  const gltf = await new GLTFLoader().parseAsync(bun.glb, "");
+  const obj = gltf.scene;
+  // == stage.html buildModelScene: one box, one centre, one fit ==
+  const box = new THREE.Box3().setFromObject(obj);
+  obj.position.sub(box.getCenter(new THREE.Vector3()));
+  const fit = 1.3 / (box.getSize(new THREE.Vector3()).length() || 1);
+  const group = new THREE.Group();
+  group.scale.setScalar(fit);
+  group.add(obj);
+  group.rotation.set(-0.15, 0.6, 0.2);        // a board pose, not identity
+  const scene = new THREE.Scene(); scene.add(group);
+  const sc = { group, THREE };
+  const b = attach(sc, src);
+  scene.updateMatrixWorld(true);              // as the renderer does each frame
+  out.attached = !!(b && sc.bundle);
+  out.marker = !!obj.getObjectByName("__ras_marker");
+  // landmark: tumour centre measured IN THE SCENE, converted back to mm
+  const tumor = obj.getObjectByName("liver_tumor");
+  tumor.geometry.computeBoundingBox();
+  const cWorld = tumor.geometry.boundingBox.getCenter(new THREE.Vector3())
+                      .applyMatrix4(tumor.matrixWorld);
+  const cMm = b.sceneToMm(cWorld);
+  out.tumor_mm = cMm.toArray().map(v => +v.toFixed(3));
+  out.tumor_err_mm = +cMm.distanceTo(new THREE.Vector3(-5, 0, -15)).toFixed(3);
+  // round trip + scale: 100 mm in patient space is 100*fit in scene units
+  const p = [12.5, -3.25, 7], q = [12.5, -3.25, 107];
+  const rt = b.sceneToMm(b.mmToScene(p));
+  out.roundtrip_err_mm = +rt.distanceTo(new THREE.Vector3(...p)).toExponential(2);
+  out.scene_per_mm = +(b.mmToScene(p).distanceTo(b.mmToScene(q)) / 100).toFixed(6);
+  out.fit = +fit.toFixed(6);
+  // RAS sense survives: +x (patient right) of the arm stays on the arm side
+  const arm = b.mmToScene([14, 0, 20]), body = b.mmToScene([-10, 0, -20]);
+  out.arm_right_of_body_mm = +(b.sceneToMm(arm).x - b.sceneToMm(body).x).toFixed(3);
+  // a plain model (no manifest) takes the untouched upstream path
+  out.heart_is_plain = (await bundleFor("/media/models/heart/heart.glb")) === null;
+  out.ok = out.verified && out.attached && out.marker && out.tumor_err_mm < 0.8 &&
+           out.roundtrip_err_mm < 1e-6 && Math.abs(out.scene_per_mm - out.fit) < 1e-6 &&
+           out.arm_right_of_body_mm > 0 && out.heart_is_plain;
+} catch (e) { out.error = String(e && e.message || e); out.ok = false; }
+document.getElementById("out").textContent = JSON.stringify(out);
+</script>
