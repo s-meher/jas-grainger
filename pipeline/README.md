@@ -14,7 +14,11 @@ export JAS_DATA_ROOT=".../My Drive/NOVA-data"      # see datasets/README.md
 | Module | Role |
 | --- | --- |
 | `canonical.py` | `CanonicalImage`: the only input contract (labels + voxel→RAS mm affine). Phase 1 produces it. |
-| `nifti_adapter.py` | **Placeholder for 1.2**: minimal MSD NIfTI → `CanonicalImage`. Replace it when 1.2 merges. |
+| `io_dicom.py` | 1.1: safe zip/dir reading, series selection, slice-geometry audit (sort by position, reject gaps/mixed/duplicates), LPS→RAS affine, de-identification report (counts only). |
+| `ircadb.py` | 1.1: an IRCADb patient → one label volume (masks aligned to the CT grid, names normalized, overlap precedence). |
+| `vtk_ref.py` | 1.1/G2: distance from our meshes to IRCAD's own reference meshes. |
+| `io_nifti.py` | 1.2: NIfTI pair → `CanonicalImage` with an explicit sform/qform policy, unit check and mask alignment. |
+| `resample.py` | 1.3: optional resampling with the physical box kept (nearest for labels, linear for intensities). |
 | `surfaces.py` | 1.4: marching cubes per label, vertices in world mm, outward normals, empty labels reported. |
 | `optimize.py` | 1.5: topology-preserving decimation, then Taubin smoothing, each gated by two-way displacement, volume and topology QA. |
 | `export.py` | 1.6: GLB (+ original), optional NRRD, `anatomy.json`, `manifest.json`. |

@@ -23,6 +23,11 @@ class CanonicalImage:
     source_case: str              # dataset case id, or "synthetic:<name>"
     image: Optional[np.ndarray] = None   # same grid as labels (HU), optional
     provenance: dict = field(default_factory=dict)
+    # optional {structure id: full boolean mask} for surfaces. `labels` must be
+    # exclusive (one value per voxel), so painting carves a tumour or vessel
+    # OUT of the liver. Surfaces of whole organs come from these instead
+    # (decision D-P1-02). Absent = surface from `labels == value`.
+    surface_masks: dict = field(default_factory=dict)
 
     @property
     def spacing(self):
@@ -54,6 +59,11 @@ class CanonicalImage:
             raise ValueError("affine axes are not orthogonal (sheared grid)")
         if self.image is not None and self.image.shape != L.shape:
             raise ValueError(f"image shape {self.image.shape} != labels {L.shape}")
+        for sid, m in self.surface_masks.items():
+            if m.shape != L.shape or m.dtype != bool:
+                raise ValueError(f"surface mask {sid!r} must be bool on the label grid")
+            if sid not in self.label_names.values():
+                raise ValueError(f"surface mask {sid!r} has no label")
         for v, sid in self.label_names.items():
             if int(v) <= 0:
                 raise ValueError(f"label value {v} must be > 0 (0 is background)")
