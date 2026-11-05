@@ -190,6 +190,59 @@ check("case: review verified", case["review"]["status"], "verified")
 
 print()
 print("=" * 72)
+print("E2. ASSET SERVING (1.7) — bundle types, private research areas never served")
+print("=" * 72)
+
+
+def head(path):
+    req = urllib.request.Request(BASE + path, method="HEAD")
+    try:
+        r = urllib.request.urlopen(req)
+        return r.status, r.headers.get("Content-Type", "")
+    except urllib.error.HTTPError as e:
+        return e.code, ""
+
+
+check("serve: .glb is model/gltf-binary",
+      head("/media/models/heart/heart.glb"), (200, "model/gltf-binary"))
+check("serve: sidecar .json is application/json",
+      head("/media/models/heart/anatomy.json"), (200, "application/json"))
+nrrd = sorted(Path(REPO, "media").rglob("*.nrrd"))
+if nrrd:
+    check("serve: .nrrd is application/octet-stream",
+          head("/" + nrrd[0].relative_to(REPO).as_posix()), (200, "application/octet-stream"))
+else:
+    print("  (no .nrrd under media/ on this branch — type check skipped)")
+# real files, so a 404 means "refused", not "absent" (both dirs are
+# git-ignored; the probes are removed again below)
+made, made_dirs = [], []
+for d in ("data", "artifacts", "private-data"):
+    f = Path(REPO, d, "_contract_probe.txt")
+    if not f.parent.exists():
+        f.parent.mkdir()
+        made_dirs.append(f.parent)
+    if not f.exists():
+        f.write_text("probe")
+        made.append(f)
+try:
+    for probe in ("/data/_contract_probe.txt", "/artifacts/_contract_probe.txt",
+                  "/private-data/_contract_probe.txt", "/.git/HEAD",
+                  "/media/../data/_contract_probe.txt",
+                  "/media/%2e%2e/artifacts/_contract_probe.txt",
+                  "//artifacts/_contract_probe.txt", "/data/_contract_probe.txt?x=1"):
+        check(f"serve: private path refused {probe}", get(probe)[0], 404)
+        check(f"serve: private path refused (HEAD) {probe}", head(probe)[0], 404)
+    if Path(REPO, "barehands.json").exists():
+        check("serve: personal config file refused", get("/barehands.json")[0], 404)
+finally:
+    for f in made:
+        f.unlink()
+    for d in made_dirs:
+        d.rmdir()
+check("serve: public code still served", get("/schemas/verbs.md")[0], 200)
+
+print()
+print("=" * 72)
 print("F. BOARD-STATE — the agent's eyes report medical state truthfully")
 print("=" * 72)
 state = {"cursors": [], "items": [{
