@@ -36,6 +36,7 @@ flowchart LR
     Gest[js/medical/gesture.js]
     Rend[js/medical/render.js]
     Bundle["js/medical/bundle.js (2.3/2.4)"]
+    Inter["js/medical/interaction.js<br/>(tracking loss, handedness, mouse)"]
   end
   Drive --> Fetch --> Reg
   Drive --> P1 --> Canon --> Surf --> Opt --> Exp
@@ -47,6 +48,7 @@ flowchart LR
   Stage --> Core --> Gest
   Core --> Rend
   Stage -. MEDICAL HOOK .-> Bundle
+  Stage -. MEDICAL HOOK .-> Inter
   Bundle -. reads .-> Bun
   Allow --> Verbs
 ```

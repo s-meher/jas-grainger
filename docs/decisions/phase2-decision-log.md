@@ -170,3 +170,27 @@ These two were written on branches that didn't include this log, so they
 live as standalone files to avoid append conflicts:
 [D-P2-08 serving scan bundles](phase2/D-P2-08-asset-serving.md) ·
 [D-P2-10 how 3.4–3.6 "Verify" is done](phase2/D-P2-10-gesture-verification.md).
+
+## D-P2-11 Closing the gesture gaps (G3-1, G3-2, 3.5-1, 3.5-2, 3.6-1)
+
+2026-11-05 · tasks 3.4, 3.5, 3.6, G3 · proposed
+
+```mermaid
+flowchart TD
+  Q{How do we fix the five confirmed gaps<br/>without destabilising upstream gestures?}
+  Q --> A[Rewrite the frame loop / pinch code in stage.html]
+  Q --> B[Small medical module + one-line marked hooks]
+  A -->|upstream barehands file; months of field-tuned thresholds;<br/>would break clean merges| AX[Rejected]
+  B --> B1{Each fix optional, testable, no threshold changes?}
+  B1 -->|interaction.js + core.js; MED.fn?.() hooks;<br/>missing module = upstream behaviour| BY[Chosen]
+  BY --> L[G3-1: freeze 500 ms, then drop with no fling/tap]
+  BY --> H[3.5-1: Left=0 / Right=1; fall back to list order on label collision]
+  BY --> P[G3-2: expire pt 400 ms after the last hand; 3.5-2: publish ambiguity, never a guess]
+  BY --> M[3.6-1: mouse uses the hand's constants: one contract]
+  Q --> N{3.4-1 sideways fist?}
+  N -->|only seen in synthetic 2-D geometry;<br/>retuning on synthetic data risks real pinches| NW[Deferred to webcam evidence]
+```
+
+The 500 ms grace is a starting value covering blinks and brief occlusion. The
+webcam session measures whether it feels live enough. It is one constant,
+`LOST_GRACE_MS` in `js/medical/interaction.js`.

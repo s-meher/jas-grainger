@@ -2059,9 +2059,13 @@ async function boot() {
       lastVideoTs = cam.currentTime;
       const res = landmarker.detectForVideo(cam, now);
       const seen = new Set();
+      // MEDICAL HOOK (3.5-1): cursor slot by handedness, not list order
+      const slots = MED.handSlots?.(res);
       (res.landmarks || []).forEach((lms, i) => {
+        if (slots) i = slots[i];
         seen.add(i);
         const cur = getCursor(i);
+        MED.foundCursor?.(cur);   // MEDICAL HOOK (G3-1): back in view
         const tip = toScreen(lms[8]), thumb = toScreen(lms[4]);
         const span = Math.hypot(lms[0].x - lms[9].x, lms[0].y - lms[9].y);
         // v3.9.3: palm-axis upness (1 = fingers straight up) — the clap
@@ -2727,7 +2731,9 @@ async function boot() {
             `\npalm ${cur.palmOpen ? "OPEN" : "-"}${cur.fpSplay ? " CLAW" : ""} pull ph${cur.fp ? cur.fp.ph : 0}` +
             `\n${cur.fpDbg || ""}` + (SAMPLED ? `\n${SAMPLED}` : "");
       });
-      Object.keys(cursors).map(Number).forEach(i => { if (!seen.has(i)) dropCursor(i); });
+      // MEDICAL HOOK (G3-1): a hand missing this frame is frozen for a short
+      // grace (MED.holdLost) instead of released on the first dropout
+      Object.keys(cursors).map(Number).forEach(i => { if (!seen.has(i) && !MED.holdLost?.(cursors[i], now)) dropCursor(i); });
 
       // ---- GESTURE v3.9: THE DELIBERATE CLAP (Jared, after false
       // resets kept wiping his pinch tests: "that reset needs to be
@@ -3123,6 +3129,10 @@ if (ROLE === "render") {
   if (h) h.remove();
   renderLoop();
 } else {
+  // MEDICAL HOOK (3.6-1): mouse fallback for models, for when hands are
+  // occluded, tracking is poor, or a colleague drives. (The board itself
+  // still needs the camera to boot; no camera = no items to move.)
+  MED.installMouse?.(() => items, { hitRect: c => MED.hitRect?.(c) });
   boot().catch(e => {
     document.getElementById("boot").innerHTML =
       `STAGE FAILED TO BOOT<br><span style="color:#ff6666;font-size:13px">${e.message}</span>`;

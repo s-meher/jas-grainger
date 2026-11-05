@@ -180,15 +180,42 @@ console.log("\n3.4 pinch: the existing classifier, sliced from stage.html");
     gap("3.4-1", "profile regime: a sideways-pointing fist is refused",
         !run(newCur(), rep(hand({ pose: "fist", ang: Math.PI / 2 }), 6)).some(Boolean));
   }
-  // tracking loss: stage.html calls dropCursor(i) for any hand index not
-  // seen THIS frame -> endGrab -> release (with fling velocity). One missed
-  // detection frame ends the manipulation; G3 asks it to freeze instead.
-  gap("G3-1", "tracking loss freezes manipulation instead of releasing on the first missed frame",
-      !/Object\.keys\(cursors\)\.map\(Number\)\.forEach\(i => \{ if \(!seen\.has\(i\)\) dropCursor\(i\); \}\);/.test(STAGE));
-  // identity: cursors are keyed by MediaPipe's per-frame list index, not handedness
-  gap("3.5-1", "cursor identity follows handedness (not detection order)",
-      !/\(res\.landmarks \|\| \[\]\)\.forEach\(\(lms, i\) => \{/.test(STAGE) ||
-      /handedness/.test(slice("function frame(now) {", "const W0 = lms[0];")));
+}
+
+// ============================ fixed gaps: tracking loss + handedness
+console.log("\nG3-1 / 3.5-1 fixes: js/medical/interaction.js + their stage.html hooks");
+const IX = await import("../js/medical/interaction.js");
+{
+  // G3-1: freeze on loss, release only after the grace, and never as a fling/tap
+  const cur = { x: 10, y: 10, history: [{ x: 1, t: 1 }, { x: 9, t: 2 }], el: null };
+  ok("G3-1: first missed frame keeps the hand (frozen)", IX.holdLost(cur, 1000) === true && cur.lostT === 1000);
+  ok("G3-1: still kept inside the grace", IX.holdLost(cur, 1000 + IX.LOST_GRACE_MS - 1) === true);
+  ok("G3-1: dropped after the grace", IX.holdLost(cur, 1000 + IX.LOST_GRACE_MS) === false);
+  ok("G3-1: the final drop carries no fling velocity and no tap",
+     cur.history.length === 0 && cur.probKill === true);
+  const back = { history: [{ x: 1, t: 1 }], el: null };
+  IX.holdLost(back, 5000);
+  IX.foundCursor(back);
+  ok("G3-1: a hand that returns in time resumes, with no lost state and no stale history",
+     back.lostT === 0 && back.history.length === 0);
+  ok("G3-1: stage.html drops an unseen hand only when holdLost says so",
+     STAGE.includes("if (!seen.has(i) && !MED.holdLost?.(cursors[i], now)) dropCursor(i);") &&
+     !STAGE.includes("if (!seen.has(i)) dropCursor(i);"));
+  ok("G3-1: stage.html marks a re-seen hand found", STAGE.includes("MED.foundCursor?.(cur);"));
+  // 3.5-1: identity from handedness, robust to list order and label confusion
+  const R = (...labs) => ({ landmarks: labs.map(() => []),
+                            handedness: labs.map(l => (l ? [{ categoryName: l }] : [])) });
+  ok("3.5-1: Left=0, Right=1 whatever the list order",
+     JSON.stringify(IX.handSlots(R("Right", "Left"))) === "[1,0]" &&
+     JSON.stringify(IX.handSlots(R("Left", "Right"))) === "[0,1]");
+  ok("3.5-1: the right hand alone keeps slot 1, so it can't inherit the left hand's grab",
+     JSON.stringify(IX.handSlots(R("Right"))) === "[1]");
+  ok("3.5-1: both hands labelled the same falls back to list order (never merges)",
+     JSON.stringify(IX.handSlots(R("Left", "Left"))) === "[0,1]");
+  ok("3.5-1: a missing label falls back to list order",
+     JSON.stringify(IX.handSlots(R("Left", null))) === "[0,1]");
+  ok("3.5-1: stage.html keys cursors by MED.handSlots",
+     STAGE.includes("const slots = MED.handSlots?.(res);") && STAGE.includes("if (slots) i = slots[i];"));
 }
 
 // ======================================== 3.6 rotate / stretch mapping
@@ -219,8 +246,20 @@ const stretch = new Function("held", "cursors", STR_SRC);
   stretch(s, { 0: { x: 0, y: 0 }, 1: { x: 1, y: 0 } });
   ok("stretch: scale floor 0.12× (always pinchable again)", s.scale === 0.12);
   ok("reset: R respawns the board", /e\.key === "r" \|\| e\.key === "R"\) loadTree\(\)\.then\(\(\) => spawnStage\(\)\)/.test(STAGE));
-  gap("3.6-1", "mouse fallback for grab/rotate/scale exists",
-      /addEventListener\("(mousedown|pointerdown|wheel)"/.test(STAGE));
+  // 3.6-1 fixed: mouse fallback with the same constants as the hand
+  const m = { x: 100, y: 100, rx: 0, ry: 0, scale: 1 };
+  IX.mouseStep({ it: m, mode: "move", ox: -10, oy: 5 }, 300, 200);
+  ok("3.6-1 mouse: drag moves the model (keeping the grab offset)", m.x === 290 && m.y === 205);
+  IX.mouseStep({ it: m, mode: "rotate", x0: 0, y0: 0, rx0: 0, ry0: 0 }, 100, 50);
+  ok("3.6-1 mouse: shift/right-drag rotates at the hand's 0.012 rad/px",
+     Math.abs(m.ry - 1.2) < 1e-9 && Math.abs(m.rx - 0.6) < 1e-9 && m.rvy === 0);
+  IX.mouseStep({ it: m, mode: "rotate", x0: 0, y0: 0, rx0: 0, ry0: 0 }, 0, 5000);
+  ok("3.6-1 mouse: pitch clamps at ±1.2 like the hand", m.rx === 1.2);
+  ok("3.6-1 mouse: wheel scales within the hand's 0.12–12× bounds",
+     IX.wheelScale({ scale: 1 }, -1e6) === 12 && IX.wheelScale({ scale: 1 }, 1e6) === 0.12 &&
+     IX.wheelScale({ scale: 1 }, -100) > 1);
+  ok("3.6-1 mouse: installed on the tracker page (not the render page)",
+     /MED\.installMouse\?\.\(\(\) => items[^\n]*\n\s*boot\(\)\.catch/.test(STAGE));
 }
 
 // ========================================================= 3.5 pointing
@@ -228,7 +267,7 @@ console.log("\n3.5 pointing: js/medical/core.js cursorFrame, stub scene");
 const SRC = join(HERE, "..", "js", "medical"), BOX = join(HERE, "cutgest");
 mkdirSync(BOX, { recursive: true });
 // bundle.js only exists once 2.3 lands; copy what's present
-for (const f of ["core.js", "gesture.js", "bundle.js"]) { try { copyFileSync(join(SRC, f), join(BOX, f)); } catch (e) {} }
+for (const f of ["core.js", "gesture.js", "bundle.js", "interaction.js"]) { try { copyFileSync(join(SRC, f), join(BOX, f)); } catch (e) {} }
 writeFileSync(join(BOX, "render.js"), "export function paint(){} export function tick(){} export function dispose(){}\n");
 writeFileSync(join(BOX, "package.json"), '{"type":"module"}\n');
 Object.assign(globalThis, { location: { search: "" }, document: { getElementById: () => null },
@@ -287,10 +326,27 @@ async function hold(cur, ms, i = 0, jitter = 0) {
   await hold(pcur(), 1400, 1);
   ok("point: the second hand (index 1) points the same way", CORE.pointState()?.structure === "liver_tumor");
   await sleep(1000);                                   // both hands leave: no more frames
-  gap("G3-2", "tracking loss clears the published structure (no stale 'pointing at')",
-      CORE.pointState() === null);
-  gap("3.5-2", "point state carries an ambiguity / confidence signal",
-      CORE.pointState() && ("ambiguous" in CORE.pointState() || "confidence" in CORE.pointState()));
+  ok("G3-2: tracking loss clears the published structure (no stale 'pointing at')",
+     CORE.pointState() === null);
+  // 3.5-2: two resting hands on different structures -> explicit ambiguity
+  const h0 = pcur(), h1 = pcur(960, 560);
+  const t0 = performance.now();
+  while (performance.now() - t0 < 1500) {
+    AIM = [tumor]; CORE.cursorFrame(h0, 0, lmsOpen);
+    AIM = [liver]; CORE.cursorFrame(h1, 1, lmsOpen);
+    await sleep(20);
+  }
+  const amb = CORE.pointState();
+  ok("3.5-2: two hands on different structures publish ambiguity, naming neither",
+     amb && amb.ambiguous === true && !("structure" in amb) &&
+     amb.candidates.slice().sort().join() === "liver,liver_tumor", JSON.stringify(amb));
+  const t1 = performance.now();
+  while (performance.now() - t1 < 1500) {
+    AIM = [tumor]; CORE.cursorFrame(h0, 0, lmsOpen); CORE.cursorFrame(h1, 1, lmsOpen);
+    await sleep(20);
+  }
+  ok("3.5-2: two hands agreeing name the structure normally",
+     CORE.pointState()?.structure === "liver_tumor" && !CORE.pointState().ambiguous);
 }
 
 console.log(`\n${pass} passed, ${fail} failed, ${xfail} known gaps (XFAIL), ${xpass} XPASS`);

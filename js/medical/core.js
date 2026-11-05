@@ -23,6 +23,8 @@
 // Re-exported so stage.html keeps ONE medical import (MED.bundleFor?.()).
 import { attach as attachBundle } from "./bundle.js";
 export { bundleFor } from "./bundle.js";
+// gesture-gap fixes (G3-1 tracking loss, 3.5-1 handedness, 3.6-1 mouse)
+export { holdLost, foundCursor, handSlots, installMouse } from "./interaction.js";
 
 const VERBS = new Set(["cut", "isolate", "hide", "label", "xray",
                        "lesion", "layer"]);
@@ -646,7 +648,19 @@ export function itemState(i) {
 
 /** Top-level `pt` on the heartbeat — what the cursor is pointing at across
  *  the whole board. null when nothing is (pushState drops the key). */
-export function pointState() { return PT.pub || null; }
+export function pointState() {
+  // G3-2: with no hand in frame cursorFrame never runs, so the last
+  // structure used to stay published forever. Expire it when no hand has
+  // reported for the same 400 ms the per-hand pruning uses.
+  const now = performance.now();
+  let live = false;
+  for (const e of HITS.values()) if (now - e.seen <= 400) { live = true; break; }
+  if (!live && (PT.pub || PT.cand)) {
+    HITS.clear();
+    PT.candKey = ""; PT.cand = null; PT.pubKey = ""; PT.pub = null;
+  }
+  return PT.pub || null;
+}
 
 /** The render page's ONLY driver: it never runs applyCmds, so bus state IS
  *  its command channel. Idempotent — a signature diff means a repaint only
@@ -736,12 +750,23 @@ export function cursorFrame(cur, i, lms) {
     h.settled = !closed && now - (h.still ?? now) >= HOLD_MS;
 
     let merged = null;
+    const settled = [];
     for (const [k, e] of HITS) {
       if (now - e.seen > 400) { HITS.delete(k); continue; }   // hand left frame
-      if (e.v && e.settled && !merged) merged = e.v;
+      if (e.v && e.settled) settled.push(e.v);
     }
-    const key = merged
-      ? merged.model + "|" + merged.structure + "|" + merged.mesh : "";
+    // 3.5-2 EXPLICIT AMBIGUITY: two resting hands on DIFFERENT structures
+    // used to publish whichever hand iterated first, silently. Now the
+    // disagreement itself is published, with no `structure`, so nothing
+    // downstream (board-state, narration, examiner) can name a guess.
+    const ids = [...new Set(settled.map(v => v.model + "|" + v.structure))];
+    if (ids.length > 1)
+      merged = { ambiguous: true, candidates: ids.map(k => k.split("|")[1]),
+                 model: settled[0].model };
+    else if (settled.length) merged = settled[0];
+    const key = !merged ? "" : merged.ambiguous
+      ? "?|" + merged.candidates.slice().sort().join(",")
+      : merged.model + "|" + merged.structure + "|" + merged.mesh;
     if (key !== PT.candKey) { PT.candKey = key; PT.candT = now; PT.cand = merged; }
     else if (now - PT.candT >= HOLD_MS && PT.pubKey !== key) {
       PT.pubKey = key; PT.pub = merged;

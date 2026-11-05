@@ -116,4 +116,8 @@ for i in items:
 pt = d.get("pt")
 if isinstance(pt, dict) and pt.get("structure"):
     print(f"POINTING AT: {pt['structure']} (on {pt.get('model', '?')})")
+elif isinstance(pt, dict) and pt.get("ambiguous"):
+    # 3.5-2: two hands resting on different structures. Say so; never pick one.
+    print(f"POINTING: ambiguous between {', '.join(pt.get('candidates') or [])} "
+          f"(on {pt.get('model', '?')}) - ask which one")
 PY
