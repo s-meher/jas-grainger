@@ -47,7 +47,7 @@ per case: shape, voxel spacing, slice thickness, labels, tumor count/size,
 | --- | --- |
 | `liver_39` | First real run: 1.0 mm isotropic, one large tumor; simplest geometry check. |
 | `hepaticvessel_424` | Demo pick: tumor + vessels at 1.5 mm. CC BY-SA, but still kept out of Git under the repo's patient-derived-asset rule. |
-| `3Dircadb1.13`, `3Dircadb1.8` | Demo picks with labeled vessels; reference VTK meshes check 1.4/1.5 output. DICOM reading is task 1.1 (Phase 1). |
+| `3Dircadb1.13`, `3Dircadb1.8` | Demo picks: liver + vessels + tumours in **one** model. `python -m pipeline.build --dataset ircadb --case 3Dircadb1.13 --out media/local/ircadb_13`. It reads the zips in place, with nothing unpacked, and checks every surface against IRCAD's own reference meshes. |
 | `liver_91` | Negative case: no tumor label — the pipeline must report it missing, not invent it. |
 
 ## Gotchas (from the Drive README; they drive the pipeline design)

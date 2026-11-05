@@ -103,3 +103,25 @@ Pointing goes through `core.js`'s real `cursorFrame` against a stub scene.
 `XFAIL` lines are **known gaps**, recorded in
 `docs/validation/2026-11-04-3-4-3-6-gestures.md`. They don't fail the run,
 and a fix shows up as `XPASS`.
+
+## Phase 1 suites
+
+```
+~/.venvs/jas/bin/python -m pytest pipeline/tests -q   # 72: pipeline + DICOM/NIfTI/resample (synthetic)
+python3 tests/test_tracker_browser.py                 # 18: real-time headless Chrome, fake camera (~3 min)
+python3 tests/test_lighting_matrix.py                 # 2.2 renders + numbers -> tests/_shots/lighting/
+```
+
+`test_tracker_browser.py` drives the **live tracker page** through Chrome's
+DevTools protocol (`tests/_cdp.py`, stdlib only) in real time. It does what
+`--dump-dom` with virtual time can't: boot MediaPipe, run a worker, and wait
+for camera recovery. It covers:
+- boot
+- V/K, unplug → recovery → staging still works
+- mouse drag/wheel/double-click
+- main vs worker perf
+- the blocked / no-camera / camera-in-use screens (the last two are injected,
+  so it works on machines that have a real webcam)
+
+Chrome's fake camera has no hands in it, so hand feel is the manual session
+(`docs/validation/phase1-webcam-session.md`).

@@ -343,3 +343,19 @@ def test_msd_liver_surface_includes_its_tumours(tmp_path):
     i, l = _pair(tmp_path, sform=(phantom.AFFINE, 1))
     ci = load_pair(i, l, "msd-liver", "t")              # phantom labels 1=liver, 2=tumour
     assert ci.surface_masks["liver"].sum() == np.isin(phantom.build().labels, (1, 2)).sum()
+
+
+def test_generic_words_in_names_are_not_identifier_hits(tmp_path):
+    from pipeline.tests.dicom_fixture import _series
+    import pydicom, io as _io
+    ci = phantom.build()
+    files = _series(np.rint(ci.image).astype(np.int16), "PATIENT_DICOM/", F._uid(1))
+    z = tmp_path / "p.zip"
+    with zipfile.ZipFile(z, "w") as w:
+        for n, b in files.items():
+            ds = pydicom.dcmread(_io.BytesIO(b))
+            ds.PatientName = "Patient^Anonymous"          # placeholder, like IRCADb
+            buf = _io.BytesIO(); ds.save_as(buf); w.writestr(n, buf.getvalue())
+    *_, deid, _ = io_dicom.load_series(z, "PATIENT_DICOM/")
+    assert deid["identifier_in_member_names"] is False      # "patient" in PATIENT_DICOM is not a hit
+    assert "PatientName" in deid["identifying_tags_with_values"]   # still reported as present

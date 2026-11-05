@@ -53,6 +53,12 @@ PHI_KEYWORDS = (
 )
 
 
+# placeholder words that appear in both names and folder names ("PATIENT_DICOM");
+# matching them is not evidence of an identifier in the paths (measured: IRCADb)
+GENERIC_NAME_WORDS = {"patient", "dicom", "image", "images", "anonymous", "anon", "unknown",
+                      "test", "none", "case", "study", "series", "scan", "data"}
+
+
 class ArchiveError(ValueError):
     pass
 
@@ -265,7 +271,8 @@ def deid_report(slices, member_names=()):
                 if v:
                     present += 1
                     if kw in ("PatientName", "PatientID", "OtherPatientIDs", "AccessionNumber"):
-                        ids.update(t.lower() for t in re.split(r"[\^\s,]+", v) if len(t) >= 3)
+                        ids.update(t.lower() for t in re.split(r"[\^\s,]+", v)
+                                   if len(t) >= 3 and t.lower() not in GENERIC_NAME_WORDS)
                 else:
                     empty += 1
         if present or empty:

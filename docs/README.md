@@ -13,6 +13,8 @@ Start here for development of hand-tracked 3D anatomy on barehands.
 | Architecture decisions | [Decision log](decisions/README.md) |
 | Phase 2 map: code, data, environment, rules | [Phase 2 knowledge graph](project/phase2-knowledge-graph.md) |
 | Phase 2 decision trees | [Phase 2 decision log](decisions/phase2-decision-log.md) |
+| Phase 1 decision trees | [Phase 1 decision log](decisions/phase1-decision-log.md) |
+| Browser module boundaries and hooks | [Modules](architecture/modules.md) |
 | Dataset registry (no scans in Git) | [Datasets](../datasets/README.md) |
 | NOVA import history and existing Windows setup | [Integration notes](nova-integration.md) |
 | AI contributor entry point | [Repository instructions](../AGENTS.md) |

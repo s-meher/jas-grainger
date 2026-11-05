@@ -14,7 +14,7 @@ flowchart LR
     Drive[(NOVA-data shared Drive<br/>ircadb / msd-liver / msd-hepaticvessel)]
     Reg[datasets/README.md + manifest.csv]
     Fetch[pipeline/fetch_datasets.py]
-    P1["Phase 1: 1.1 DICOM, 1.2 NIfTI, 1.3 resample<br/>(other workstream)"]
+    P1["Phase 1: pipeline/io_dicom.py + ircadb.py (1.1),<br/>io_nifti.py (1.2), resample.py (1.3)"]
     Canon[CanonicalImage<br/>array + voxel→world affine mm]
     Surf["1.4 marching cubes"]
     Opt["1.5 bounded smooth/decimate"]
@@ -37,6 +37,7 @@ flowchart LR
     Rend[js/medical/render.js]
     Bundle["js/medical/bundle.js (2.3/2.4)"]
     Inter["js/medical/interaction.js<br/>(tracking loss, handedness, mouse)"]
+    Cam["js/medical/camera.js + tracking.js<br/>(camera states, worker, perf)"]
   end
   Drive --> Fetch --> Reg
   Drive --> P1 --> Canon --> Surf --> Opt --> Exp
@@ -49,6 +50,7 @@ flowchart LR
   Core --> Rend
   Stage -. MEDICAL HOOK .-> Bundle
   Stage -. MEDICAL HOOK .-> Inter
+  Stage -. MEDICAL HOOK .-> Cam
   Bundle -. reads .-> Bun
   Allow --> Verbs
 ```
@@ -124,3 +126,5 @@ the bundle gate and mm transform in `js/medical/bundle.js` (PR D).)*
 | E | `feat/ui/3-4-3-6-gesture-verification` | 3.4, 3.5, 3.6 | — |
 
 Merging is done by the repository owner's review process, not by Phase 2 authors.
+
+**Update 2026-11-05 (Phase 1):** ingestion (1.1–1.3), camera/tracking modules (3.2/3.3), the module map [docs/architecture/modules.md](../architecture/modules.md), and [the Phase 1 decision log](../decisions/phase1-decision-log.md).
