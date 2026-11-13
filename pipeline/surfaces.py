@@ -37,7 +37,9 @@ def _signed_volume(v, f):
 
 def extract(ci: CanonicalImage, label_value: int, structure_id: str) -> Surface:
     from skimage.measure import marching_cubes
-    mask = ci.labels == label_value
+    mask = ci.surface_masks.get(structure_id)
+    if mask is None:
+        mask = ci.labels == label_value
     n = int(mask.sum())
     voxel_ml = abs(np.linalg.det(ci.affine[:3, :3])) / 1000.0
     if n == 0:

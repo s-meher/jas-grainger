@@ -211,18 +211,21 @@ def test_real_data_cannot_be_written_into_tracked_media():
     build._guard_out(HERE / "media" / "local" / "liver_39", synthetic=False)   # allowed
 
 
-# ---- NIfTI placeholder adapter (stands in for 1.2) ----------------------
-def test_nifti_adapter_keeps_affine_and_rejects_misaligned_mask(tmp_path):
+# ---- 1.2 NIfTI loader (pipeline/io_nifti.py; more in test_ingest.py) -----
+def test_nifti_loader_keeps_affine_and_rejects_misaligned_mask(tmp_path):
     nib = pytest.importorskip("nibabel")
-    from pipeline.nifti_adapter import load_nifti_pair
+    from pipeline.io_nifti import load_pair as load_nifti_pair
     ci = phantom.build()
-    nib.save(nib.Nifti1Image(ci.image, phantom.AFFINE), tmp_path / "image.nii.gz")
-    nib.save(nib.Nifti1Image(ci.labels.astype(np.uint8), phantom.AFFINE), tmp_path / "label.nii.gz")
+    def mm(img):                      # real scans declare mm; 1.2 refuses "unknown"
+        img.header.set_xyzt_units("mm")
+        return img
+    nib.save(mm(nib.Nifti1Image(ci.image, phantom.AFFINE)), tmp_path / "image.nii.gz")
+    nib.save(mm(nib.Nifti1Image(ci.labels.astype(np.uint8), phantom.AFFINE)), tmp_path / "label.nii.gz")
     got = load_nifti_pair(tmp_path / "image.nii.gz", tmp_path / "label.nii.gz", "msd-liver", "t")
     assert np.allclose(got.affine, phantom.AFFINE, atol=1e-5)
     assert np.array_equal(got.labels, ci.labels)
     shifted = phantom.AFFINE.copy()
     shifted[0, 3] += 5
-    nib.save(nib.Nifti1Image(ci.labels.astype(np.uint8), shifted), tmp_path / "label.nii.gz")
+    nib.save(mm(nib.Nifti1Image(ci.labels.astype(np.uint8), shifted)), tmp_path / "label.nii.gz")
     with pytest.raises(ValueError, match="not aligned"):
         load_nifti_pair(tmp_path / "image.nii.gz", tmp_path / "label.nii.gz", "msd-liver", "t")

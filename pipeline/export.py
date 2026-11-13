@@ -34,6 +34,28 @@ STYLE = {
     "vena_cava": ("Inferior vena cava", (0.25, 0.35, 0.80, 1.0)),
     "hepatic_artery": ("Hepatic artery", (0.85, 0.25, 0.25, 1.0)),
 }
+# IRCADb ids are numbered or named differently (liver_tumor_03, venous_system, artery):
+# style by family so every tumour reads as a tumour and every vein as a vein
+STYLE_FAMILY = [
+    (("liver_tumor", "metastasectomy"), ("Liver tumor", (0.93, 0.80, 0.35, 1.0))),
+    (("liver_cyst",), ("Liver cyst", (0.70, 0.85, 0.95, 1.0))),
+    (("artery",), ("Artery", (0.85, 0.25, 0.25, 1.0))),
+    (("venous_system", "vena_cava", "hepatic_vein"), ("Veins", (0.25, 0.35, 0.80, 1.0))),
+    (("biliary",), ("Biliary system", (0.40, 0.70, 0.35, 1.0))),
+]
+
+
+def style(sid):
+    """-> (display name, rgba). Exact entry first, then family, then neutral."""
+    if sid in STYLE:
+        return STYLE[sid]
+    for prefixes, (name, rgba) in STYLE_FAMILY:
+        if sid.startswith(prefixes):
+            suffix = sid.rsplit("_", 1)[-1]
+            return (f"{name} {int(suffix)}" if suffix.isdigit() else sid.replace("_", " ").capitalize(), rgba)
+    return (sid.replace("_", " ").capitalize(), (0.75, 0.75, 0.75, 1.0))
+
+
 PARENT = "liver"   # tumors/vessels nest under the liver when it exists
 
 
@@ -56,7 +78,7 @@ def _glb(meshes):
     scene = trimesh.Scene()
     for sid, v, f in meshes:
         m = trimesh.Trimesh(vertices=v, faces=f, process=False)
-        color = STYLE.get(sid, (None, (0.75, 0.75, 0.75, 1.0)))[1]
+        color = style(sid)[1]
         m.visual = TextureVisuals(material=PBRMaterial(
             name=sid, baseColorFactor=[int(c * 255) for c in color],
             metallicFactor=0.0, roughnessFactor=0.6, doubleSided=True))
@@ -87,7 +109,7 @@ def anatomy_sidecar(present_ids, source):
     for sid in present_ids:
         parent = PARENT if has_parent and sid != PARENT else None
         structures[sid] = {
-            "name": STYLE.get(sid, (sid.replace("_", " ").capitalize(),))[0],
+            "name": style(sid)[0],
             "meshes": [sid], "parent": parent,
             "children": [c for c in present_ids if has_parent and sid == PARENT and c != PARENT],
             "layer": 0 if parent is None else 1,
@@ -162,6 +184,10 @@ def write_bundle(out, ci, surfaces, optimized, reports, *, source, dataset_licen
             "license": dataset_license, "citation": citation,
             "loader": ci.provenance.get("loader"),
             "input_hashes": {k: v for k, v in ci.provenance.items() if k.endswith("sha256") and v},
+            # 1.1/1.2/1.3 evidence travels with the bundle (counts only; never PHI values)
+            **{k: ci.provenance[k] for k in ("geometry_audit", "deid_report", "masks", "affine_policy", "surfaces_from",
+                                            "resampling", "source_archives_sha256")
+               if k in ci.provenance},
             "tool_versions": _tool_versions(),
             "pipeline_config": pipeline_config,
             "segmentation": segmentation,
