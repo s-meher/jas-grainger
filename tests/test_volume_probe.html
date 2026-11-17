@@ -1,0 +1,91 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Phase 3 volume probe</title>
+<pre id="out">running</pre>
+<script type="module">
+  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+  import { createVolumeView, drawSlice, loadVolume, orthogonalPlane, parseVolumeNrrd } from "../js/medical/volume.js";
+
+  const out = document.querySelector("#out");
+  function require(condition, message) {
+    if (!condition) throw new Error(message);
+  }
+
+  function fixture(Scalar) {
+    // 8x8x8 voxels fill patient-space unit bounds. All intensities are 100.
+    const header = new TextEncoder().encode(`NRRD0005\ntype: ${Scalar === Int16Array ? "int16" : "float"}\ndimension: 3\nspace: right-anterior-superior\nsizes: 8 8 8\nspace directions: (0.125,0,0) (0,0.125,0) (0,0,0.125)\nspace origin: (0.0625,0.0625,0.0625)\nendian: little\nencoding: raw\n\n`);
+    const data = new Scalar(512).fill(100);
+    const file = new Uint8Array(header.length + data.byteLength);
+    file.set(header);
+    file.set(new Uint8Array(data.buffer), header.length);
+    return parseVolumeNrrd(file.buffer, { axes: "RAS", units: "mm", shape: [8, 8, 8],
+      voxel_to_world: [[0.125,0,0,0.0625],[0,0.125,0,0.0625],[0,0,0.125,0.0625],[0,0,0,1]] });
+  }
+
+  try {
+    const dir = "../media/models/phantom/";
+    const manifest = await (await fetch(dir + "manifest.json")).json();
+    const phantom = await loadVolume({ manifest, get: async path => (await fetch(dir + path)).arrayBuffer() });
+    const canvas = document.createElement("canvas");
+    for (const axis of ["axial", "coronal", "sagittal"]) {
+      const frame = drawSlice(canvas, phantom, orthogonalPlane(phantom, axis));
+      require(frame.width > 1 && frame.height > 1, `missing ${axis} MPR raster`);
+    }
+    const frame = drawSlice(canvas, phantom, { originMm: [0, 0, 0], normal: [1, 1, 1] });
+    require(frame.width > 1 && frame.height > 1, "missing oblique MPR raster");
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
+    const shaderErrors = [];
+    renderer.debug.onShaderError = (gl, program, vertex, fragment) => {
+      shaderErrors.push(gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertex), gl.getShaderInfoLog(fragment));
+    };
+    renderer.setSize(64, 64);
+    const target = new THREE.WebGLRenderTarget(64, 64);
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-0.6, 0.6, 0.6, -0.6, 0.01, 10);
+    camera.position.set(0.5, 0.5, 2);
+    camera.lookAt(0.5, 0.5, 0.5);
+    const perspective = new THREE.PerspectiveCamera(45, 1, 0.01, 10);
+    perspective.position.copy(camera.position);
+    perspective.lookAt(0.5, 0.5, 0.5);
+    const read = (x, y) => {
+      const pixel = new Uint8Array(4);
+      renderer.readRenderTargetPixels(target, x, y, 1, 1, pixel);
+      return pixel[0];
+    };
+    const pixels = {};
+    for (const Scalar of [Int16Array, Float32Array]) {
+      const volume = await fixture(Scalar);
+      const slice = drawSlice(canvas, volume, orthogonalPlane(volume, "axial"), { maxSize: 32 });
+      const ctx = canvas.getContext("2d");
+      require(ctx.getImageData(slice.width / 2, slice.height / 2, 1, 1).data[0] === 166,
+        "MPR pixels must match the source scalar and requested window/level");
+      const view = createVolumeView(THREE, volume, { renderer });
+      scene.add(view.root);
+      renderer.setRenderTarget(target);
+      renderer.render(scene, camera);
+      require(read(32, 32) === 0, "surface mode must not display a volume");
+      view.setMode("volume");
+      renderer.render(scene, camera);
+      require(!shaderErrors.length, shaderErrors.join("\n"));
+      require(read(20, 32) > 20 && read(44, 32) > 20, "uncut volume must render both halves");
+      view.setCut({ originMm: [0.5, 0.5, 0.5], normal: [1, 0, 0] });
+      for (const projection of [camera, perspective]) {
+        renderer.render(scene, projection);
+        const sample = [read(20, 32), read(44, 32)];
+        pixels[`${Scalar.name}/${projection.type}`] = sample;
+        require(sample[0] < 5 && sample[1] > 20, "RAS cut plane must clip the left half");
+      }
+      view.setOpacity(0);
+      renderer.render(scene, camera);
+      require(read(44, 32) === 0, "zero opacity must hide the remaining volume");
+      view.dispose();
+      require(!scene.children.length, "disposed view must be detached");
+    }
+    target.dispose();
+    renderer.dispose();
+    out.textContent = JSON.stringify({ ok: true, pixels, slices: "three orthogonal and one oblique" });
+  } catch (error) {
+    out.textContent = JSON.stringify({ ok: false, error: error.stack || error.message });
+  }
+</script>

@@ -1,3 +1,5 @@
 update.bat -text
 # Preserve the supplied artifact's bytes, including its original trailing spaces.
 docs/project/project_task_map.md -text whitespace=-blank-at-eol
+# The tracked synthetic bundle manifest hashes its exact sidecar bytes.
+media/models/phantom/anatomy.json -text

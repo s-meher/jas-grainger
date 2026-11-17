@@ -377,7 +377,7 @@ export function gestureFrame(cur, i, lms) {
         if (over && now - h.commitT > CUT_COOL_MS) {
           h.ph = 1; h.ax = cur.x; h.ay = cur.y; h.t0 = now;
           h.nm = n.slice(); h.np = n.slice();
-          noteCutActivity(sc);
+          noteCutActivity(sc, i);
         }
       } else if (h.ph === 1) {
         const mean = norm3(h.nm);
@@ -421,7 +421,7 @@ export function gestureFrame(cur, i, lms) {
       if (!cut) { h.sp = null; }
       else if (!h.sp) {
         h.sp = { s0: sp, base: cut.t == null ? 0.5 : cut.t, live: false, wT: 0 };
-        noteCutActivity(sc);
+        noteCutActivity(sc, i);
       } else {
         if (!h.sp.live && Math.abs(sp - h.sp.s0) > SPREAD_ENGAGE) {
           h.sp.live = true;
@@ -430,8 +430,12 @@ export function gestureFrame(cur, i, lms) {
           toast("scrubbing the cut — spread wider to go deeper", 900);
         }
         if (h.sp.live) {
-          const t = Math.max(0, Math.min(1,
+          const target = Math.max(0, Math.min(1,
             h.sp.base + SPREAD_DIR * (sp - h.sp.s0) / SPREAD_RANGE));
+          const previous = cut.t ?? 0.5;
+          // Scan scrubbing drives a slice and two renderers. Use the existing
+          // hand-size normalization with damped depth updates.
+          const t = sc.bundle ? previous + (target - previous) * 0.4 : target;
           if (Math.abs(t - (cut.t == null ? 0.5 : cut.t)) > SCRUB_EPS &&
               now - h.sp.wT > SCRUB_MS) {
             h.sp.wT = now;

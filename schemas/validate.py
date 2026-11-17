@@ -61,6 +61,9 @@ def validate_anatomy_shape(doc, label="anatomy"):
     errors = []
     warnings = []
 
+    if not isinstance(doc, dict):
+        return [f"{label}: expected a JSON object"], warnings, {}
+
     if doc.get("schema") != "barehands-anatomy/1":
         errors.append(f'{label}: schema must be "barehands-anatomy/1", '
                        f'got {doc.get("schema")!r}')
@@ -129,6 +132,29 @@ def validate_anatomy_shape(doc, label="anatomy"):
                         errors.append(f"{label}: structures.{sid}."
                                        f"teach.connects references "
                                        f"unknown id {c!r}")
+
+        if "scan" in s:
+            scan = s["scan"]
+            value = scan.get("label_value") if isinstance(scan, dict) else None
+            if type(value) is not int or value <= 0:
+                errors.append(f"{label}: structures.{sid}.scan.label_value "
+                              "must be a positive integer")
+        if "teaching_reference" in s:
+            reference = s["teaching_reference"]
+            if not isinstance(reference, dict):
+                errors.append(f"{label}: structures.{sid}.teaching_reference must be an object")
+                continue
+            if reference.get("review_status") != "pending_review":
+                errors.append(f"{label}: structures.{sid}.teaching_reference "
+                              "must use pending_review")
+            note, sources = reference.get("text"), reference.get("sources")
+            if not isinstance(note, str) or not note.strip():
+                errors.append(f"{label}: structures.{sid}.teaching_reference.text must be non-empty")
+            if not isinstance(sources, list) or not sources or not all(
+                    isinstance(url, str) and url.startswith("https://") and len(url) > 8
+                    for url in sources):
+                errors.append(f"{label}: structures.{sid}.teaching_reference.sources "
+                              "must contain HTTPS source URLs")
 
     aliases = doc.get("aliases", {})
     if not isinstance(aliases, dict):

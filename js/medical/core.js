@@ -22,6 +22,8 @@
 // scan bundles (2.3/2.4): verification before parse + the mm view transform.
 // Re-exported so stage.html keeps ONE medical import (MED.bundleFor?.()).
 import { attach as attachBundle } from "./bundle.js";
+import { syncScanView, installScanControls, disposeScanView, scanCameraDistance } from "./phase3.js";
+import { selectScene, castStructure, mergeSelections, videoToBoard } from "./selection.js";
 export { bundleFor } from "./bundle.js";
 // gesture-gap fixes (G3-1 tracking loss, 3.5-1 handedness, 3.6-1 mouse)
 export { holdLost, foundCursor, handSlots, installMouse } from "./interaction.js";
@@ -29,6 +31,7 @@ export { holdLost, foundCursor, handSlots, installMouse } from "./interaction.js
 export { bootFailed, watchCamera, cameraMenu, togglePreview } from "./camera.js";
 // tracker scheduling (3.2): GPU->CPU fallback, ?track=worker prototype, ?perf=1 measurement
 export { createLandmarker, wrapTracker } from "./tracking.js";
+export { videoToBoard };
 
 const VERBS = new Set(["cut", "isolate", "hide", "label", "xray",
                        "lesion", "layer"]);
@@ -162,6 +165,14 @@ function sidecarURLs(src) {
 
 async function loadSidecar(sc, src) {
   const M = sc.med;
+  if (sc.verifiedBundle) {
+    const doc = sc.verifiedBundle.sidecar;
+    if (!doc) return null;
+    M.doc = doc;
+    M.structs = doc.structures;
+    M.aliases = doc.aliases || {};
+    return (M.idx = buildIndex(sc));
+  }
   for (const u of sidecarURLs(src)) {
     let doc = null;
     try {
@@ -344,13 +355,17 @@ export function onModelLoaded(sc, src) {
   try {
     if (!sc || !sc.canvas) return null;
     if (sc.med) return sc.med.ready;
-    try { attachBundle(sc, src); } catch (e) { console.warn("[medical] bundle", e); }
+    try { attachBundle(sc); } catch (e) { console.warn("[medical] bundle", e); }
     const M = (sc.med = newState(src));
     const el = sc.canvas.parentElement;
     if (el) BY_EL.set(el, sc);
     SCENES.add(sc);
     ensureNormals(sc);          // before any custom shader can read them
-    M.ready = loadSidecar(sc, src)
+    M.ready = loadSidecar(sc, src).then(idx => {
+      if (idx && sc.med === M && sc.bundle && !IS_RENDER)
+        installScanControls(sc, action => scanAction(sc, action));
+      return idx;
+    })
       .catch(e => { console.warn("[medical] sidecar", e); return null; });
     return M.ready;
   } catch (e) { return null; }
@@ -380,13 +395,30 @@ export function tick(sc) {
     if (sc.camera) {
       if (M.camZ0 === undefined) M.camZ0 = sc.camera.position.z;
       const ex = Math.max(0, Math.min(1, sc.exC || 0));
-      const want = M.camZ0 * (1 + 0.8 * ex);
+      const want = Math.max(M.camZ0 * (1 + 0.8 * ex), scanCameraDistance(sc));
+      if (want * 2 > sc.camera.far) {
+        sc.camera.far = want * 2;
+        sc.camera.updateProjectionMatrix();
+      }
       const z = sc.camera.position.z;
       if (Math.abs(want - z) > 0.001) sc.camera.position.z = z + (want - z) * 0.12;
     }
+    if (sc.bundle) {
+      if (sc.exC > 0.001) M.mouseHit = null;
+      M.pointDisplay = sc.exC > 0.001 ? null :
+        PT.pub?.bundleRevision === sc.bundle.revision ? PT.pub : M.mouseHit || null;
+      const owner = M.cutHand;
+      if (M.st.cut?.arm && owner != null && performance.now() - M.cutHandSeen > 400) {
+        M.cutPaused = "Tracking lost";
+        disarmCut(sc);
+        clearPointing();
+      }
+      syncScanView(sc);
+    }
     if (!R) return;
     const base = M.src.split("/").pop();
-    M.ptS = PT.pub && PT.pub.model === base ? PT.pub.structure : null;
+    M.ptS = PT.pub?.model === base && (!sc.bundle ||
+      PT.pub.bundleRevision === sc.bundle.revision) ? PT.pub.structure : null;
     R.tick(sc);
   } catch (e) {}
 }
@@ -400,6 +432,8 @@ export function onDispose(sc) {
     const el = sc.canvas && sc.canvas.parentElement;
     if (el) BY_EL.delete(el);
     SCENES.delete(sc);
+    disposeScanView(sc);
+    if (sc.bundle) clearPointing();
     if (sc.med && R) R.dispose(sc);
     sc.med = null;
   } catch (e) {}
@@ -448,8 +482,13 @@ export function cutFromGesture(sc, patch) {
 
 /** Hand activity that isn't itself a cut edit (a swipe forming, a scrub
  *  engaging) still counts as "someone is using this" for the idle clock. */
-export function noteCutActivity(sc) {
-  if (sc && sc.med) sc.med.cutT = performance.now();
+export function noteCutActivity(sc, hand) {
+  if (!sc?.med) return;
+  sc.med.cutT = performance.now();
+  if (sc.bundle && hand != null && sc.med.cutHand == null) {
+    sc.med.cutHand = hand;
+    sc.med.cutHandSeen = sc.med.cutT;
+  }
 }
 
 /** Toggle cut mode from the keyboard (X on the tracker). Arming used to
@@ -474,12 +513,7 @@ export function toggleArm() {
       if (d > z) { z = d; sc = s; }
     }
     if (!sc) { toast("no anatomy model on the board to cut", 2400); return; }
-    const st = sc.med.st;
-    st.cut = st.cut || { plane: "axial", t: 0.5, arm: 0 };
-    st.cut.arm = 1;
-    noteCutActivity(sc);
-    toast("cut ARMED — flat palm swipes the plane, scissors spread it", 3000);
-    paint(sc);
+    applyVerb(sc, {a: "cut", arm: 1});
   } catch (e) {}
 }
 
@@ -488,6 +522,7 @@ export function disarmCut(sc, why) {
     const st = sc && sc.med && sc.med.st;
     if (!st || !st.cut || !st.cut.arm) return;
     st.cut.arm = 0;                            // the plane STAYS; only the
+    sc.med.cutHand = null;
     if (why) toast(why, 2000);                 // hands let go of it
   } catch (e) {}
 }
@@ -496,7 +531,41 @@ export function disarmCut(sc, why) {
  *  with it because palm geometry can't be read off a cursor dot. All the
  *  hand math lives in gesture.js; this is only the doorway. */
 export function gestureFrame(cur, i, lms) {
-  try { if (G && lms) G.gestureFrame(cur, i, lms); } catch (e) {}
+  try {
+    const sc = armedScene();
+    if (sc?.bundle && sc.med.cutHand != null) {
+      if (sc.med.cutHand !== i) return;
+      if (performance.now() - sc.med.cutHandSeen > 400) {
+        sc.med.cutPaused = "Tracking lost";
+        disarmCut(sc);
+        clearPointing();
+      } else if (lms) sc.med.cutHandSeen = performance.now();
+    }
+    if (G && lms) G.gestureFrame(cur, i, lms);
+  } catch (e) {}
+}
+
+function scanAction(sc, action) {
+  const M = sc.med;
+  if (!M?.idx) return;
+  if (action?.screenPoint) {
+    const found = selectScene([sc], action.screenPoint);
+    if (found && !(sc.exC > 0.001)) {
+      sc.scene.updateMatrixWorld(true);
+      R?.tick(sc);
+      const result = castStructure(sc, found.ndc);
+      M.mouseHit = result.status === "hit" || result.ambiguous ? result : null;
+      M.lastPickStatus = result.status;
+      M.lastPickAt = performance.now();
+    } else M.mouseHit = null;
+    return;
+  }
+  if (action === "arm") applyVerb(sc, {a: "cut", arm: 1});
+  else if (action === "lock" || action === "pause") {
+    M.cutPaused = action === "lock" ? "Locked" : "Paused";
+    disarmCut(sc);
+    clearPointing();
+  } else applyVerb(sc, {a: "cut", ...action});
 }
 
 // ------------------------------------------------------------- the verbs
@@ -527,13 +596,22 @@ function applyVerb(sc, c) {
   };
   switch (c.a) {
     case "cut": {
-      if (c.off) { st.cut = null; break; }
+      if (sc.bundle) clearPointing();
+      if (c.off) { st.cut = null; M.cutHand = null; M.cutPaused = null; break; }
       const cut = st.cut || { plane: "axial", t: 0.5, arm: 0 };
       if (c.plane != null) cut.plane = c.plane;   // server already normalized {o,n}
       if (c.t != null) cut.t = c.t;
+      if (c.manualDepth && typeof cut.plane === "object") {
+        const n = cut.plane.n;
+        cut.plane = {n, o: n.map(x => x * (cut.t * 2 - 1))};
+      }
       if (c.arm != null) {
         const was = cut.arm;
         cut.arm = c.arm ? 1 : 0;
+        if (sc.bundle) {
+          M.cutHand = null;
+          M.cutPaused = null;
+        }
         M.cutT = performance.now();               // arm/disarm restarts the clock
         if (cut.arm && !was) {
           needGesture();                          // the hand math loads HERE
@@ -545,12 +623,14 @@ function applyVerb(sc, c) {
       break;
     }
     case "isolate": {
+      if (sc.bundle) clearPointing();
       if (c.off) { st.iso = null; break; }
       const s = need(c.structure); if (!s) return;
       st.iso = s;
       break;
     }
     case "hide": {
+      if (sc.bundle) clearPointing();
       if (c.off) { st.hid.clear(); break; }       // off clears the whole set
       const s = need(c.structure); if (!s) return;
       st.hid.add(s);
@@ -576,6 +656,7 @@ function applyVerb(sc, c) {
       break;
     }
     case "xray": {
+      if (sc.bundle) clearPointing();
       if (c.off) { st.xray = null; break; }
       const f = c.focus ? need(c.focus) : null;
       if (c.focus && !f) return;
@@ -583,6 +664,7 @@ function applyVerb(sc, c) {
       break;
     }
     case "layer":
+      if (sc.bundle) clearPointing();
       st.layer = c.off ? null : (c.depth | 0);
       break;
     case "lesion":
@@ -714,6 +796,10 @@ export function applyRemote(sc, it) {
 // wobbling hand doesn't strobe the bus.
 const HITS = new Map();        // cursor index -> {v, t, seen}
 const PT = { candKey: "", candT: 0, cand: null, pubKey: "", pub: null };
+function clearPointing() {
+  HITS.clear(); PT.candKey = ""; PT.cand = null; PT.pubKey = ""; PT.pub = null;
+  for (const sc of SCENES) if (sc.med) sc.med.mouseHit = null;
+}
 const CAST_MS = 40;            // ~25Hz per cursor — a raycast is not free
 // THE DWELL. 150ms of "same structure" was the original gate, and it was
 // the wrong question: a hand sweeping across the organ stays on one big
@@ -749,7 +835,7 @@ export function cursorFrame(cur, i, lms) {
       h.sx = cur.x; h.sy = cur.y; h.still = now;
     }
     // a pinched hand is GRABBING, not asking — pointing is the open hand
-    if (closed) { h.v = null; h.t = now; h.still = now; }
+    if (closed || armedScene()?.bundle) { h.v = null; h.t = now; h.still = now; }
     else if (now - h.t >= CAST_MS) { h.v = pick(cur); h.t = now; }
     h.settled = !closed && now - (h.still ?? now) >= HOLD_MS;
 
@@ -764,15 +850,16 @@ export function cursorFrame(cur, i, lms) {
     // disagreement itself is published, with no `structure`, so nothing
     // downstream (board-state, narration, examiner) can name a guess.
     const ids = [...new Set(settled.map(v => v.model + "|" + v.structure))];
-    if (ids.length > 1)
+    if (settled.some(v => v.status)) merged = mergeSelections(settled);
+    else if (ids.length > 1)
       merged = { ambiguous: true, candidates: ids.map(k => k.split("|")[1]),
                  model: settled[0].model };
     else if (settled.length) merged = settled[0];
     const key = !merged ? "" : merged.ambiguous
-      ? "?|" + merged.candidates.slice().sort().join(",")
-      : merged.model + "|" + merged.structure + "|" + merged.mesh;
+      ? ["?", merged.bundleRevision, ...merged.candidates.slice().sort()].join("|")
+      : [merged.bundleRevision, merged.model, merged.structure, merged.mesh].join("|");
     if (key !== PT.candKey) { PT.candKey = key; PT.candT = now; PT.cand = merged; }
-    else if (now - PT.candT >= HOLD_MS && PT.pubKey !== key) {
+    else if (now - PT.candT >= HOLD_MS) {
       PT.pubKey = key; PT.pub = merged;
     }
   } catch (e) {}
@@ -785,7 +872,7 @@ function pick(cur) {
     if (!M || !M.idx) continue;
     const e = s.canvas && s.canvas.parentElement;
     if (!e || !e.isConnected) continue;
-    const r = e.getBoundingClientRect();
+    const r = s.bundle ? s.canvas.getBoundingClientRect() : e.getBoundingClientRect();
     if (cur.x < r.left || cur.x > r.right || cur.y < r.top || cur.y > r.bottom)
       continue;
     // topmost = latest among #behind's children (a grab re-appends its card)
@@ -794,6 +881,20 @@ function pick(cur) {
     if (d > z) { z = d; sc = s; el = e; }
   }
   if (!sc) return null;
+  if (sc.bundle) {
+    if (sc.exC > 0.001) {
+      sc.med.lastPickStatus = "unavailable while exploded";
+      return null;
+    }
+    const found = selectScene([sc], cur);
+    if (!found) return null;
+    sc.scene.updateMatrixWorld(true);
+    R?.tick(sc);
+    const result = castStructure(sc, found.ndc);
+    sc.med.lastPickStatus = result?.status;
+    sc.med.lastPickAt = performance.now();
+    return result && (result.status === "hit" || result.ambiguous) ? result : null;
+  }
   const r = el.getBoundingClientRect();
   // Screen -> the model canvas's own NDC. The card is a fixed 480px square
   // scaled about its center, so this rect form is algebraically identical

@@ -25,6 +25,7 @@ implementation spikes establish evidence.
 | --- | --- | --- |
 | [0001](0001-frontend-modules-no-bundler.md) | Frontend modules without a bundler or framework | proposed |
 | [0002](0002-bundle-manifest-and-patient-space.md) | Bundle manifest and patient-space export axes | proposed |
+| [0003](0003-volume-mpr-rendering.md) | Verified NRRD, multiplanar slices and volume rendering | proposed (implementation verified in headless Chrome) |
 | [0005](0005-tracking-worker.md) | Hand tracking on the main thread vs in a worker | proposed (main-thread default until measured on target hardware) |
 
 Phases 1 and 2 log each smaller choice as a decision tree:
