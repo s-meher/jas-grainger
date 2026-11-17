@@ -155,6 +155,15 @@ Every row remains open until its exit condition has a linked PR/test record.
 | 3.10 | UI / New | Browser speech names only reviewed sidecar text after dwell; debounce, cancel, mute/repeat, unavailable-voice and offline behavior tested. | 1.8, 3.8 |
 | 3.11 | UI / Extend | Tune existing filters or compare EMA/One Euro; report latency/jitter tradeoff, calibrated thresholds and reacquisition behavior. | 3.2, 3.4-3.8 |
 
+Progress 2026-11-14 (`feat/ui/3-10-browser-tts`, not yet merged; rows stay open
+until the manual webcam session in
+[2026-11-14-3-9-3-11-ui](../validation/2026-11-14-3-9-3-11-ui.md) passes):
+3.10 browser speech prototype per [ADR 0006](../decisions/0006-browser-speech.md);
+3.9 demo HUD with whitelisted dataset/revision/review state, case "answer hidden",
+mute/repeat/reset (browser case-session UI and teaching/exam modes remain open);
+3.11 EMA vs One Euro compared on synthetic signals, One Euro opt-in only
+(`?smooth=oneeuro`), default EMA unchanged pending the webcam A/B.
+
 ## Added cross-cutting tasks
 
 | ID | Work | Acceptance / owner |

@@ -25,6 +25,10 @@ import { attach as attachBundle } from "./bundle.js";
 export { bundleFor } from "./bundle.js";
 // gesture-gap fixes (G3-1 tracking loss, 3.5-1 handedness, 3.6-1 mouse)
 export { holdLost, foundCursor, handSlots, installMouse } from "./interaction.js";
+import { resetPose } from "./interaction.js";
+// cursor smoothing (3.11): ?smooth=oneeuro opt-in One Euro in place of the EMA
+export { smoothCursor } from "./smoothing.js";
+import { smoothingMode } from "./smoothing.js";
 // webcam states (3.3): error explanations + Retry, unplug recovery, picker, preview privacy
 export { bootFailed, watchCamera, cameraMenu, togglePreview } from "./camera.js";
 // tracker scheduling (3.2): GPU->CPU fallback, ?track=worker prototype, ?perf=1 measurement
@@ -832,4 +836,58 @@ function castAt(sc, nx, ny) {
     }
   } catch (e) {}
   return null;
+}
+
+// ----------------------------------------------------- HUD + SPEECH (3.9/3.10)
+// Read-only views for ./hud.js. They hand over reviewed sidecar text and
+// whitelisted bundle fields only: never the case/lesion ids (answer isolation),
+// never a raw mesh name. hud.js loads LAZILY behind its own catch, so a
+// broken overlay leaves the board exactly as it was.
+
+/** The reviewed display name of `structure` on the model whose file is
+ *  `model` (the basename pointState publishes), or null. No id fallback:
+ *  anatomy.schema.md makes `name` required, so a missing one is a sidecar
+ *  bug to fix, not something to paper over by speaking "left_ventricle". */
+export function structureName(model, structure) {
+  try {
+    for (const s of SCENES) {
+      const M = s.med;
+      if (!M || !M.idx || M.src.split("/").pop() !== model) continue;
+      const st = M.structs[structure];
+      const n = st && st.name;
+      if (typeof n === "string" && n.trim()) return n.trim();
+    }
+  } catch (e) {}
+  return null;
+}
+
+/** The topmost medical model (pick()'s rule), as raw material for hud.js's
+ *  whitelist: the sidecar doc, the verified bundle manifest + revision, and
+ *  two booleans. caseActive deliberately carries no ids. */
+export function boardInfo() {
+  try {
+    let sc = null, z = -1;
+    for (const s of SCENES) {
+      if (!s.med || !s.med.idx) continue;
+      const e = s.canvas && s.canvas.parentElement;
+      if (!e || !e.isConnected) continue;
+      const d = e.parentElement
+        ? Array.prototype.indexOf.call(e.parentElement.children, e) : 0;
+      if (d > z) { z = d; sc = s; }
+    }
+    if (!sc) return null;
+    const M = sc.med;
+    return { doc: M.doc, manifest: sc.bundle ? sc.bundle.manifest : null,
+             revision: sc.bundle ? sc.bundle.revision : null,
+             caseActive: !!M.st.les, armed: !!(M.st.cut && M.st.cut.arm) };
+  } catch (e) { return null; }
+}
+
+/** stage.html hook (tracker page only). ctx = {items(), cursors(), toast}. */
+export function installHud(ctx) {
+  if (IS_RENDER) return;
+  import("./hud.js")
+    .then(m => m.install(Object.assign({}, ctx, { pointState, structureName, boardInfo,
+                                                  resetPose, toast, smoothingMode })))
+    .catch(e => console.warn("[medical] hud.js failed to load", e));
 }

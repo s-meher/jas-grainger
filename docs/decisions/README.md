@@ -26,6 +26,7 @@ implementation spikes establish evidence.
 | [0001](0001-frontend-modules-no-bundler.md) | Frontend modules without a bundler or framework | proposed |
 | [0002](0002-bundle-manifest-and-patient-space.md) | Bundle manifest and patient-space export axes | proposed |
 | [0005](0005-tracking-worker.md) | Hand tracking on the main thread vs in a worker | proposed (main-thread default until measured on target hardware) |
+| [0006](0006-browser-speech.md) | Browser speech and its offline/voice dependencies | proposed (prototype built; manual session pending) |
 
 Phases 1 and 2 log each smaller choice as a decision tree:
-[Phase 1](phase1-decision-log.md) · [Phase 2](phase2-decision-log.md).
+[Phase 1](phase1-decision-log.md) · [Phase 2](phase2-decision-log.md) · [Phase 4](phase4-decision-log.md).

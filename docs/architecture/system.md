@@ -19,11 +19,13 @@ flowchart LR
   Server --> Case[case-render: filtered lesion data]
   Driver[bin scripts / examiner skill] -->|validated commands| Server
   Driver --> Narrate[macOS narration helper]
+  Core --> Hud[js/medical/hud.js + speech.js: demo overlay, browser speech]
 ```
 
 There is no patient-scan ingestion pipeline, volume renderer, React application,
-FastAPI service, persistent patient database, or browser TTS implementation in
-this baseline. A generic 16-structure heart is not a patient reconstruction.
+FastAPI service, or persistent patient database in
+this baseline. Browser speech (3.10) is a prototype that speaks reviewed
+sidecar names only ([ADR 0006](../decisions/0006-browser-speech.md)). A generic 16-structure heart is not a patient reconstruction.
 The examiner is an agent workflow; it is not yet a complete browser case UI.
 
 ## Proposed end-to-end system

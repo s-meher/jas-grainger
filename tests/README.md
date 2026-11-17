@@ -108,7 +108,7 @@ and a fix shows up as `XPASS`.
 
 ```
 ~/.venvs/jas/bin/python -m pytest pipeline/tests -q   # 72: pipeline + DICOM/NIfTI/resample (synthetic)
-python3 tests/test_tracker_browser.py                 # 18: real-time headless Chrome, fake camera (~3 min)
+python3 tests/test_tracker_browser.py                 # 30: real-time headless Chrome, fake camera (~3 min)
 python3 tests/test_lighting_matrix.py                 # 2.2 renders + numbers -> tests/_shots/lighting/
 ```
 
@@ -122,6 +122,26 @@ for camera recovery. It covers:
 - main vs worker perf
 - the blocked / no-camera / camera-in-use screens (the last two are injected,
   so it works on machines that have a real webcam)
+- the 3.9 HUD (whitelisted bundle fields, M/H keys, Reset pose, absent on
+  `?role=render`) and the 3.11 `?smooth=oneeuro` opt-in
 
 Chrome's fake camera has no hands in it, so hand feel is the manual session
 (`docs/validation/phase1-webcam-session.md`).
+
+## Phase 4 suites (3.9 overlay, 3.10 speech, 3.11 smoothing)
+
+```
+node tests/test_speech_hud.mjs     # no server, no browser, ~3 s
+node tests/test_smoothing.mjs      # no server, no browser, <1 s
+```
+
+`test_speech_hud.mjs` drives the speech narrator on a fake clock (dwell,
+cooldown, switch/loss cancel, mute, repeat, no engine, throwing engine), the
+Web Speech adapter on fake windows (async voices, local-voice choice,
+cancel/resume), the HUD whitelist against a manifest stuffed with fake
+identifiers, and then the REAL `core.js` pointing path into `hud.js` on a
+minimal fake DOM, grepping the rendered panel for ids and case answers.
+`test_smoothing.mjs` prints the EMA vs One Euro table on seeded synthetic
+30 fps signals and checks loss/reacquisition semantics. Neither exercises a
+real speech engine, voice, or hand: that is the manual session in
+`docs/validation/2026-11-14-3-9-3-11-ui.md`.

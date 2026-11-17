@@ -20,25 +20,28 @@ All of it loads from public CDNs, so the browser needs network on first load (G4
 
 | Module | Owns | Exports used by stage.html (via core.js) |
 | --- | --- | --- |
-| `core.js` | sidecar loading, mesh→structure index, medical state, verbs, pointing, state-bus (de)serialization | `onModelLoaded`, `tick`, `onDispose`, `handles`, `applyCmd`, `toggleArm`, `armedScene`, `stillModel`, `hitRect`, `cursorFrame`, `itemState`, `pointState`, `applyRemote` + re-exports below |
+| `core.js` | sidecar loading, mesh→structure index, medical state, verbs, pointing, state-bus (de)serialization; read-only `structureName`/`boardInfo` views for the HUD | `onModelLoaded`, `tick`, `onDispose`, `handles`, `applyCmd`, `toggleArm`, `armedScene`, `stillModel`, `hitRect`, `cursorFrame`, `itemState`, `pointState`, `applyRemote`, `installHud` + re-exports below |
 | `gesture.js` | armed-cut hand geometry (palm plane, swipe, spread) | (imported lazily by core.js) |
 | `render.js` | cut planes/caps, x-ray, isolate/hide, labels | (imported lazily by core.js) |
 | `bundle.js` | jas-bundle/1 verification before parse; mm view transform (2.3/2.4) | `bundleFor` |
-| `interaction.js` | tracking-loss freeze, handedness slots, mouse fallback (G3/3.5/3.6) | `holdLost`, `foundCursor`, `handSlots`, `installMouse` |
+| `interaction.js` | tracking-loss freeze, handedness slots, mouse fallback, shared `resetPose` (G3/3.5/3.6/3.9) | `holdLost`, `foundCursor`, `handSlots`, `installMouse` |
 | `camera.js` | camera error screens + Retry, unplug recovery, picker, preview privacy (3.3) | `bootFailed`, `watchCamera`, `cameraMenu`, `togglePreview` |
 | `tracking.js` | GPU→CPU fallback, `?track=worker`, `?perf=1`, empty-frame guard (3.2) | `createLandmarker`, `wrapTracker` |
 | `track-worker.js` | the MediaPipe worker (module worker + `importScripts` shim) | — (loaded by tracking.js) |
+| `hud.js` | demo overlay: whitelisted model/case state, pointed name, mode, tracking, speech; M/N/H keys, Reset pose (3.9) | — (loaded lazily by core.js `installHud`) |
+| `speech.js` | browser speech: dwell/cooldown narrator, Web Speech adapter, voice choice (3.10, ADR 0006) | — (imported by hud.js) |
+| `smoothing.js` | One Euro cursor filter, opt-in `?smooth=oneeuro` in place of the EMA (3.11) | `smoothCursor` |
 
 ## Hook points in stage.html
 
-There are 24 `MED.*` calls in all. Search `MEDICAL HOOK` to find them.
+There are 27 `MED.*` calls (25 distinct hooks) in all. Search `MEDICAL HOOK` to find them.
 
 | Phase of the page | Hooks |
 | --- | --- |
-| Boot | `createLandmarker`, `wrapTracker`, `togglePreview` (restore), `bootFailed` (in boot's catch), `installMouse` (before boot) |
+| Boot | `createLandmarker`, `wrapTracker`, `togglePreview` (restore), `bootFailed` (in boot's catch), `installMouse` (before boot), `installHud` (tracker page only) |
 | Camera | `watchCamera` (in `startCam`), `cameraMenu` (K), `togglePreview` (V) |
 | Model load / dispose | `bundleFor` (before parse, in `buildModelScene`), `onModelLoaded`, `onDispose` |
-| Every frame | `handSlots`, `foundCursor`, `cursorFrame`, `holdLost`, `tick`, `stillModel` |
+| Every frame | `handSlots`, `foundCursor`, `smoothCursor` (no-op unless `?smooth=oneeuro`), `cursorFrame`, `holdLost`, `tick`, `stillModel` |
 | Commands / state bus | `handles`, `applyCmd`, `itemState`, `pointState`, `applyRemote`, `armedScene`, `toggleArm` (X), `hitRect` |
 
 ## Rules for new code

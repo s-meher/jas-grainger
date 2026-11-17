@@ -83,6 +83,7 @@ const PINCH_SRC = slice("const gap = Math.hypot(lms[4].x - lms[8].x, lms[4].y - 
                         "} else cur.badRun = 0;", true);
 const pinchStep = new Function("cur", "lms", "items", "i", "now", `
   const W = ${W}, H = ${H}, toScreen = ${toScreen.toString()};
+  const MED = {};   // the page's medical namespace; empty = every MED.fn?.() hook is a no-op (3.11's smoothCursor)
   const tip = toScreen(lms[8]), thumb = toScreen(lms[4]);
   const span = Math.hypot(lms[0].x - lms[9].x, lms[0].y - lms[9].y);
   ${PINCH_SRC}

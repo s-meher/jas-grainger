@@ -88,6 +88,13 @@ export function mouseStep(st, x, y) {
   }
   return it;
 }
+/** makeModel's starting pose. Shared by double-click and the HUD's
+ *  Reset pose button (3.9), so the two can never drift apart. */
+export function resetPose(it) {
+  if (!it) return it;
+  it.rx = -0.15; it.ry = 0.6; it.rz = 0; it.rvy = 0; it.scale = 1;
+  return it;
+}
 export function wheelScale(it, deltaY) {
   it.scale = Math.max(SMIN, Math.min(SMAX, (it.scale || 1) * Math.exp(-deltaY * 0.0015)));
   return it.scale;
@@ -129,6 +136,6 @@ export function installMouse(getItems, opts = {}) {
   addEventListener("dblclick", e => {
     const it = pickAt(e.clientX, e.clientY);
     if (!it) return;
-    it.rx = -0.15; it.ry = 0.6; it.rz = 0; it.rvy = 0; it.scale = 1;   // makeModel's pose
+    resetPose(it);
   });
 }

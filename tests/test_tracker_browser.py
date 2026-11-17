@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tracker-page acceptance in a real (headless) Chrome: 2.1, 3.2, 3.3 and 3.6-1.
+"""Tracker-page acceptance in a real (headless) Chrome: 2.1, 3.2, 3.3, 3.6-1, 3.9/3.10 plumbing, 3.11 opt-in.
 
     python3 server.py &                 # idle server, like the other suites
     python3 tests/test_tracker_browser.py
@@ -49,7 +49,10 @@ print("2.1 boot (fake camera, real time)")
 with Browser() as b:
     b.open(BASE + "/stage.html?perf=1")
     ok = b.wait(BOOTED, 120)
-    check("tracker page boots with a camera and spawns the stage", ok and b.eval("document.querySelectorAll('.card').length") > 0)
+    # #boot is removed BEFORE `await loadTree(); spawnStage()`, so sampling the
+    # card count the instant BOOTED flips raced the stage (seen once, 2026-11-14)
+    check("tracker page boots with a camera and spawns the stage",
+          ok and b.wait("document.querySelectorAll('.card').length > 0", 15))
     check("hint lists the new keys (K, V)", "K pick camera" in (b.eval("document.getElementById('hint')?.textContent || ''") or ""))
     perf_main = b.wait("window.__trackPerf && window.__trackPerf.frames > 60 && window.__trackPerf", 60)
     check("3.2 main-thread mode measured (?perf=1)", perf_main and perf_main["mode"] == "main", perf_main)
@@ -107,6 +110,52 @@ with Browser() as b:
         time.sleep(0.6)
         s2 = item(lambda i: i.get("id") == it0["id"])["scale"]
         check("double-click resets the pose", abs(s2 - s0) < 0.05 * s0 + 1e-3, f"{s1} -> {s2} (start {s0})")
+
+    print("3.9 / 3.10 overlay + speech plumbing, live (no hands: pointing/speech by hand is manual)")
+    hud = b.wait("document.getElementById('nova-hud')?.textContent", 10) or ""
+    check("HUD panel is on the tracker page with the education-only banner", "NOT FOR CLINICAL USE" in hud, hud[:160])
+    hud = b.wait("(t => t.includes('scan bundle') && t)(document.getElementById('nova-hud').textContent)", 10) or hud
+    check("HUD shows the phantom's whitelisted bundle fields (dataset, short rev, review state)",
+          "synthetic" in hud and "rev e98a3dec87b3" in hud and "seg: dataset_reference" in hud, hud[:300])
+    check("HUD never shows bundle_id / source_case", "asymmetric-phantom" not in hud and "synthetic:" not in hud, hud[:300])
+    check("HUD reports tracking honestly with no hands in the fake feed", "no hands" in hud, hud[:300])
+    check("default page keeps the EMA (HUD names no alternative filter)", "one-euro" not in hud, hud[:300])
+    sp = b.eval("typeof speechSynthesis !== 'undefined'")
+    line = b.eval("[...document.querySelectorAll('#nova-hud .r')].map(r => r.textContent)"
+                  ".find(t => t.startsWith('SPEECH')) || ''")
+    check("HUD speech line is present and truthful about the engine",
+          ("unavailable" in line) != bool(sp), f"speechSynthesis={sp} line={line!r}")
+    print(f"    (headless speech line: {line!r})")
+    b.key("m")
+    check("M mutes (HUD says so)", b.wait("document.getElementById('nova-hud').textContent.includes('muted (M)')", 5))
+    b.key("m")
+    check("M again unmutes", b.wait("!document.getElementById('nova-hud').textContent.includes('muted (M)')", 5))
+    b.key("h")
+    check("H hides the HUD", b.wait("document.getElementById('nova-hud').classList.contains('off')", 5))
+    b.key("h")
+    if it0:
+        cmd_scale = item(lambda i: i.get("id") == it0["id"])["scale"]
+        b.mouse("mouseWheel", x, y, deltaX=0, deltaY=-400)
+        time.sleep(0.6)
+        big = item(lambda i: i.get("id") == it0["id"])["scale"]
+        b.eval("[...document.querySelectorAll('#nova-hud button')].find(e => /Reset/.test(e.textContent)).click()")
+        time.sleep(0.6)
+        back = item(lambda i: i.get("id") == it0["id"])["scale"]
+        check("HUD Reset pose button resets the model (same pose as double-click)",
+              big > cmd_scale * 1.3 and abs(back - 1) < 0.05, f"{cmd_scale} -> {big} -> {back}")
+
+print("3.9 render page stays clean (on air)")
+with Browser(port=9345) as b:
+    b.open(BASE + "/stage.html?role=render")
+    time.sleep(4)
+    check("no HUD on ?role=render", b.eval("!document.getElementById('nova-hud')"))
+
+print("3.11 smoothing opt-in (filter numbers: tests/test_smoothing.mjs)")
+with Browser() as b:
+    b.open(BASE + "/stage.html?smooth=oneeuro")
+    b.wait(BOOTED, 120)
+    hud = b.wait("(t => t.includes('MODE') && t)(document.getElementById('nova-hud')?.textContent || '')", 15) or ""
+    check("?smooth=oneeuro boots and the HUD names the filter", "one-euro" in hud, hud[:200])
 
 print("3.2 worker mode")
 with Browser() as b:
