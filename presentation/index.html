@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en" data-type="software" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NOVA Grainger Pitch</title>
+<meta name="description" content="NOVA turns a patient's CT or MRI into a 3D model a surgeon can turn, zoom and cut open with bare hands, using a laptop, a webcam and a monitor.">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<meta name="theme-color" content="#06090d">
+<meta property="og:title" content="NOVA · Grainger Computing Innovation Prize">
+<meta property="og:description" content="The scan, back in the surgeon's hands. A Team JAS pitch.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2306090d'/%3E%3Cpath d='M9 23V9l14 14V9' stroke='%2378e0d6' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Geist";font-weight:300 700;font-display:swap;src:url(fonts/geist.woff2) format("woff2")}
+@font-face{font-family:"Geist Mono";font-weight:400 500;font-display:swap;src:url(fonts/geist-mono.woff2) format("woff2")}
+@font-face{font-family:"Instrument Serif";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/instrument-serif.woff2) format("woff2")}
+@font-face{font-family:"Instrument Serif";font-style:italic;font-weight:400;font-display:swap;src:url(fonts/instrument-serif-italic.woff2) format("woff2")}
+
+/* Night theatre: one dark room, light comes only from the work (film, scans, hands, the heart). */
+:root{
+  --bg:#06090d; --bg-2:#0b1117; --surface:rgba(150,200,210,.055); --surface-2:rgba(150,200,210,.09);
+  --line:rgba(190,225,230,.12); --line-2:rgba(190,225,230,.22);
+  --ink:#eaf2f3; --ink-2:rgba(234,242,243,.74); --ink-3:rgba(234,242,243,.56);
+  --teal:#78e0d6; --teal-2:#3fb8ae; --teal-dim:rgba(120,224,214,.14);
+  --amber:#ffb84d; --amber-dim:rgba(255,184,77,.14); --ok:#8be3a6; --cut:#ff6b5e;
+  --serif:"Instrument Serif",Georgia,serif; --sans:"Geist","Helvetica Neue",Arial,sans-serif; --mono:"Geist Mono",ui-monospace,Menlo,monospace;
+  --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1);
+  --u:min(1vw,1.7778vh);
+  --mx:calc(var(--u)*4.6); --gut:calc(var(--u)*1.8);
+  --fs-hero:calc(var(--u)*6.6); --fs-h2:calc(var(--u)*4.2); --fs-h3:calc(var(--u)*1.38);
+  --fs-body:calc(var(--u)*1.16); --fs-small:calc(var(--u)*.9); --fs-big:calc(var(--u)*6.2);
+  --sp1:calc(var(--u)*.6); --sp2:calc(var(--u)*1.2); --sp3:calc(var(--u)*2); --sp4:calc(var(--u)*3.2);
+  --r:calc(var(--u)*1.1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink)}
+body{font-family:var(--sans);font-size:var(--fs-body);line-height:1.5;-webkit-font-smoothing:antialiased;font-weight:400}
+::selection{background:var(--teal);color:var(--bg)}
+h1,h2,h3,p,ul,ol,figure{margin:0;padding:0}
+ul,ol{list-style:none}
+img,video,canvas,svg{display:block;max-width:100%}
+a{color:inherit;text-underline-offset:.2em}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono)}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:8px;text-decoration:none}
+.skip:focus{top:12px}
+
+h2{font-size:var(--fs-h2);font-weight:500;line-height:1.02;letter-spacing:-.035em;text-wrap:balance;max-width:20ch}
+h2 em,h1 em{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em;color:var(--teal)}
+h3{font-size:var(--fs-h3);font-weight:550;line-height:1.2;letter-spacing:-.015em}
+p{max-width:60ch}
+.lede{font-size:calc(var(--fs-body)*1.12);color:var(--ink-2);max-width:42ch}
+.small{font-size:var(--fs-small);color:var(--ink-3)}
+.dim{color:var(--ink-2)}
+
+/* status pills */
+.st{display:inline-flex;align-items:center;gap:.5em;font-family:var(--mono);font-size:var(--fs-small);padding:.32em .75em;border-radius:99px;background:var(--surface-2);white-space:nowrap;line-height:1.2}
+.st::before{content:"";width:.5em;height:.5em;border-radius:50%;background:currentColor}
+.st-work{color:var(--ok)}.st-prog{color:var(--teal)}.st-prop{color:var(--amber)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.7em;min-height:44px;padding:.8em 1.35em;border:0;border-radius:99px;background:var(--ink);color:var(--bg);font-weight:550;font-size:var(--fs-body);cursor:pointer;text-decoration:none;transition:transform .16s var(--ease-out),background-color .2s ease,box-shadow .25s ease}
+.btn svg{width:1em;height:1em;transition:transform .2s var(--ease-out)}
+.btn:hover{background:#fff}
+.btn:hover svg{transform:translateX(2px)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn.ghost:hover{background:rgba(150,200,210,.16)}
+
+/* ---------- deck frame ---------- */
+.deck{position:fixed;inset:0;overflow:hidden}
+.stage{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:var(--bg)}
+.slide{position:absolute;inset:0;padding:calc(var(--u)*8) var(--mx) calc(var(--u)*6);visibility:hidden;outline:none;background:radial-gradient(120% 90% at 70% 0%,rgba(63,184,174,.07),transparent 60%),var(--bg)}
+.slide.is-on,.slide.is-out{visibility:visible}
+.slide.is-on{z-index:2}.slide.is-out{z-index:1}
+.g{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut);height:100%}
+.panel{background:linear-gradient(180deg,rgba(150,200,210,.075),rgba(150,200,210,.03));border:1px solid var(--line);border-radius:var(--r);position:relative;overflow:hidden}
+
+/* chrome */
+.rail{position:absolute;z-index:20;top:0;left:var(--mx);right:var(--mx);height:calc(var(--u)*5.4);display:flex;align-items:center;gap:var(--sp3);font-size:var(--fs-small);pointer-events:none;transition:opacity .4s ease}
+.rail>*{pointer-events:auto}
+.mark{display:flex;align-items:center;gap:.6em;font-weight:600;letter-spacing:.16em;text-decoration:none;min-height:44px}
+.mark svg{width:1.8em;height:1.8em}
+.crit{display:flex;gap:calc(var(--u)*.4);margin-left:auto;align-items:center;padding:4px;border-radius:99px;background:rgba(6,9,13,.45);box-shadow:inset 0 0 0 1px var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.crit button{background:none;border:0;cursor:pointer;color:var(--ink-3);font-size:var(--fs-small);padding:.45em .95em;border-radius:99px;min-height:36px;transition:color .2s ease,background-color .25s ease}
+.crit button span{display:inline-flex;flex-direction:column}
+.crit button span::after{content:attr(data-t);font-weight:600;height:0;overflow:hidden;visibility:hidden}
+.crit button:hover{color:var(--ink)}
+.crit button[aria-current="true"]{color:var(--bg);background:var(--teal);font-weight:600}
+.clock{font-family:var(--mono);min-width:4em;text-align:right;display:none}
+.clock.show{display:block}.clock.late{color:var(--cut)}
+.foot{position:absolute;z-index:20;bottom:0;left:var(--mx);right:var(--mx);height:calc(var(--u)*4.6);display:flex;align-items:center;gap:var(--sp3);font-size:var(--fs-small);color:var(--ink-3);pointer-events:none;transition:opacity .4s ease}
+.foot>*{pointer-events:auto}
+.rubric{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.count{font-family:var(--mono);color:var(--ink-2)}
+.nav{display:flex;gap:6px}
+.nav button{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;color:var(--ink);transition:transform .14s var(--ease-out),background-color .2s ease}
+.nav button:hover{background:rgba(150,200,210,.18)}
+.nav button:active{transform:scale(.94)}
+.nav svg{width:16px;height:16px}
+.prog{position:absolute;z-index:21;left:0;right:0;bottom:0;height:2px;background:rgba(190,225,230,.06)}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--teal-2),var(--teal));transform-origin:0 50%;transform:scaleX(0);transition:transform .6s var(--ease-out)}
+.stage.filming .rail,.stage.filming .foot{opacity:0;pointer-events:none}
+.toast{position:absolute;z-index:40;left:50%;top:calc(var(--u)*7);transform:translate(-50%,-8px);background:var(--ink);color:var(--bg);padding:.7em 1.2em;border-radius:99px;font-size:var(--fs-small);font-weight:550;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s var(--ease-out)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- 01 film ---------- */
+.s-film{padding:0;background:#000}
+.s-film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(10px) brightness(.62) saturate(1.1);transform:scale(1.06);transition:filter .8s var(--ease-out),transform 1.2s var(--ease-out)}
+.s-film.playing video{filter:none;transform:none}
+.s-film .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,9,13,.92) 0%,rgba(6,9,13,.7) 38%,rgba(6,9,13,.15) 70%),linear-gradient(0deg,rgba(6,9,13,.85),transparent 45%);transition:opacity .6s var(--ease-out)}
+.s-film .copy{position:absolute;left:var(--mx);bottom:calc(var(--u)*9);width:min(52%,calc(var(--u)*62));display:flex;flex-direction:column;gap:var(--sp3);transition:opacity .45s var(--ease-out),transform .6s var(--ease-out),filter .45s ease}
+.s-film h1{font-size:var(--fs-hero);font-weight:500;line-height:.98;letter-spacing:-.045em;text-wrap:balance}
+.s-film .act{display:flex;align-items:center;gap:var(--sp2);flex-wrap:wrap}
+.s-film .meta{display:flex;gap:var(--sp3);font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3)}
+.s-film .meta b{color:var(--ink);font-weight:500}
+.s-film.playing .scrim{opacity:0}
+.s-film.playing .copy{opacity:0;transform:translateY(16px);filter:blur(6px);pointer-events:none}
+.filmbar{position:absolute;left:var(--mx);right:var(--mx);bottom:calc(var(--u)*2.6);display:flex;align-items:center;gap:var(--sp2);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .4s var(--ease-out),transform .4s var(--ease-out)}
+.s-film.playing .filmbar{opacity:1;transform:none;pointer-events:auto}
+.filmbar .track{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
+.filmbar .track i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:0 50%;transform:scaleX(0)}
+.filmbar button{min-height:40px;padding:.5em 1em;border-radius:99px;border:0;background:rgba(6,9,13,.55);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2);cursor:pointer;font-size:var(--fs-small);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background-color .2s ease,transform .14s var(--ease-out)}
+.filmbar button:hover{background:rgba(6,9,13,.8)}
+.filmbar button:active{transform:scale(.96)}
+.filmbar .t{font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-2);min-width:5.5em}
+
+/* ---------- 02 problem: slice stack ---------- */
+.s-problem .left{grid-column:1/6;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4)}
+.pts3{display:flex;flex-direction:column;gap:var(--sp2)}
+.pts3 li{display:grid;grid-template-columns:calc(var(--u)*2.2) 1fr;gap:var(--sp2);align-items:start}
+.pts3 i{width:calc(var(--u)*2.2);height:calc(var(--u)*2.2);border-radius:50%;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);display:grid;place-items:center;font-style:normal;font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.9));color:var(--teal)}
+.pts3 p{color:var(--ink-2);font-size:var(--fs-small);margin-top:.15em}
+.stackwrap{grid-column:6/13;position:relative;perspective:calc(var(--u)*120);display:grid;place-items:center}
+.stack{position:relative;width:calc(var(--u)*34);height:calc(var(--u)*25);transform-style:preserve-3d;transform:rotateX(58deg) rotateZ(-32deg)}
+.stack canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:calc(var(--u)*.8);box-shadow:0 0 0 1px rgba(190,225,230,.14);opacity:.9}
+.stack-note{position:absolute;right:0;bottom:calc(var(--u)*1);font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3);text-align:right}
+.stack-note b{display:block;color:var(--ink);font-family:var(--sans);font-weight:500;font-size:var(--fs-h3)}
+
+/* ---------- 03 map ---------- */
+.s-map .head{grid-column:1/5;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3)}
+.tiles{grid-column:5/13;align-self:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp2)}
+.tile{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:var(--sp1);padding:var(--sp3);min-height:calc(var(--u)*13);border-radius:var(--r);background:linear-gradient(180deg,rgba(150,200,210,.075),rgba(150,200,210,.025));border:1px solid var(--line);transition:transform .25s var(--ease-out),border-color .25s ease,background-color .25s ease}
+.tile:hover{transform:translateY(-3px);border-color:rgba(120,224,214,.45)}
+.tile:active{transform:scale(.98)}
+.tile:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.tile .n{font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
+.tile b{font-size:var(--fs-h3);font-weight:550;letter-spacing:-.015em}
+.tile span{font-size:var(--fs-small);color:var(--ink-3);margin-top:auto}
+
+/* ---------- 04 how ---------- */
+.s-how .g{grid-template-rows:auto 1fr;row-gap:var(--sp4)}
+.s-how .head{grid-column:1/13;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp4)}
+.flow{grid-column:1/13;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gut);position:relative;align-self:stretch}
+.flow .panel{display:flex;flex-direction:column}
+.flow .viz{position:relative;flex:1;min-height:0;border-bottom:1px solid var(--line)}
+.flow .viz canvas{position:absolute;inset:0;width:100%;height:100%}
+.flow .txt{padding:var(--sp2) var(--sp2) var(--sp3);display:flex;flex-direction:column;gap:.35em}
+.flow .txt .k{font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
+.flow .panel.ai .txt .k{color:var(--amber)}
+.flow .txt p{font-size:var(--fs-small);color:var(--ink-2)}
+.gesture{position:absolute;left:var(--sp2);top:var(--sp2);font-family:var(--mono);font-size:var(--fs-small);padding:.3em .7em;border-radius:99px;background:rgba(6,9,13,.6);box-shadow:inset 0 0 0 1px var(--line-2)}
+.gesture b{color:var(--teal);font-weight:500}
+
+/* ---------- 05 effectiveness ---------- */
+.s-eff .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp3)}
+.s-eff .head{grid-column:1/13}
+.rows{grid-column:1/13;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gut);align-self:center}
+.rows .panel{padding:var(--sp3);display:flex;flex-direction:column;gap:var(--sp2);min-height:calc(var(--u)*17)}
+.rows .q{font-size:var(--fs-small);color:var(--ink-3)}
+.rows .a{font-size:var(--fs-body);color:var(--ink);font-weight:500;line-height:1.35}
+.rows .st{margin-top:auto;align-self:flex-start}
+.rows small{font-size:max(11px,calc(var(--fs-small)*.92));color:var(--ink-3);margin-top:-.4em}
+.measures{grid-column:1/13;display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp1) var(--sp1)}
+.measures b{font-weight:500;font-size:var(--fs-small);color:var(--ink-2);margin-right:var(--sp1)}
+.measures span{font-size:var(--fs-small);padding:.4em .9em;border-radius:99px;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink-2)}
+
+/* ---------- 06 innovation ---------- */
+.s-inn .left{grid-column:1/5;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4);position:relative;z-index:2}
+.s-inn .list{display:flex;flex-direction:column;gap:var(--sp3)}
+.s-inn .list li{display:flex;flex-direction:column;gap:.3em;padding-left:var(--sp2);box-shadow:inset 2px 0 0 var(--line-2);transition:box-shadow .3s ease}
+.s-inn .list li.on{box-shadow:inset 2px 0 0 var(--teal)}
+.s-inn .list p{font-size:var(--fs-small);color:var(--ink-2)}
+.organ{position:absolute;top:0;bottom:0;right:0;left:30%;z-index:1}
+.organ canvas{position:absolute;inset:0;width:100%;height:100%;cursor:ew-resize;touch-action:pan-y}
+.organ svg.hand{position:absolute;width:calc(var(--u)*13);height:calc(var(--u)*16);pointer-events:none}
+.readout{position:absolute;right:var(--mx);bottom:calc(var(--u)*6.4);display:flex;gap:var(--sp2);font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3)}
+.readout b{color:var(--teal);font-weight:500}
+
+/* ---------- 07 scale ---------- */
+.s-sca .left{grid-column:1/7;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4);position:relative;z-index:2}
+.figs{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:var(--sp4)}
+.figs b{display:block;font-size:var(--fs-big);font-weight:500;letter-spacing:-.05em;line-height:1}
+.figs b small{font-family:var(--serif);font-style:italic;font-weight:400;font-size:.55em;color:var(--teal);letter-spacing:0;margin-left:.04em}
+.figs p{font-size:var(--fs-small);color:var(--ink-2);max-width:20ch;margin-top:.5em}
+.subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp2) var(--sp3)}
+.subs li{display:flex;flex-direction:column;gap:.2em;padding-top:var(--sp1);border-top:1px solid var(--line)}
+.subs h3{font-size:var(--fs-body)}
+.subs p{font-size:var(--fs-small);color:var(--ink-2)}
+.globe{position:absolute;top:0;bottom:0;right:0;width:58%}
+.globe canvas{position:absolute;inset:0;width:100%;height:100%}
+.src{font-size:max(11px,calc(var(--fs-small)*.9));color:var(--ink-3)}
+
+/* ---------- 08 empowerment ---------- */
+.s-emp .left{grid-column:1/6;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4)}
+.three{display:flex;flex-direction:column;gap:var(--sp2)}
+.three li{display:grid;grid-template-columns:minmax(0,.4fr) minmax(0,1fr);gap:var(--sp2);padding-top:var(--sp2);border-top:1px solid var(--line)}
+.three h3{font-size:var(--fs-body)}
+.three p{font-size:var(--fs-small);color:var(--ink-2)}
+.mock{grid-column:6/13;align-self:center;aspect-ratio:16/10.5;display:grid;grid-template-columns:1fr calc(var(--u)*17)}
+.mock .view{position:relative;border-right:1px solid var(--line)}
+.mock .view svg{position:absolute;inset:6% 4%;width:92%;height:88%}
+.mock .side{padding:var(--sp2);display:flex;flex-direction:column;gap:var(--sp2)}
+.mock .bar{position:absolute;left:var(--sp2);top:var(--sp2);display:flex;gap:6px}
+.mock .bar span{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.86));padding:.25em .6em;border-radius:99px;background:var(--surface-2);color:var(--ink-3)}
+.mock .bar span.on{color:var(--teal);box-shadow:inset 0 0 0 1px rgba(120,224,214,.4)}
+.flagcard{border-radius:calc(var(--r)*.8);padding:var(--sp2);background:var(--amber-dim);box-shadow:inset 0 0 0 1px rgba(255,184,77,.35);display:flex;flex-direction:column;gap:.4em;opacity:0;transform:translateY(8px);transition:opacity .4s var(--ease-out),transform .4s var(--ease-out)}
+.flagcard.show{opacity:1;transform:none}
+.flagcard .k{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.9));color:var(--amber)}
+.flagcard p{font-size:var(--fs-small);color:var(--ink-2)}
+.choices{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.choices span{font-size:var(--fs-small);padding:.55em .8em;border-radius:10px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);transition:background-color .3s ease,box-shadow .3s ease,color .3s ease}
+.choices span.pick{background:var(--teal);color:var(--bg);box-shadow:none;font-weight:550}
+.decides{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.9));color:var(--ink-3)}
+.illus{position:absolute;right:var(--sp2);bottom:var(--sp1);font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.8));color:var(--ink-3)}
+
+/* ---------- 09 the data ---------- */
+.s-exe .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp3)}
+.s-exe .head{grid-column:1/13;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp4)}
+.sets{grid-column:1/13;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gut);min-height:0}
+.set{display:flex;flex-direction:column;overflow:hidden}
+.set .thumb{width:100%;flex:1;min-height:calc(var(--u)*7);border-bottom:1px solid var(--line);background:#020406}
+.set .body{padding:var(--sp2) var(--sp3) var(--sp3);display:flex;flex-direction:column;gap:.5em}
+.set .top{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp1);font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
+.set .top b{font-family:var(--sans);font-size:calc(var(--fs-h3)*2);color:var(--ink);font-weight:500;letter-spacing:-.045em;line-height:1}
+.set .top b small{font-size:.42em;letter-spacing:0;color:var(--ink-3);margin-left:.3em;font-weight:400}
+.set p{font-size:var(--fs-small);color:var(--ink-2)}
+.set .lic{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.88));color:var(--ink-3)}
+
+/* ---------- 10 scan to 3D: system map ---------- */
+.s-road .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp3)}
+.s-road .head{grid-column:1/13;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp4)}
+.sysmap{grid-column:1/13;position:relative;display:grid;grid-template-columns:1fr .9fr 1.3fr .55fr 1.1fr .4fr 1fr;grid-template-rows:repeat(3,auto);row-gap:calc(var(--u)*2.4);align-items:center;align-self:center}
+.sysmap .wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.wires path{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.wires .w-n{stroke:var(--ink-3)}.wires .w-t{stroke:var(--teal)}.wires .w-a{stroke:var(--amber)}
+.sn{position:relative;z-index:1;display:flex;flex-direction:column;gap:.35em;padding:var(--sp2);border-radius:var(--r);background:var(--bg-2);box-shadow:inset 0 0 0 1px var(--line-2)}
+.sn .k{font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3)}
+.sn h3{font-size:var(--fs-body)}
+.sn p{font-size:var(--fs-small);color:var(--ink-2)}
+.sn.core{background:linear-gradient(180deg,rgba(120,224,214,.08),rgba(120,224,214,.02)),var(--bg-2);box-shadow:inset 0 0 0 1px rgba(120,224,214,.5)}
+.sn.core .k{color:var(--teal)}
+.sn.ai{background:linear-gradient(180deg,rgba(255,184,77,.08),rgba(255,184,77,.02)),var(--bg-2);box-shadow:inset 0 0 0 1px rgba(255,184,77,.5)}
+.sn.ai .k{color:var(--amber)}
+.sn.end .k{color:var(--ok)}
+.n-img{grid-column:1;grid-row:2}.n-hand{grid-column:3;grid-row:1}.n-pipe{grid-column:3;grid-row:2}.n-ai{grid-column:3;grid-row:3}.n-web{grid-column:5;grid-row:1}.n-use{grid-column:7;grid-row:1}
+.elabel{grid-column:2;grid-row:2;position:relative;z-index:1;justify-self:center;transform:translateY(-95%);font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.9));line-height:1.35;color:var(--teal);text-align:center}
+.sproof{grid-column:5/8;grid-row:2/4;align-self:end;display:grid;grid-template-columns:1fr 1fr;gap:var(--sp3) var(--gut);border-top:1px solid var(--line);padding-top:var(--sp2)}
+.sproof .t{grid-column:1/3;font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3)}
+.sproof b{display:block;font-size:calc(var(--fs-h3)*1.5);font-weight:500;letter-spacing:-.04em;line-height:1.05}
+.sproof p{font-size:var(--fs-small);color:var(--ink-3);margin-top:.3em}
+
+/* ---------- 11 interdisciplinary ---------- */
+.s-int .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp3)}
+.s-int .head{grid-column:1/13}
+.conv{grid-column:1/13;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gut);align-self:center}
+.conv .panel{padding:var(--sp3);display:flex;flex-direction:column;gap:var(--sp3);min-height:calc(var(--u)*15)}
+.conv .pair{font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
+.conv .lbl{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.86));letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.conv .bef,.conv .aft{display:flex;flex-direction:column;gap:.45em}
+.conv .aft{margin-top:auto}
+.conv .aft .lbl{color:var(--teal)}
+.conv .was{color:var(--ink-2);font-size:calc(var(--fs-body)*1.12);line-height:1.35;position:relative;align-self:flex-start}
+.conv .was::after{content:"";position:absolute;left:0;right:0;top:56%;height:1px;background:var(--cut);opacity:.55;transform-origin:0 50%;transform:scaleX(var(--strike,1));transition:transform .6s var(--ease-out)}
+.conv .now{font-size:calc(var(--fs-h3)*1.25);font-weight:500;line-height:1.3}
+.team{grid-column:1/13;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gut)}
+.team>div{border-top:1px solid var(--line);padding-top:var(--sp1)}
+.team b{display:block;font-weight:550}
+.team span{font-size:var(--fs-small);color:var(--ink-3)}
+
+/* ---------- 12 heart + close ---------- */
+.s-heart .left{grid-column:1/5;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3);position:relative;z-index:2}
+.reel{display:flex;flex-direction:column;gap:var(--sp2)}
+.reel .step{display:flex;align-items:baseline;gap:.7em;font-size:calc(var(--fs-h3)*1.15)}
+.reel .step .k{font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
+.reel .step b{font-weight:500;transition:opacity .25s ease}
+.reel .dots{display:flex;gap:6px}
+.reel .dots li{flex:1;height:3px;border-radius:3px;background:var(--line-2);overflow:hidden}
+.reel .dots li i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:0 50%;transform:scaleX(0)}
+.pointing{font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3);display:flex;gap:.5em;align-items:center;min-height:2.2em;opacity:0;transform:translateY(4px);transition:opacity .3s var(--ease-out),transform .3s var(--ease-out)}
+.pointing.on{opacity:1;transform:none}
+.pointing b{color:var(--teal);font-weight:500}
+.heartview{position:absolute;top:0;bottom:calc(var(--u)*11.5);right:0;left:30%;z-index:1}
+.heartview canvas{position:absolute;inset:0;width:100%;height:100%}
+.heartview .fail{position:absolute;inset:0;display:none;place-items:center}
+.heartview.nogl .fail{display:grid}
+.heartview .fail img{width:100%;height:100%;object-fit:contain}
+.closer{position:absolute;z-index:3;left:var(--mx);right:var(--mx);bottom:calc(var(--u)*5.2);display:flex;align-items:center;gap:var(--sp3);padding-top:var(--sp2);border-top:1px solid var(--line)}
+.closer .big{font-size:calc(var(--fs-h2)*.82);font-weight:500;letter-spacing:-.035em;line-height:1;white-space:nowrap}
+.closer .big em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--teal)}
+.closer .credits{flex:1;font-size:max(11px,calc(var(--fs-small)*.86));color:var(--ink-3);max-width:62ch;line-height:1.4}
+
+/* rehearsal results */
+.results{position:absolute;inset:0;z-index:50;background:var(--bg);padding:calc(var(--u)*6) var(--mx);display:none;flex-direction:column;gap:var(--sp3);overflow:auto}
+.results.show{display:flex}
+.results table{border-collapse:collapse;width:100%;font-size:var(--fs-small)}
+.results th,.results td{text-align:left;padding:.45em .6em;border-bottom:1px solid var(--line)}
+.results td.n,.results th.n{text-align:right;font-family:var(--mono)}
+.results .over{color:var(--cut)}.results .ok{color:var(--ok)}
+.results tfoot td{font-weight:600;border-top:1px solid var(--line-2)}
+
+/* presenter window */
+.presenter{display:none}
+body.is-presenter .deck{display:none}
+body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:32px;padding:28px 32px;font-size:18px}
+.presenter .now{display:flex;flex-direction:column;gap:18px}
+.presenter .tag{font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+.presenter h1{font-size:44px;font-weight:500;letter-spacing:-.03em;line-height:1}
+.presenter .who{font-family:var(--mono);color:var(--teal)}
+.presenter .notes{font-size:24px;line-height:1.5;max-width:58ch;white-space:pre-line;color:var(--ink-2)}
+.presenter .side{display:flex;flex-direction:column;gap:22px;border-left:1px solid var(--line);padding-left:28px}
+.presenter .tm{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.presenter .tm b{display:block;font-size:52px;font-weight:500;font-family:var(--mono);line-height:1.1}
+.presenter .pace{height:10px;border-radius:10px;background:var(--surface-2);position:relative;overflow:hidden}
+.presenter .pace i{position:absolute;inset:0 auto 0 0;background:var(--ok);transition:width .3s linear,background-color .3s ease}
+.presenter .pace.amber i{background:var(--amber)}.presenter .pace.red i{background:var(--cut)}
+.presenter .ctrls{display:flex;gap:10px;flex-wrap:wrap}
+.presenter .next{font-size:16px;color:var(--ink-3)}
+.presenter .next b{display:block;font-size:22px;color:var(--ink);font-weight:500}
+
+/* ---------- small screens: one scrolling document ---------- */
+@media (max-width:860px){
+  :root{--u:8px;--mx:16px;--gut:14px;--fs-hero:clamp(36px,10vw,52px);--fs-h2:clamp(30px,8.4vw,42px);--fs-h3:18px;--fs-body:16px;--fs-small:13.5px;--fs-big:clamp(40px,12vw,56px);--sp1:6px;--sp2:12px;--sp3:20px;--sp4:28px;--r:14px}
+  .deck{position:static;overflow:visible}
+  .stage{width:auto;height:auto;overflow:visible}
+  .slide{position:relative;inset:auto;visibility:visible;min-height:100svh;padding:96px 16px 56px}
+  .g{display:flex;flex-direction:column;gap:24px;height:auto}
+  .rail{position:fixed;left:0;right:0;top:0;height:56px;padding:0 16px;background:rgba(6,9,13,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .crit,.foot,.prog{display:none}
+  .s-film{padding:0;min-height:100svh}
+  .s-film .copy{width:auto;right:16px;bottom:72px}
+  .filmbar{left:16px;right:16px}
+  .stackwrap{min-height:300px}
+  .stack{width:240px;height:176px}
+  .stack-note{position:static;text-align:left;margin-top:12px}
+  .tiles{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr}
+  .flow .viz{height:200px;flex:none}
+  .s-how .head,.s-exe .head{flex-direction:column;align-items:flex-start}
+  .rows{grid-template-columns:1fr}
+  .rows .panel{min-height:0}
+  .organ{position:relative;left:auto;height:78vw;margin:0 -16px}
+  .readout{position:static}
+  .figs{grid-template-columns:1fr 1fr;gap:20px}
+  .subs{grid-template-columns:1fr}
+  .globe{position:relative;width:auto;height:80vw;margin:0 -16px}
+  .three li{grid-template-columns:1fr}
+  .mock{grid-template-columns:1fr;aspect-ratio:auto}
+  .mock .view{height:62vw;border-right:0;border-bottom:1px solid var(--line)}
+  .sets{grid-template-columns:1fr 1fr}
+  .set .thumb{flex:none;height:120px}
+  .s-road .head{flex-direction:column;align-items:flex-start}
+  .sysmap{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+  .sysmap .wires{display:none}
+  .elabel{display:none}
+  .n-img{order:1}.elabel{order:2}.n-hand{order:3}.n-pipe{order:4}.n-ai{order:5}.n-web{order:6}.n-use{order:7}.sproof{order:8;margin-top:12px}
+  .conv{grid-template-columns:1fr}
+  .conv .panel{min-height:0}
+  .team{grid-template-columns:1fr 1fr}
+  .heartview{position:relative;left:auto;height:90vw;margin:0 -16px}
+  .closer{position:static;flex-direction:column;align-items:flex-start;margin-top:24px}
+  .closer .big{white-space:normal}
+  .results{position:fixed}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#s-film">Skip to the presentation</a>
+<div class="deck" id="deck">
+<div class="stage" id="stage">
+
+  <header class="rail" id="rail">
+    <a class="mark" href="#s-film" aria-label="NOVA, first slide"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x=".5" y=".5" width="31" height="31" rx="8" fill="none" stroke="rgba(234,242,243,.3)"/><path d="M10 22V10l12 12V10" stroke="#78e0d6" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>NOVA</a>
+    <nav class="crit" id="crit" aria-label="Judging criteria">
+      <button type="button" data-goto="s-eff" data-c="eff"><span data-t="Effectiveness">Effectiveness</span></button>
+      <button type="button" data-goto="s-inn" data-c="inn"><span data-t="Innovation">Innovation</span></button>
+      <button type="button" data-goto="s-sca" data-c="sca"><span data-t="Scalability">Scalability</span></button>
+      <button type="button" data-goto="s-emp" data-c="emp"><span data-t="Empowerment">Empowerment</span></button>
+      <button type="button" data-goto="s-exe" data-c="exe"><span data-t="Execution">Execution</span></button>
+      <button type="button" data-goto="s-int" data-c="int"><span data-t="Interdisciplinary">Interdisciplinary</span></button>
+    </nav>
+    <span class="clock num" id="clock">0:00</span>
+  </header>
+
+  <main id="main">
+
+  <!-- 01 film -->
+  <section class="slide s-film" id="s-film" data-title="NOVA and the film" data-budget="85" data-rubric="Grainger Computing Innovation Prize · Team JAS · The film is AI-generated concept footage, not the product" aria-label="Slide 1: NOVA and the concept film" tabindex="-1">
+    <video id="film" muted loop playsinline autoplay preload="auto" aria-label="NOVA concept film"><source src="film.mp4" type="video/mp4"></video>
+    <div class="scrim"></div>
+    <div class="copy">
+      <h1 data-in>The scan, back in the <em>surgeon's hands.</em></h1>
+      <p class="lede" data-in>NOVA turns a patient's CT or MRI into a 3D model a surgeon can turn, zoom and cut open with bare hands. Nothing to touch, so nothing to contaminate.</p>
+      <div class="act" data-in>
+        <button class="btn" type="button" id="playFilm">Play the film <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z"/></svg></button>
+        <span class="small">57 seconds · concept footage, AI-generated</span>
+      </div>
+      <div class="meta" data-in><span>Team <b>JAS</b></span><span>Runs on <b>laptop · webcam · monitor</b></span></div>
+    </div>
+    <div class="filmbar" aria-label="Film controls">
+      <button type="button" id="filmPause">Pause</button>
+      <span class="t num" id="filmTime">0:00 / 0:57</span>
+      <div class="track" aria-hidden="true"><i id="filmTrack"></i></div>
+      <button type="button" id="filmAuto" aria-pressed="true">Next slide at the end: on</button>
+      <button type="button" id="filmStop">Back to title</button>
+    </div>
+  </section>
+
+  <!-- 02 problem -->
+  <section class="slide s-problem" id="s-problem" data-title="The problem" data-budget="40" data-rubric="The problem: once a surgeon scrubs in, the scan is out of reach" aria-label="Slide 2: The problem" tabindex="-1">
+    <div class="g">
+      <div class="left">
+        <h2 data-in>Once a surgeon scrubs in, the scan <em>stays out of reach.</em></h2>
+        <ul class="pts3">
+          <li data-in><i>1</i><div><h3>The screen sits outside the sterile field</h3><p>Checking it means stepping away, or asking someone else to drive.</p></div></li>
+          <li data-in><i>2</i><div><h3>Flat slices, solid anatomy</h3><p>The surgeon rebuilds 3D in their head when attention is scarcest.</p></div></li>
+          <li data-in><i>3</i><div><h3>Load turns into risk</h3><p>Slower decisions in exactly the steps that matter most.</p></div></li>
+        </ul>
+      </div>
+      <div class="stackwrap" data-in>
+        <div class="stack" id="stack" aria-hidden="true"></div>
+        <p class="stack-note"><b>Hundreds of flat slices</b>rebuilt in the surgeon's head</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 map -->
+  <section class="slide s-map" id="s-map" data-title="Six criteria" data-budget="10" data-rubric="Quality: the pitch follows the judging rubric in order" aria-label="Slide 3: Six criteria" tabindex="-1">
+    <div class="g">
+      <div class="head">
+        <h2 data-in>Six criteria, <em>in order.</em></h2>
+        <p class="lede" data-in>The criterion each slide answers is lit at the top of the screen. Select one to jump to it.</p>
+      </div>
+      <div class="tiles">
+        <button class="tile" type="button" data-goto="s-eff" data-in><span class="n">Slide 5</span><b>Effectiveness</b><span>Does it solve the problem?</span></button>
+        <button class="tile" type="button" data-goto="s-inn" data-in><span class="n">Slide 6</span><b>Innovation</b><span>The palm plane becomes the cut</span></button>
+        <button class="tile" type="button" data-goto="s-sca" data-in><span class="n">Slide 7</span><b>Scalability</b><span>Reach, adoption, barriers</span></button>
+        <button class="tile" type="button" data-goto="s-emp" data-in><span class="n">Slide 8</span><b>Empowerment</b><span>Access, usefulness, control</span></button>
+        <button class="tile" type="button" data-goto="s-exe" data-in><span class="n">Slides 9–10</span><b>Execution</b><span>Our datasets and the system map</span></button>
+        <button class="tile" type="button" data-goto="s-int" data-in><span class="n">Slide 11</span><b>Interdisciplinary</b><span>How the fields changed the design</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 how -->
+  <section class="slide s-how" id="s-how" data-title="How it works" data-budget="45" data-rubric="The system: four computing stages behind one webcam" aria-label="Slide 4: How it works" tabindex="-1">
+    <div class="g">
+      <div class="head">
+        <h2 data-in>Four stages behind <em>one webcam.</em></h2>
+        <p class="lede" data-in>From a labelled scan to a model the surgeon handles in real time.</p>
+      </div>
+      <div class="flow">
+        <div class="panel" data-in><div class="viz"><canvas id="vRecon" aria-hidden="true"></canvas></div><div class="txt"><span class="k">Reconstruct</span><h3>Scan to model</h3><p>Labelled CT or MRI becomes meshes in real millimetres, from each scan's voxel spacing.</p></div></div>
+        <div class="panel" data-in><div class="viz"><canvas id="vHand" aria-hidden="true"></canvas></div><div class="txt"><span class="k">See</span><h3>Hands, tracked</h3><p>Computer vision finds both hands and their pose in the live webcam feed.</p></div></div>
+        <div class="panel" data-in><div class="viz"><canvas id="vResp" aria-hidden="true"></canvas><span class="gesture" id="gest">pinch → <b>turn</b></span></div><div class="txt"><span class="k">Respond</span><h3>Gesture to action</h3><p>Pinch to turn, spread to zoom, a flat palm to slice. Low latency.</p></div></div>
+        <div class="panel ai" data-in><div class="viz"><canvas id="vAdv" aria-hidden="true"></canvas></div><div class="txt"><span class="k">Advise</span><h3>A second pair of eyes</h3><p>A vision language model flags regions worth a second look.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 effectiveness -->
+  <section class="slide s-eff" id="s-eff" data-title="Effectiveness" data-c="eff" data-budget="50" data-rubric="Effectiveness: does it solve the problem?" aria-label="Slide 5: Effectiveness" tabindex="-1">
+    <div class="g">
+      <div class="head"><h2 data-in>Does it solve the problem? <em>Each piece, honestly.</em></h2></div>
+      <div class="rows">
+        <div class="panel" data-in><p class="q">Scans out of reach after scrubbing in</p><p class="a">Turn, zoom, pull apart and cut the model with hands that touch nothing</p><span class="st st-work">Working</span><small>reference heart, webcam, Chrome</small></div>
+        <div class="panel" data-in><p class="q">2D slices are hard to read under pressure</p><p class="a">The patient's own anatomy as a true-scale model, cut along any plane</p><span class="st st-prog">In progress</span><small>scan pipeline, liver CT first</small></div>
+        <div class="panel" data-in><p class="q">High load slows decisions</p><p class="a">The plan stays in view, and a vision language model points at what to check</p><span class="st st-prop">Proposed</span><small>not built yet</small></div>
+        <div class="panel" data-in><p class="q">Residents learn from flat diagrams</p><p class="a">The same tool on real scans and sourced cases, with grading</p><span class="st st-work">Working</span><small>one graded cardiac case</small></div>
+      </div>
+      <div class="measures" data-in><b>How we'll measure it</b><span>Time to re-orient</span><span>Steps away from the table</span><span>NASA-TLX workload</span><span>SUS usability</span><span>Gesture accuracy · latency · mesh error (mm)</span><span>Resident scores before and after</span></div>
+    </div>
+  </section>
+
+  <!-- 06 innovation -->
+  <section class="slide s-inn" id="s-inn" data-title="Innovation" data-c="inn" data-budget="55" data-rubric="Innovation: conceptual and technical novelty and creativity" aria-label="Slide 6: Innovation" tabindex="-1">
+    <div class="organ" id="organ">
+      <canvas id="glOrgan" aria-label="An organ model being cut by a moving plane. Drag sideways to move the plane."></canvas>
+      <svg class="hand" id="palm" viewBox="-1 -0.6 2 2" aria-hidden="true"></svg>
+    </div>
+    <div class="g">
+      <div class="left">
+        <h2 data-in>Your palm <em>is the scalpel.</em></h2>
+        <ul class="list" id="innList">
+          <li class="on" data-in><h3>The hand's plane becomes the incision</h3><p>Sweep a flat palm to cut; spread two fingers to go deeper. Cut faces render solid.</p></li>
+          <li data-in><h3>Sterile by design</h3><p>The only hardware is a webcam on the monitor.</p></li>
+          <li data-in><h3>Measured in real millimetres</h3><p>Simplified meshes must pass displacement, volume and topology checks, so thin vessels stay.</p></li>
+          <li data-in><h3>An AI with a narrow set of controls</h3><p>It sees what the hand points at and can only send validated commands.</p></li>
+        </ul>
+      </div>
+    </div>
+    <div class="readout" aria-hidden="true"><span>gesture <b>flat palm</b></span><span>plane x <b id="planeX">+0.00</b></span><span>faces <b>solid</b></span></div>
+  </section>
+
+  <!-- 07 scale -->
+  <section class="slide s-sca" id="s-sca" data-title="Scalability" data-c="sca" data-budget="45" data-rubric="Implementation · Scalability: reach, ease of implementation, simplicity of adoption, minimal barriers to access" aria-label="Slide 7: Scalability" tabindex="-1">
+    <div class="globe"><canvas id="globe" aria-hidden="true"></canvas></div>
+    <div class="g">
+      <div class="left">
+        <h2 data-in>Built to reach people, <em>not just hospitals that can pay.</em></h2>
+        <div class="figs">
+          <div data-in><b class="num"><span data-count="313">313</span><small>M</small></b><p>surgical procedures a year worldwide</p></div>
+          <div data-in><b class="num"><span data-count="5">5</span><small>B</small></b><p>people without safe, affordable surgery</p></div>
+          <div data-in><b class="num"><span data-count="3">3</span></b><p>devices: laptop, webcam, monitor</p></div>
+        </div>
+        <ul class="subs">
+          <li data-in><h3>Easy to implement</h3><p>Runs in Chrome on equipment already in the building.</p></li>
+          <li data-in><h3>Simple to adopt</h3><p>Pinch, pull, spread, slice. Minutes to learn.</p></li>
+          <li data-in><h3>Fewer barriers</h3><p>Open source, on MediaPipe, three.js and open CT data.</p></li>
+          <li data-in><h3>People reached</h3><p>Surgeons who plan from imaging, and the residents who train.</p></li>
+        </ul>
+        <p class="src" data-in>Figures: Lancet Commission on Global Surgery, 2015.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 empowerment -->
+  <section class="slide s-emp" id="s-emp" data-title="Empowerment" data-c="emp" data-budget="45" data-rubric="Implementation · Empowerment: all people, including underrepresented communities, above technology in access, usefulness and control" aria-label="Slide 8: Empowerment" tabindex="-1">
+    <div class="g">
+      <div class="left">
+        <h2 data-in>The AI flags. <em>The surgeon decides.</em></h2>
+        <ul class="three">
+          <li data-in><h3>Access</h3><p>Programs without sim labs and hospitals without navigation suites still get patient-specific 3D, on hardware they own.</p></li>
+          <li data-in><h3>Usefulness</h3><p>Every name and teaching line is cited and reviewed. Nothing clinical is invented at runtime.</p></li>
+          <li data-in><h3>Control</h3><p>The AI never diagnoses or acts. Cutting must be armed, and disarms after three idle minutes.</p></li>
+        </ul>
+      </div>
+      <div class="mock panel" data-in aria-label="Illustration of the NOVA screen: the AI flags a region, the surgeon chooses what to do">
+        <div class="view">
+          <div class="bar"><span class="on">Liver · CT</span><span>Coronal</span><span>mm</span></div>
+          <svg id="mockSvg" viewBox="0 0 400 260" aria-hidden="true">
+            <defs><radialGradient id="lv" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#b8615a"/><stop offset="1" stop-color="#6e2b28"/></radialGradient></defs>
+            <path d="M40 120 C40 60 120 30 210 34 C300 38 372 70 366 112 C360 150 300 160 250 186 C200 212 140 226 96 206 C56 188 40 160 40 120Z" fill="url(#lv)" opacity=".92"/>
+            <g fill="none" stroke-linecap="round">
+              <path d="M200 230 C196 190 200 150 214 110 C222 88 236 70 262 58" stroke="#5f8fe0" stroke-width="5"/>
+              <path d="M214 110 C180 100 140 98 104 112" stroke="#5f8fe0" stroke-width="3.5"/>
+              <path d="M220 96 C260 96 300 100 334 92" stroke="#5f8fe0" stroke-width="3"/>
+              <path d="M188 230 C186 196 190 160 204 128 C214 108 226 92 246 82" stroke="#e0564a" stroke-width="3.5"/>
+              <path d="M204 128 C170 128 132 136 110 150" stroke="#e0564a" stroke-width="2.5"/>
+            </g>
+            <circle id="flagRing" cx="292" cy="118" r="20" fill="none" stroke="#ffb84d" stroke-width="2.5" opacity="0"/>
+            <circle id="flagDot" cx="292" cy="118" r="7" fill="#ffb84d" opacity="0"/>
+          </svg>
+          <span class="illus">Illustration</span>
+        </div>
+        <div class="side">
+          <div class="flagcard" id="flagCard"><span class="k">AI flag</span><b>Worth a second look</b><p>Texture differs from the surrounding tissue in this region.</p></div>
+          <div class="choices"><span id="ch1">Mark as reviewed</span><span id="ch2">Dismiss flag</span><span id="ch3">Isolate region</span></div>
+          <span class="decides" id="decides">waiting for the surgeon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 the data -->
+  <section class="slide s-exe" id="s-exe" data-title="The data" data-c="exe" data-budget="45" data-rubric="Execution: the public datasets every 3D model is built from" aria-label="Slide 9: The datasets" tabindex="-1">
+    <div class="g">
+      <div class="head">
+        <h2 data-in>Real scans, <em>real millimetres.</em></h2>
+        <p class="lede" data-in>Three public CT datasets and one anatomical atlas. 45 labelled CT cases in all.</p>
+      </div>
+      <div class="sets">
+        <div class="panel set" data-in><canvas class="thumb" data-kind="ircad" aria-hidden="true"></canvas><div class="body"><div class="top"><span>DICOM · CT</span><b class="num">20<small>patients</small></b></div><h3>3D-IRCADb-01</h3><p>Liver, vessel and tumour masks, plus IRCAD's own reference meshes that we check our output against.</p><span class="lic">IRCAD · CC BY-NC-ND 4.0</span></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="liver" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">10<small>cases</small></b></div><h3>MSD Task03 · Liver</h3><p>Medical Segmentation Decathlon. Labels: liver and tumour. Our first real run, at 1 mm isotropic.</p><span class="lic">MSD · CC BY-SA 4.0</span></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="vessel" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">15<small>cases</small></b></div><h3>MSD Task08 · Vessels</h3><p>Labels: hepatic vessels and tumour. Thin branching tubes that smoothing must not erase.</p><span class="lic">MSD · CC BY-SA 4.0</span></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="heart" aria-hidden="true"></canvas><div class="body"><div class="top"><span>Mesh atlas</span><b class="num">16<small>parts</small></b></div><h3>BodyParts3D · Heart</h3><p>Chambers, great vessels, coronaries and valves, each named. The heart on our last slide.</p><span class="lic">DBCLS · CC BY 4.0</span></div></div>
+      </div>
+      <div class="measures" data-in><b>What makes it hard</b><span>Voxels aren't cubes: about 0.7 mm in-plane, 0.7–5 mm between slices</span><span>DICOM and NIfTI disagree on left and right</span><span>Slices sorted by position, never by filename</span><span>Scans stay on a shared drive, never in Git</span></div>
+    </div>
+  </section>
+
+  <!-- 10 system map -->
+  <section class="slide s-road" id="s-road" data-title="System map" data-c="exe" data-budget="40" data-rubric="Execution: the system map, from patient imaging to the surgeon" aria-label="Slide 10: System map" tabindex="-1">
+    <div class="g">
+      <div class="head">
+        <h2 data-in>From scan <em>to surgeon.</em></h2>
+        <p class="lede" data-in>Three streams, one webcam, one browser. They meet in a single surgical view.</p>
+      </div>
+      <div class="sysmap" id="sysmap">
+        <svg class="wires" id="wires" aria-hidden="true"></svg>
+        <div class="sn n-img" id="n-img" data-in><span class="k">Input</span><h3>Patient imaging</h3><p>CT and MRI scans, DICOM or NIfTI.</p></div>
+        <span class="elabel" data-in>geometry-checked<br>scans</span>
+        <div class="sn n-hand" id="n-hand" data-in><span class="k">Vision</span><h3>Webcam hand tracking</h3><p>Mid-air gestures, 21 points per hand.</p></div>
+        <div class="sn core n-pipe" id="n-pipe" data-in><span class="k">Graphics</span><h3>3D graphics pipeline</h3><p>Segmentation masks → 3D meshes in real mm, then model rendering.</p></div>
+        <div class="sn ai n-ai" id="n-ai" data-in><span class="k">AI · proposed</span><h3>AI detection engine</h3><p>Flags suspicious regions for clinician review.</p></div>
+        <div class="sn n-web" id="n-web" data-in><span class="k">Web app</span><h3>Surgical view</h3><p>Runs in Chrome. Validated commands only.</p></div>
+        <div class="sn end n-use" id="n-use" data-in><span class="k">Surgeon utility</span><h3>Pre-op planning</h3><p>and in-op review.</p></div>
+        <div class="sproof" data-in>
+          <span class="t">Checked along the way</span>
+          <div><b class="num">0.6 mm</b><p>mean distance to IRCAD's own liver meshes</p></div>
+          <div><b class="num">534k → 172k</b><p>faces after optimising, 0 mm displacement</p></div>
+          <div><b class="num" data-count="72">72</b><p>pipeline tests passed</p></div>
+          <div><b class="num">54 · 77</b><p>gesture and contract checks passed</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 interdisciplinary -->
+  <section class="slide s-int" id="s-int" data-title="Interdisciplinary" data-c="int" data-budget="45" data-rubric="Interdisciplinary convergence: how the team's fields transformed the design" aria-label="Slide 11: Interdisciplinary convergence" tabindex="-1">
+    <div class="g">
+      <div class="head"><h2 data-in>No single field <em>could have designed this.</em></h2></div>
+      <div class="conv">
+        <div class="panel" data-in><span class="pair">Medicine × AI</span><div class="bef"><span class="lbl">Before</span><span class="was">an assistant that improvises answers</span></div><div class="aft"><span class="lbl">After</span><p class="now">An AI that only points, with every claim cited and reviewed.</p></div></div>
+        <div class="panel" data-in><span class="pair">Imaging × Graphics</span><div class="bef"><span class="lbl">Before</span><span class="was">smooth the mesh until it looks good</span></div><div class="aft"><span class="lbl">After</span><p class="now">Millimetres first. Accuracy gates come before speed.</p></div></div>
+        <div class="panel" data-in><span class="pair">Human factors × Vision</span><div class="bef"><span class="lbl">Before</span><span class="was">just make tracking better</span></div><div class="aft"><span class="lbl">After</span><p class="now">Gestures that fail safe: arming, auto-disarm, blocked accidents.</p></div></div>
+      </div>
+      <div class="team" id="team" hidden data-in></div>
+    </div>
+  </section>
+
+  <!-- 12 heart + close -->
+  <section class="slide s-heart" id="s-heart" data-title="The heart, and thanks" data-budget="45" data-rubric="Live: the prototype's own 16-part heart · BodyParts3D, CC BY 4.0" aria-label="Slide 12: Live heart and close" tabindex="-1">
+    <div class="heartview" id="heartview">
+      <canvas id="gl" aria-label="The 16-part heart turning, pulling apart, cut on three planes and naming its parts"></canvas>
+      <div class="fail"><img src="img/heart.png" alt="The prototype's 16-part heart, cut on the coronal plane" width="560" height="560"></div>
+    </div>
+    <div class="g">
+      <div class="left">
+        <h2 data-in>The prototype's <em>heart.</em></h2>
+        <p class="dim" data-in>The same 16-part model. Live demo next.</p>
+        <div class="reel" data-in>
+          <p class="step"><span class="k" id="reelN">01</span><b id="reelStep">Turn</b></p>
+          <ol class="dots" id="reelDots" aria-hidden="true"><li><i></i></li><li><i></i></li><li><i></i></li><li><i></i></li><li><i></i></li><li><i></i></li></ol>
+          <p class="pointing" id="point">naming <b>…</b></p>
+        </div>
+      </div>
+    </div>
+    <div class="closer" data-in>
+      <p class="big">Keep the plan <em>in reach.</em></p>
+      <p class="credits">Sources: Lancet Commission on Global Surgery (2015). Heart: BodyParts3D, © DBCLS, CC BY 4.0. Film: AI-generated concept footage. Thank you.</p>
+      <a class="btn" href="https://github.com/s-meher/jas-grainger" target="_blank" rel="noopener">View the code <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"/></svg></a>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="foot" id="foot">
+    <span class="rubric" id="rubric"></span>
+    <span class="count num" id="count">1 / 12</span>
+    <div class="nav">
+      <button type="button" id="prev" aria-label="Previous slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
+      <button type="button" id="next" aria-label="Next slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+    </div>
+  </footer>
+  <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="results" id="results" role="dialog" aria-label="Rehearsal timing"></div>
+</div>
+</div>
+
+<div class="presenter" id="presenter" aria-label="Presenter view">
+  <div class="now">
+    <span class="tag" id="pTag">Slide 1 of 12</span>
+    <h1 id="pTitle">NOVA</h1>
+    <span class="who" id="pWho"></span>
+    <p class="notes" id="pNotes"></p>
+  </div>
+  <div class="side">
+    <div class="tm">
+      <div><span class="tag">This slide</span><b id="pSlide">0:00</b><span class="tag" id="pBudget">of 0:25</span></div>
+      <div><span class="tag">Total</span><b id="pTotal">0:00</b><span class="tag" id="pPlan">plan · limit 10:00</span></div>
+    </div>
+    <div class="pace" id="pPace"><i></i></div>
+    <div class="ctrls">
+      <button class="btn ghost" type="button" id="pPrev">Previous</button>
+      <button class="btn" type="button" id="pNext">Next slide</button>
+      <button class="btn ghost" type="button" id="pReset">Restart clock</button>
+    </div>
+    <p class="next" id="pNext2"></p>
+    <p class="tag">Keys in the main window: ← → move · F full screen · T clock · R rehearsal timing · P this window</p>
+  </div>
+</div>
+
+<script>
+/* Team names for slide 11: one entry per person, {name:"", field:""}. The row stays hidden while this is empty. */
+var TEAM = [];
+
+/* Speaker notes, in slide order. Speakers A–D until names are added. */
+var NOTES = {
+ "s-film":["A","We're Team JAS, and this is NOVA. A surgeon studies the CT or MRI before an operation, then carries that plan in their head for hours. NOVA puts the scan back in their hands: a 3D model they turn, zoom and cut open with bare hands. Here's what that looks like in the room.\n(Press Play the film. Stay quiet for 57 seconds. The deck moves on by itself.)"],
+ "s-problem":["A","Once a surgeon scrubs in, the scan is out of reach. The screen is outside the sterile field, so checking it means stepping away or asking someone to drive.\nAnd the scan is hundreds of flat slices. The surgeon rebuilds solid anatomy in their head, when attention is scarcest. More load means slower decisions in the steps that matter."],
+ "s-map":["A","We've organised the next eight minutes around your six criteria. Each one lights up at the top as we reach it."],
+ "s-how":["A","NOVA is four stages behind one webcam.\nReconstruct: labelled scans become meshes in real millimetres.\nSee: computer vision tracks both hands from the webcam. No gloves with markers, no controller.\nRespond: pinch to turn, spread to zoom, a flat palm to slice.\nAdvise: a vision language model flags regions worth a second look."],
+ "s-eff":["B","Does it solve the problem? Here's each piece and where it honestly stands.\nTouchless turn, zoom and cut: working today on a reference heart.\nTrue-scale patient anatomy: in progress, liver CT first.\nAn AI that points at what to check: proposed.\nResidents: graded cases on real anatomy, one cardiac case working.\nWe'll measure re-orientation time, steps away from the table, NASA-TLX workload, usability, system accuracy, and learning."],
+ "s-inn":["B","Here's what we think is new: your palm is the scalpel.\nThe plane of a flat hand becomes the incision. Spread two fingers to go deeper, and the cut faces render solid, like tissue.\nIt's sterile by design: the only hardware is a webcam.\nIt's measured in real millimetres; simplified meshes must pass displacement, volume and topology checks.\nAnd the AI can see what the hand points at, but can only send validated commands."],
+ "s-sca":["C","How many people could this reach? 313 million procedures a year, and any planned from imaging is a candidate. Five billion people lack safe, affordable surgery, and expensive hardware never reaches them.\nNOVA needs three devices hospitals and schools already own. It runs in Chrome, takes minutes to learn, and it's open source on open tools and data."],
+ "s-emp":["C","People stay above the technology.\nAccess: programs without sim labs and hospitals without navigation suites still get patient-specific 3D.\nUsefulness: every name and teaching line is cited and reviewed.\nControl: watch the screen. The AI flags a region. The surgeon decides what happens. The AI never diagnoses or acts, and cutting must be armed."],
+ "s-exe":["D","Execution starts with data. We built on public sources. 3D-IRCADb: twenty patients in DICOM, with IRCAD's own reference meshes we test against. Two Medical Segmentation Decathlon sets: ten liver CTs and fifteen hepatic-vessel CTs in NIfTI. And the BodyParts3D heart, sixteen named parts.\nThe hard part is geometry: voxels aren't cubes, the two formats disagree on left and right, and slices must be sorted by position. Scans never go into Git."],
+ "s-road":["D","Here's the whole system. Patient CT or MRI comes in. Geometry-checked scans go to our 3D graphics pipeline: segmentation masks become meshes in real millimetres, then the model is rendered. The same scans can feed an AI detection engine that flags suspicious regions for a clinician to review.\nA webcam tracks the surgeon's hands in mid air. All three meet in one web app, the surgical view, for pre-op planning and in-op review. Our meshes sit 0.6 millimetres from IRCAD's own."],
+ "s-int":["D","No single field could have designed this. Each meeting of disciplines changed a decision.\nMedicine met AI: an AI that could improvise became one that only points.\nImaging met graphics: millimetres first, accuracy before speed.\nHuman factors met vision: gestures that fail safe.\n(Name each teammate and their field.)"],
+ "s-heart":["A","This is the prototype's own heart: sixteen named parts. It turns, pulls apart, and cuts on three planes with solid faces, and every structure has a name. In a moment we'll show it live, driven by bare hands.\nA surgeon who can't touch anything still gets the scan back in their hands. NOVA: keep the plan in reach. The code is open. Thank you, and we'd love your questions."]
+};
+</script>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var narrow=matchMedia('(max-width: 860px)');
+  var isPresenter=location.hash==='#presenter';
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var N=slides.length;
+  var budgets=slides.map(function(s){return +s.dataset.budget||30;});
+  var PLAN=budgets.reduce(function(a,b){return a+b;},0);
+  var ch=('BroadcastChannel' in window)?new BroadcastChannel('nova-deck'):null;
+  function fmt(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+  var $=function(id){return document.getElementById(id);};
+
+  /* ===== presenter window ===== */
+  if(isPresenter){
+    document.body.classList.add('is-presenter');document.title='NOVA presenter';
+    var st={i:0,talk0:null,slide0:Date.now()};
+    function draw(){
+      var s=slides[st.i],n=NOTES[s.id]||['',''];
+      $('pTag').textContent='Slide '+(st.i+1)+' of '+N+(s.dataset.c?' · '+s.dataset.rubric.split(':')[0]:'');
+      $('pTitle').textContent=s.dataset.title;$('pWho').textContent=n[0]?('Speaker '+n[0]):'';$('pNotes').textContent=n[1];
+      var nx=slides[st.i+1];$('pNext2').innerHTML=nx?('Next<b>'+nx.dataset.title+'</b>'):'Last slide';
+      $('pBudget').textContent='of '+fmt(budgets[st.i]);$('pPlan').textContent='plan '+fmt(PLAN)+' · limit 10:00';
+    }
+    function tick(){
+      var now=Date.now(),ss=(now-st.slide0)/1000,tt=st.talk0?(now-st.talk0)/1000:0;
+      var planned=budgets.slice(0,st.i).reduce(function(a,b){return a+b;},0);
+      $('pSlide').textContent=fmt(ss);$('pTotal').textContent=fmt(tt);
+      var pace=$('pPace');pace.firstElementChild.style.width=Math.min(100,ss/budgets[st.i]*100)+'%';
+      var behind=tt-(planned+Math.min(ss,budgets[st.i]));
+      pace.className='pace'+(ss>budgets[st.i]?' red':(behind>10?' amber':''));
+      $('pTotal').style.color=tt>600?'var(--cut)':'';
+    }
+    if(ch){ch.onmessage=function(e){var d=e.data;if(d&&d.type==='state'){st.i=d.i;st.talk0=d.talk0;st.slide0=d.slide0;draw();}};ch.postMessage({type:'hello'});}
+    $('pNext').onclick=function(){ch&&ch.postMessage({type:'go',d:1});};
+    $('pPrev').onclick=function(){ch&&ch.postMessage({type:'go',d:-1});};
+    $('pReset').onclick=function(){ch&&ch.postMessage({type:'reset'});};
+    addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();ch&&ch.postMessage({type:'go',d:1});}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();ch&&ch.postMessage({type:'go',d:-1});}});
+    draw();setInterval(tick,250);return;
+  }
+
+  /* ===== deck ===== */
+  var stage=$('stage'),countEl=$('count'),rubricEl=$('rubric'),bar=$('bar'),clock=$('clock'),toastEl=$('toast');
+  var critBtns=[].slice.call(document.querySelectorAll('#crit button'));
+  var cur=-1,anim=null,talk0=null,slide0=Date.now(),rehearse=false,times=new Array(N).fill(0),hooks={};
+  window.__deckHooks=hooks;
+
+  (function(){var t=$('team');if(TEAM.length){t.innerHTML=TEAM.map(function(p){return '<div><b>'+p.name+'</b><span>'+p.field+'</span></div>';}).join('');t.hidden=false;}})();
+
+  function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){toastEl.classList.remove('show');},1600);}
+  function idx(id){for(var i=0;i<N;i++)if(slides[i].id===id)return i;return -1;}
+  function broadcast(){ch&&ch.postMessage({type:'state',i:cur,talk0:talk0,slide0:slide0});}
+  function chrome(i){
+    var s=slides[i];countEl.textContent=(i+1)+' / '+N;rubricEl.textContent=s.dataset.rubric||'';
+    bar.style.transform='scaleX('+(i/(N-1))+')';
+    critBtns.forEach(function(b){b.setAttribute('aria-current',b.dataset.c===s.dataset.c?'true':'false');});
+  }
+  /* content arrives: a short rise out of a soft blur, staggered */
+  function enterContent(s,base){
+    if(reduce||!s.animate)return;
+    [].slice.call(s.querySelectorAll('[data-in]')).forEach(function(el,k){
+      el.animate([{opacity:0,transform:'translateY(14px)',filter:'blur(6px)'},{opacity:1,transform:'none',filter:'blur(0)'}],{duration:620,delay:(base||140)+k*55,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'});
+    });
+  }
+
+  function setActive(i,dir,instant){
+    if(i===cur)return;
+    var prev=slides[cur],next=slides[i],from=cur;
+    if(anim)anim.finish();
+    var now=Date.now();
+    if(from>=0)times[from]+=(now-slide0)/1000;
+    if(talk0===null&&from>=0)talk0=now-budgets[0]*1000;
+    slide0=now;cur=i;
+    slides.forEach(function(s,k){s.inert=(k!==i);s.setAttribute('aria-hidden',k!==i?'true':'false');});
+    chrome(i);
+    if(location.hash!=='#'+next.id)history.replaceState(null,'','#'+next.id);
+    if(prev&&hooks[prev.id]&&hooks[prev.id].leave)hooks[prev.id].leave();
+    var hadFocus=prev&&prev.contains(document.activeElement);
+    function enter(){if(hooks[next.id]&&hooks[next.id].enter)hooks[next.id].enter();}
+    if(instant||!prev||reduce||narrow.matches||!next.animate){
+      slides.forEach(function(s){s.classList.remove('is-on','is-out');});next.classList.add('is-on');enter();
+      if(prev&&!narrow.matches)enterContent(next);
+      if(hadFocus)next.focus({preventScroll:true});broadcast();return;
+    }
+    /* crossfade: the old slide recedes and softens, the new one settles in */
+    prev.classList.remove('is-on');prev.classList.add('is-out');next.classList.add('is-on');
+    var D=560,E='cubic-bezier(.23,1,.32,1)',d=dir>=0?1:-1;
+    var a1=prev.animate([{opacity:1,transform:'none',filter:'blur(0)'},{opacity:0,transform:'translateX('+(-d*1.5)+'%) scale(.985)',filter:'blur(8px)'}],{duration:D*.8,easing:E,fill:'forwards'});
+    var a2=next.animate([{opacity:0,transform:'translateX('+(d*2)+'%) scale(1.01)',filter:'blur(8px)'},{opacity:1,transform:'none',filter:'blur(0)'}],{duration:D,easing:E});
+    enterContent(next,120);
+    var done=false,timer;
+    function settle(){if(done)return;done=true;clearTimeout(timer);anim=null;a1.cancel();a2.cancel();
+      slides.forEach(function(s){if(s!==next)s.classList.remove('is-on','is-out');});next.classList.add('is-on');
+      if(hadFocus)next.focus({preventScroll:true});}
+    a2.onfinish=settle;timer=setTimeout(settle,D+80);anim={finish:settle};
+    enter();broadcast();
+  }
+  function goTo(i,instant){i=Math.max(0,Math.min(N-1,i));if(narrow.matches){slides[i].scrollIntoView({behavior:reduce?'auto':'smooth'});return;}setActive(i,i>=cur?1:-1,instant);}
+  function step(d){goTo(cur+d);}
+  window.__deck={go:goTo,step:step,get i(){return cur;}};
+
+  $('next').onclick=function(){step(1);};$('prev').onclick=function(){step(-1);};
+  [].forEach.call(document.querySelectorAll('[data-goto]'),function(b){b.addEventListener('click',function(){goTo(idx(b.dataset.goto));});});
+  document.querySelector('.mark').addEventListener('click',function(e){if(!narrow.matches){e.preventDefault();goTo(0);}});
+
+  addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey||narrow.matches)return;
+    var tag=e.target&&e.target.tagName,inField=(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'),k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||(k===' '&&!e.shiftKey&&tag!=='BUTTON')){if(inField&&k!=='PageDown')return;e.preventDefault();step(1);}
+    else if(k==='ArrowLeft'||k==='PageUp'||(k===' '&&e.shiftKey)){if(inField&&k!=='PageUp')return;e.preventDefault();step(-1);}
+    else if(inField)return;
+    else if(k==='Home'){e.preventDefault();goTo(0);}
+    else if(k==='End'){e.preventDefault();goTo(N-1);}
+    else if(k==='f'||k==='F'){if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(function(){});}else document.exitFullscreen();}
+    else if(k==='t'||k==='T'){clock.classList.toggle('show');}
+    else if(k==='p'||k==='P'){window.open(location.pathname+'#presenter','nova-presenter','width=1280,height=760');setTimeout(broadcast,600);}
+    else if(k==='r'||k==='R'){toggleRehearse();}
+    else if(k==='Escape'){$('results').classList.remove('show');}
+  });
+  var wheelLock=0,acc=0;
+  addEventListener('wheel',function(e){
+    if(narrow.matches)return;if(e.target.closest&&e.target.closest('canvas,.results'))return;
+    e.preventDefault();var now=Date.now();if(now<wheelLock)return;
+    acc+=e.deltaY+e.deltaX;if(Math.abs(acc)>60){step(acc>0?1:-1);acc=0;wheelLock=now+800;}
+  },{passive:false});
+  var tx=null,ty=null;
+  addEventListener('touchstart',function(e){if(narrow.matches||e.target.closest('canvas,input'))return;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  addEventListener('touchend',function(e){if(tx===null)return;var dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy))step(dx<0?1:-1);tx=null;},{passive:true});
+
+  if(ch){ch.onmessage=function(e){var d=e.data||{};if(d.type==='go')step(d.d);else if(d.type==='hello')broadcast();else if(d.type==='reset'){talk0=Date.now();slide0=Date.now();times.fill(0);broadcast();toast('Clock restarted');}};}
+  setInterval(function(){if(!clock.classList.contains('show')&&!rehearse)return;var t=talk0?(Date.now()-talk0)/1000:0;clock.textContent=fmt(t);clock.classList.toggle('late',t>PLAN);},500);
+
+  function toggleRehearse(){
+    var box=$('results');
+    if(!rehearse){rehearse=true;times.fill(0);talk0=Date.now();slide0=Date.now();clock.classList.add('show');box.classList.remove('show');toast('Rehearsal timing on. Press R again for results');broadcast();return;}
+    rehearse=false;times[cur]+=(Date.now()-slide0)/1000;slide0=Date.now();
+    var tot=0,rows=slides.map(function(s,i){tot+=times[i];var d=times[i]-budgets[i];
+      return '<tr><td>'+(i+1)+'</td><td>'+s.dataset.title+'</td><td class="n">'+fmt(budgets[i])+'</td><td class="n">'+fmt(times[i])+'</td><td class="n '+(d>5?'over':'ok')+'">'+(d>=0?'+':'−')+fmt(Math.abs(d))+'</td></tr>';}).join('');
+    box.innerHTML='<h2>Rehearsal <em>timing.</em></h2><p class="lede">Total '+fmt(tot)+' against a plan of '+fmt(PLAN)+' and a limit of 10:00. '+(tot>600?'Over the limit: trim the red rows.':'Inside the limit.')+'</p><table><thead><tr><th>#</th><th>Slide</th><th class="n">Plan</th><th class="n">Actual</th><th class="n">Difference</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td></td><td>Total</td><td class="n">'+fmt(PLAN)+'</td><td class="n">'+fmt(tot)+'</td><td class="n">'+(tot-PLAN>=0?'+':'−')+fmt(Math.abs(tot-PLAN))+'</td></tr></tfoot></table><p><button class="btn" type="button" id="closeRes">Close</button></p>';
+    box.classList.add('show');$('closeRes').onclick=function(){box.classList.remove('show');};
+    var log=JSON.parse(store('nova-rehearsals')||'[]');log.push({at:new Date().toISOString(),total:tot,times:times.slice()});store('nova-rehearsals',JSON.stringify(log.slice(-20)));
+  }
+
+  /* shared canvas helper: sizes to its box at device pixel ratio */
+  function fit(cv){var r=cv.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}return {w:w,h:h,dpr:dpr};}
+  function loop(fn){var on=false,raf=0,t0=0;function f(t){if(!on)return;fn((t-t0)/1000);raf=requestAnimationFrame(f);}return {start:function(){if(on)return;on=true;t0=performance.now();raf=requestAnimationFrame(f);},stop:function(){on=false;cancelAnimationFrame(raf);}};}
+
+  /* hand landmarks (MediaPipe's 21-point topology): open palm and pinch */
+  var BONES=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+  var OPEN=[[0,1],[-.28,.85],[-.48,.68],[-.62,.52],[-.74,.38],[-.2,.42],[-.24,.18],[-.26,.02],[-.28,-.12],[0,.38],[0,.1],[0,-.08],[0,-.24],[.18,.42],[.21,.18],[.23,.02],[.25,-.12],[.33,.52],[.4,.34],[.45,.22],[.5,.1]];
+  var PINCH=OPEN.map(function(p){return p.slice();});PINCH[3]=[-.52,.42];PINCH[4]=[-.42,.28];PINCH[6]=[-.3,.2];PINCH[7]=[-.38,.14];PINCH[8]=[-.42,.26];
+  PINCH[10]=[.02,.16];PINCH[11]=[-.02,.02];PINCH[12]=[-.04,-.08];
+  function pose(t){return OPEN.map(function(p,i){return [p[0]+(PINCH[i][0]-p[0])*t,p[1]+(PINCH[i][1]-p[1])*t];});}
+  function drawHand(c,pts,cx,cy,s,col){
+    c.lineWidth=Math.max(1.5,s*.018);c.strokeStyle=col||'rgba(120,224,214,.85)';c.lineCap='round';
+    c.beginPath();BONES.forEach(function(b){c.moveTo(cx+pts[b[0]][0]*s,cy+pts[b[0]][1]*s);c.lineTo(cx+pts[b[1]][0]*s,cy+pts[b[1]][1]*s);});c.stroke();
+    pts.forEach(function(p,i){c.beginPath();c.arc(cx+p[0]*s,cy+p[1]*s,(i%4===0?.03:.022)*s,0,7);c.fillStyle=i===4||i===8?'#ffffff':(col||'#78e0d6');c.fill();});
+  }
+
+  /* ----- 01 film ----- */
+  (function(){
+    var s=$('s-film'),v=$('film'),play=$('playFilm'),pause=$('filmPause'),stop=$('filmStop'),au=$('filmAuto'),tr=$('filmTrack'),tm=$('filmTime');
+    var auto=store('nova-auto')!=='off',playing=false;
+    function syncAuto(){au.setAttribute('aria-pressed',auto?'true':'false');au.textContent='Next slide at the end: '+(auto?'on':'off');}
+    syncAuto();au.onclick=function(){auto=!auto;store('nova-auto',auto?'on':'off');syncAuto();};
+    function ambient(){playing=false;s.classList.remove('playing');stage.classList.remove('filming');v.loop=true;v.muted=true;var p=v.play();if(p&&p.catch)p.catch(function(){});}
+    function start(){playing=true;s.classList.add('playing');stage.classList.add('filming');v.loop=false;v.muted=false;v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){v.muted=true;v.play();});pause.textContent='Pause';}
+    play.onclick=start;
+    pause.onclick=function(){if(v.paused){v.play();pause.textContent='Pause';}else{v.pause();pause.textContent='Play';}};
+    stop.onclick=function(){v.currentTime=0;ambient();};
+    v.addEventListener('timeupdate',function(){if(!playing)return;var d=v.duration||57;tr.style.transform='scaleX('+(v.currentTime/d)+')';tm.textContent=fmt(v.currentTime)+' / '+fmt(d);});
+    v.addEventListener('ended',function(){if(!playing)return;ambient();if(auto&&!narrow.matches&&slides[cur].id==='s-film')step(1);});
+    hooks['s-film']={enter:function(){ambient();},leave:function(){if(playing){playing=false;s.classList.remove('playing');stage.classList.remove('filming');}v.pause();}};
+    if(reduce){v.removeAttribute('autoplay');v.pause();}
+  })();
+
+  /* ----- 02 problem: a stack of synthetic CT slices ----- */
+  (function(){
+    var host=$('stack'),n=14,cvs=[];
+    function slice(c,w,h,z){
+      c.fillStyle='#05080b';c.fillRect(0,0,w,h);
+      var cx=w/2,cy=h/2;
+      c.save();c.beginPath();c.ellipse(cx,cy,w*.43,h*.4,0,0,7);c.fillStyle='#3b3f42';c.fill();
+      c.lineWidth=w*.018;c.strokeStyle='#8d9496';c.stroke();c.clip();
+      var g=c.createRadialGradient(cx,cy,0,cx,cy,w*.45);g.addColorStop(0,'#5a6063');g.addColorStop(1,'#2a2e30');c.fillStyle=g;c.fillRect(0,0,w,h);
+      var k=Math.sin(z*Math.PI);
+      c.fillStyle='#7c7570';c.beginPath();c.ellipse(cx-w*.12,cy-h*.02,w*(.16+.07*k),h*(.2+.06*k),.3,0,7);c.fill();
+      c.fillStyle='#4c4a48';c.beginPath();c.ellipse(cx+w*.14,cy+h*.02,w*.08,h*.11,0,0,7);c.fill();
+      c.fillStyle='#d9dcdc';c.beginPath();c.arc(cx,cy+h*.27,w*.045,0,7);c.fill();
+      c.fillStyle='#bfc4c4';c.beginPath();c.arc(cx+w*.04,cy+h*.12,w*.022,0,7);c.fill();
+      c.fillStyle='#6e6865';[[-.2,.18],[.2,.18]].forEach(function(o){c.beginPath();c.ellipse(cx+w*o[0],cy+h*o[1],w*.05*(.6+.4*k),h*.07*(.6+.4*k),0,0,7);c.fill();});
+      var id=c.getImageData(0,0,w,h),d=id.data;for(var i=0;i<d.length;i+=4){var r=(Math.random()-.5)*26;d[i]+=r;d[i+1]+=r;d[i+2]+=r;}c.putImageData(id,0,0);
+      c.restore();
+    }
+    for(var i=0;i<n;i++){var cv=document.createElement('canvas');cv.width=340;cv.height=250;slice(cv.getContext('2d'),340,250,i/(n-1));host.appendChild(cv);cvs.push(cv);}
+    function place(spread){cvs.forEach(function(cv,i){var z=(i-(n-1)/2)*spread;cv.style.transform='translateZ('+z+'px)';cv.style.opacity=i===Math.floor(n/2)?1:.8;});}
+    place(10);
+    var raf=0;
+    hooks['s-problem']={enter:function(){if(reduce){place(16);return;}var t0=performance.now();cancelAnimationFrame(raf);(function f(t){var k=Math.min(1,(t-t0)/1400),e=1-Math.pow(1-k,3);place(4+12*e);if(k<1)raf=requestAnimationFrame(f);})(t0);},leave:function(){cancelAnimationFrame(raf);}};
+  })();
+
+  /* ----- 04 how: four live panels ----- */
+  (function(){
+    var cR=$('vRecon'),cH=$('vHand'),cP=$('vResp'),cA=$('vAdv'),gest=$('gest');
+    var L=loop(function(t){
+      /* reconstruct: contour rings stack into a shape and turn */
+      var f=fit(cR),c=cR.getContext('2d');c.clearRect(0,0,f.w,f.h);
+      var rings=18,cx=f.w/2,cy=f.h/2,R=Math.min(f.w,f.h)*.34,rot=t*.5;
+      for(var i=0;i<rings;i++){var z=i/(rings-1)*2-1,rr=Math.sqrt(1-z*z)*(1+.18*Math.sin(z*3+1));
+        c.beginPath();for(var a=0;a<=64;a++){var th=a/64*Math.PI*2,x=rr*Math.cos(th)*(1.25+.2*Math.sin(th*2)),y=rr*Math.sin(th);
+          var X=x*Math.cos(rot)-z*Math.sin(rot),Z=x*Math.sin(rot)+z*Math.cos(rot);var px=cx+X*R,py=cy+(y*.42+z*.62)*R;if(a)c.lineTo(px,py);else c.moveTo(px,py);}
+        c.strokeStyle='rgba(120,224,214,'+(.25+.45*(i/rings))+')';c.lineWidth=f.dpr;c.stroke();}
+      /* see: the hand skeleton, pinching */
+      f=fit(cH);c=cH.getContext('2d');c.clearRect(0,0,f.w,f.h);
+      var p=(Math.sin(t*1.6)+1)/2;drawHand(c,pose(p),f.w*.52,f.h*.5,Math.min(f.w,f.h)*.55);
+      /* respond: gesture drives a cube */
+      f=fit(cP);c=cP.getContext('2d');c.clearRect(0,0,f.w,f.h);
+      var ph=Math.floor(t/2.4)%3,lt=(t%2.4)/2.4,s=Math.min(f.w,f.h)*.22,ang=ph===0?lt*Math.PI:0,sc=ph===1?1+.4*Math.sin(lt*Math.PI):1,cut=ph===2?lt:-1;
+      gest.innerHTML=['pinch → <b>turn</b>','spread → <b>zoom</b>','flat palm → <b>slice</b>'][ph];
+      var V=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      var a0=.6+ang,b0=.5;var P=V.map(function(v){var x=v[0]*Math.cos(a0)-v[2]*Math.sin(a0),z=v[0]*Math.sin(a0)+v[2]*Math.cos(a0),y=v[1]*Math.cos(b0)-z*Math.sin(b0);return [f.w/2+x*s*sc,f.h*.56+y*s*sc];});
+      c.strokeStyle='rgba(234,242,243,.75)';c.lineWidth=1.5*f.dpr;c.beginPath();E.forEach(function(e){c.moveTo(P[e[0]][0],P[e[0]][1]);c.lineTo(P[e[1]][0],P[e[1]][1]);});c.stroke();
+      if(cut>=0){var x=f.w/2+(cut*2-1)*s*1.6;c.fillStyle='rgba(120,224,214,.18)';c.strokeStyle='rgba(120,224,214,.9)';c.beginPath();c.moveTo(x-s*.5,f.h*.2);c.lineTo(x+s*.5,f.h*.28);c.lineTo(x+s*.5,f.h*.9);c.lineTo(x-s*.5,f.h*.82);c.closePath();c.fill();c.stroke();}
+      /* advise: an organ outline with a flagged region */
+      f=fit(cA);c=cA.getContext('2d');c.clearRect(0,0,f.w,f.h);
+      var w=f.w,h=f.h;c.beginPath();c.moveTo(w*.15,h*.5);c.bezierCurveTo(w*.15,h*.22,w*.45,h*.16,w*.66,h*.2);c.bezierCurveTo(w*.9,h*.24,w*.92,h*.48,w*.75,h*.6);c.bezierCurveTo(w*.6,h*.72,w*.35,h*.84,w*.24,h*.74);c.bezierCurveTo(w*.17,h*.68,w*.15,h*.6,w*.15,h*.5);
+      c.fillStyle='rgba(184,97,90,.35)';c.fill();c.strokeStyle='rgba(234,242,243,.5)';c.lineWidth=1.2*f.dpr;c.stroke();
+      var pr=(t%2)/2;c.beginPath();c.arc(w*.68,h*.42,(10+18*pr)*f.dpr,0,7);c.strokeStyle='rgba(255,184,77,'+(1-pr)+')';c.lineWidth=2*f.dpr;c.stroke();
+      c.beginPath();c.arc(w*.68,h*.42,5*f.dpr,0,7);c.fillStyle='#ffb84d';c.fill();
+    });
+    hooks['s-how']={enter:function(){if(reduce){L.start();setTimeout(L.stop,60);return;}L.start();},leave:L.stop};
+  })();
+
+  /* ----- 07 scale: a dotted globe with sites lighting up ----- */
+  (function(){
+    var cv=$('globe'),pts=[],n=1400,sites=[];
+    for(var i=0;i<n;i++){var y=1-i/(n-1)*2,r=Math.sqrt(1-y*y),th=i*2.399963;pts.push([Math.cos(th)*r,y,Math.sin(th)*r]);}
+    for(var j=0;j<46;j++)sites.push({p:pts[Math.floor(Math.random()*n)],o:Math.random()*4});
+    var L=loop(function(t){
+      var f=fit(cv),c=cv.getContext('2d');c.clearRect(0,0,f.w,f.h);
+      var R=Math.min(f.w,f.h)*.4,cx=f.w*.62,cy=f.h*.5,a=t*.12+1,tilt=.35;
+      function proj(p){var x=p[0]*Math.cos(a)-p[2]*Math.sin(a),z=p[0]*Math.sin(a)+p[2]*Math.cos(a),y=p[1]*Math.cos(tilt)-z*Math.sin(tilt);z=p[1]*Math.sin(tilt)+z*Math.cos(tilt);return [cx+x*R,cy+y*R,z];}
+      var g=c.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.25);g.addColorStop(0,'rgba(63,184,174,.10)');g.addColorStop(1,'rgba(63,184,174,0)');c.fillStyle=g;c.fillRect(0,0,f.w,f.h);
+      pts.forEach(function(p){var q=proj(p);if(q[2]<-.05)return;c.fillStyle='rgba(190,225,230,'+(.2+.55*q[2])+')';c.fillRect(q[0],q[1],1.6*f.dpr,1.6*f.dpr);});
+      sites.forEach(function(s){var q=proj(s.p);if(q[2]<0)return;var k=((t+s.o)%4)/4;c.beginPath();c.arc(q[0],q[1],(2+12*k)*f.dpr,0,7);c.strokeStyle='rgba(120,224,214,'+(.7*(1-k)*q[2])+')';c.lineWidth=f.dpr;c.stroke();c.fillStyle='rgba(120,224,214,'+(.9*q[2])+')';c.beginPath();c.arc(q[0],q[1],2*f.dpr,0,7);c.fill();});
+    });
+    hooks['s-sca']={enter:function(){
+      if(reduce){L.start();setTimeout(L.stop,60);}else L.start();
+      if(reduce)return;[].forEach.call(document.querySelectorAll('#s-sca [data-count]'),function(el,k){var end=+el.dataset.count,t0=performance.now()+150*k;(function f(t){var q=Math.max(0,Math.min(1,(t-t0)/1000));el.textContent=Math.round(end*(1-Math.pow(1-q,3)));if(q<1)requestAnimationFrame(f);})(performance.now());});
+    },leave:L.stop};
+  })();
+
+  /* ----- 08 empowerment: the flag, then the surgeon's choice ----- */
+  (function(){
+    var ring=$('flagRing'),dot=$('flagDot'),card=$('flagCard'),c1=$('ch1'),dec=$('decides'),T=[];
+    function reset(){T.forEach(clearTimeout);T=[];ring.setAttribute('opacity',0);dot.setAttribute('opacity',0);card.classList.remove('show');c1.classList.remove('pick');dec.textContent='waiting for the surgeon';}
+    function run(){reset();
+      if(reduce){ring.setAttribute('opacity',1);dot.setAttribute('opacity',1);card.classList.add('show');c1.classList.add('pick');dec.textContent='surgeon chose: mark as reviewed';return;}
+      T.push(setTimeout(function(){dot.setAttribute('opacity',1);ring.setAttribute('opacity',1);ring.animate([{r:6,opacity:1},{r:26,opacity:.2}],{duration:1600,iterations:Infinity,easing:'ease-out'});},700));
+      T.push(setTimeout(function(){card.classList.add('show');},1300));
+      T.push(setTimeout(function(){c1.classList.add('pick');dec.textContent='surgeon chose: mark as reviewed';},3200));
+    }
+    hooks['s-emp']={enter:run,leave:reset};
+  })();
+
+  /* ----- 09 the data: labelled-slice thumbnails ----- */
+  (function(){
+    var cvs=[].slice.call(document.querySelectorAll('#s-exe .thumb'));
+    function blob(c,cx,cy,rx,ry,wob,seed){c.beginPath();for(var a=0;a<=64;a++){var t=a/64*Math.PI*2,r=1+wob*Math.sin(t*3+seed)+wob*.6*Math.sin(t*5+seed*2);c.lineTo(cx+Math.cos(t)*rx*r,cy+Math.sin(t)*ry*r);}c.closePath();}
+    function draw(cv){var d=fit(cv),w=d.w,h=d.h,c=cv.getContext('2d'),k=cv.dataset.kind,seed=k.length*7+3;
+      function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+      c.clearRect(0,0,w,h);var cx=w/2,cy=h/2,R=Math.min(w*.36,h*.42);
+      if(k==='heart'){for(var i=0;i<9;i++){var s=.35+i*.075;blob(c,cx,cy+R*.06,R*s*1.05,R*s*.92,.07,1.3);c.strokeStyle='rgba(120,224,214,'+(.18+i*.07)+')';c.lineWidth=1.2*d.dpr;c.stroke();}
+        c.fillStyle='rgba(255,107,94,.8)';blob(c,cx-R*.14,cy+R*.1,R*.2,R*.24,.05,2);c.fill();c.fillStyle='rgba(77,127,214,.8)';blob(c,cx+R*.2,cy-R*.08,R*.16,R*.18,.05,4);c.fill();return;}
+      var g=c.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.1);g.addColorStop(0,'#4a5156');g.addColorStop(1,'#22282c');c.fillStyle=g;blob(c,cx,cy,R*1.25,R*.8,.02,0);c.fill();
+      for(var n=0;n<w*h/90;n++){c.fillStyle='rgba(255,255,255,'+(rnd()*.05)+')';c.fillRect(rnd()*w,rnd()*h,d.dpr,d.dpr);}
+      c.fillStyle='#d8dcde';c.beginPath();c.arc(cx,cy+R*.52,R*.12,0,7);c.fill();
+      blob(c,cx-R*.42,cy-R*.05,R*.55,R*.46,.08,1);c.fillStyle='#62696d';c.fill();
+      if(k!=='vessel'){blob(c,cx-R*.42,cy-R*.05,R*.55,R*.46,.08,1);c.fillStyle='rgba(120,224,214,.42)';c.fill();c.strokeStyle='rgba(120,224,214,.9)';c.lineWidth=1.2*d.dpr;c.stroke();}
+      if(k!=='liver'){c.strokeStyle='rgba(255,184,77,.95)';c.lineWidth=1.6*d.dpr;c.lineCap='round';[[-.1,.1,-.55,-.3],[-.25,0,-.75,.15],[-.3,-.15,-.5,-.38],[-.1,.1,-.2,.3]].forEach(function(l){c.beginPath();c.moveTo(cx+R*l[0],cy+R*l[1]);c.quadraticCurveTo(cx+R*(l[0]+l[2])/2,cy+R*(l[1]+l[3])/2-R*.06,cx+R*l[2],cy+R*l[3]);c.stroke();});}
+      c.fillStyle='rgba(255,107,94,.85)';blob(c,cx-R*.55,cy+R*.05,R*.13,R*.11,.1,3);c.fill();
+    }
+    function all(){cvs.forEach(draw);}
+    addEventListener('resize',function(){if(slides[cur]&&slides[cur].id==='s-exe')all();});
+    hooks['s-exe']={enter:function(){requestAnimationFrame(all);}};
+  })();
+
+  /* ----- 10 system map: wires drawn between the real node boxes ----- */
+  (function(){
+    var map=$('sysmap'),svg=$('wires'),NS='http://www.w3.org/2000/svg',edges=[];
+    function bx(id){var e=$(id),l=e.offsetLeft,t=e.offsetTop;return {l:l,t:t,r:l+e.offsetWidth,b:t+e.offsetHeight,y:t+e.offsetHeight/2};}
+    function clean(pts){var o=[];pts.forEach(function(q){var L=o[o.length-1];if(L&&Math.abs(L[0]-q[0])<.5&&Math.abs(L[1]-q[1])<.5)return;o.push(q);});
+      for(var i=o.length-2;i>0;i--){var a=o[i-1],b=o[i],c=o[i+1];if((Math.abs(a[0]-b[0])<.5&&Math.abs(b[0]-c[0])<.5)||(Math.abs(a[1]-b[1])<.5&&Math.abs(b[1]-c[1])<.5))o.splice(i,1);}return o;}
+    function path(pts,r){var d='M'+pts[0][0]+' '+pts[0][1];
+      for(var i=1;i<pts.length-1;i++){var a=pts[i-1],b=pts[i],c=pts[i+1],l1=Math.hypot(b[0]-a[0],b[1]-a[1]),l2=Math.hypot(c[0]-b[0],c[1]-b[1]),k=Math.min(r,l1/2,l2/2);
+        d+=' L'+(b[0]-(b[0]-a[0])/l1*k)+' '+(b[1]-(b[1]-a[1])/l1*k)+' Q'+b[0]+' '+b[1]+' '+(b[0]+(c[0]-b[0])/l2*k)+' '+(b[1]+(c[1]-b[1])/l2*k);}
+      var z=pts[pts.length-1];return d+' L'+z[0]+' '+z[1];}
+    function add(pts,c,delay){pts=clean(pts);var z=pts[pts.length-1];z[0]-=3;
+      var p=document.createElementNS(NS,'path');p.setAttribute('class','w-'+c);p.setAttribute('d',path(pts,10));svg.appendChild(p);
+      var a=document.createElementNS(NS,'path');a.setAttribute('class','w-'+c);a.setAttribute('d','M'+(z[0]-7)+' '+(z[1]-4.5)+' L'+z[0]+' '+z[1]+' L'+(z[0]-7)+' '+(z[1]+4.5));svg.appendChild(a);
+      edges.push({p:p,a:a,d:delay});}
+    function build(){svg.innerHTML='';edges=[];if(narrow.matches)return;
+      svg.setAttribute('viewBox','0 0 '+map.clientWidth+' '+map.clientHeight);
+      var I=bx('n-img'),H=bx('n-hand'),P=bx('n-pipe'),A=bx('n-ai'),W=bx('n-web'),U=bx('n-use'),g=W.l-P.r,gi=P.l-I.r;
+      function wy(f){return W.t+(W.b-W.t)*f;}
+      var py=Math.max(I.t+14,Math.min(I.b-14,P.y));add([[I.r,py],[P.l,py]],'t',0);
+      var ay=I.t+(I.b-I.t)*.8,ex=I.r+gi*.2;add([[I.r,ay],[ex,ay],[ex,A.y],[A.l,A.y]],'a',.15);
+      var hy=Math.max(W.t+14,Math.min(wy(.5),H.y)),hx=H.r+g*.5;add([[H.r,H.y],[hx,H.y],[hx,hy],[W.l,hy]],'n',.55);
+      var px=P.r+g*.3;add([[P.r,P.y],[px,P.y],[px,wy(.68)],[W.l,wy(.68)]],'t',.65);
+      var qx=P.r+g*.7;add([[A.r,A.y],[qx,A.y],[qx,wy(.86)],[W.l,wy(.86)]],'a',.75);
+      var ux=W.r+(U.l-W.r)*.5;add([[W.r,W.y],[ux,W.y],[ux,U.y],[U.l,U.y]],'n',1.25);}
+    function draw(){build();if(reduce)return;edges.forEach(function(e){if(!e.p.animate)return;var L=e.p.getTotalLength(),t=450+e.d*1000;e.p.style.strokeDasharray=L;
+      e.p.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:650,delay:t,easing:'cubic-bezier(.65,0,.35,1)',fill:'backwards'});
+      e.a.animate([{opacity:0},{opacity:1}],{duration:180,delay:t+560,fill:'backwards'});});
+      [].forEach.call(document.querySelectorAll('#s-road [data-count]'),function(el){var end=+el.dataset.count,t0=performance.now()+300;(function f(t){var q=Math.max(0,Math.min(1,(t-t0)/1100));el.textContent=Math.round(end*(1-Math.pow(1-q,3)));if(q<1)requestAnimationFrame(f);})(performance.now());});}
+    addEventListener('resize',function(){if(slides[cur]&&slides[cur].id==='s-road')build();});
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(slides[cur]&&slides[cur].id==='s-road')build();});
+    hooks['s-road']={enter:function(){requestAnimationFrame(draw);}};
+  })();
+  /* ----- 11 interdisciplinary: the old idea gets struck through ----- */
+  hooks['s-int']={enter:function(){if(reduce)return;[].forEach.call(document.querySelectorAll('#s-int .was'),function(el,k){el.style.setProperty('--strike',0);setTimeout(function(){el.style.setProperty('--strike',1);},600+k*250);});}};
+
+  /* start */
+  var start=idx(location.hash.slice(1));if(start<0)start=0;
+  if(narrow.matches){slides.forEach(function(s){s.inert=false;s.removeAttribute('aria-hidden');});cur=start;chrome(start);
+    if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(en){var h=hooks[en.target.id];if(!h)return;if(en.isIntersecting){h.enter&&h.enter();}else{h.leave&&h.leave();}});},{threshold:.3});slides.forEach(function(s){io.observe(s);});}
+    if(start>0)slides[start].scrollIntoView();
+  } else {
+    setActive(start,1,true);
+    if(start===0)enterContent(slides[0],250);
+  }
+  window.__deckStart=function(){var h=hooks[slides[cur].id];if(h&&h.enter&&!narrow.matches)h.enter();};
+  narrow.addEventListener&&narrow.addEventListener('change',function(){location.reload();});
+})();
+</script>
+
+<script src="heart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+  if(location.hash==='#presenter')return;
+  var hooks=window.__deckHooks||{}, reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function renderer(canvas){try{var r=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});r.localClippingEnabled=true;r.setPixelRatio(Math.min(devicePixelRatio||1,2));return r;}catch(e){return null;}}
+  function sizer(r,cam,el){return function(){var w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();};}
+
+  /* ===== 06 innovation: a flat palm sweeps a cutting plane through an organ ===== */
+  (function(){
+    var host=document.getElementById('organ'),cv=document.getElementById('glOrgan'),palm=document.getElementById('palm'),px=document.getElementById('planeX'),items=[].slice.call(document.querySelectorAll('#innList li'));
+    var started=false,active=false,manual=null;
+    var OPEN=[[0,1],[-.28,.85],[-.48,.68],[-.62,.52],[-.74,.38],[-.2,.42],[-.24,.18],[-.26,.02],[-.28,-.12],[0,.38],[0,.1],[0,-.08],[0,-.24],[.18,.42],[.21,.18],[.23,.02],[.25,-.12],[.33,.52],[.4,.34],[.45,.22],[.5,.1]];
+    var BONES=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+    palm.innerHTML=BONES.map(function(b){return '<line x1="'+OPEN[b[0]][0]+'" y1="'+OPEN[b[0]][1]+'" x2="'+OPEN[b[1]][0]+'" y2="'+OPEN[b[1]][1]+'" stroke="#78e0d6" stroke-width=".03" stroke-linecap="round"/>';}).join('')+OPEN.map(function(p,i){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(i%4===0?.045:.032)+'" fill="'+(i%4===0?'#fff':'#78e0d6')+'"/>';}).join('');
+    function init(){
+      started=true;if(!window.THREE)return;
+      var r=renderer(cv);if(!r)return;
+      var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,1,.1,100);cam.position.set(4.6,1.4,5.6);cam.lookAt(0,0,0);
+      scene.add(new THREE.HemisphereLight(0xdff7f5,0x1a2a30,.75));var k=new THREE.DirectionalLight(0xffffff,.9);k.position.set(3,4,5);scene.add(k);var rim=new THREE.DirectionalLight(0x78e0d6,.7);rim.position.set(-4,1,-3);scene.add(rim);
+      var plane=new THREE.Plane(new THREE.Vector3(-1,0,0),0),root=new THREE.Group();scene.add(root);
+      var geo=new THREE.SphereGeometry(1,128,96),pos=geo.attributes.position,v=new THREE.Vector3();
+      for(var i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i);var n=1+.12*Math.sin(v.x*3.1+1)*Math.cos(v.y*2.3)+.07*Math.sin(v.z*4.2+v.x*2);v.multiplyScalar(n);v.x*=1.55;v.y*=.86;v.z*=.95;if(v.y<0)v.x+=v.y*.25;pos.setXYZ(i,v.x,v.y,v.z);}
+      geo.computeVertexNormals();
+      root.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xa9554c,roughness:.5,metalness:.05,clippingPlanes:[plane]})));
+      root.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x5c1f1b,side:THREE.BackSide,clippingPlanes:[plane]})));
+      function vessel(pts,rad,col){var c=new THREE.CatmullRomCurve3(pts.map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);}));root.add(new THREE.Mesh(new THREE.TubeGeometry(c,60,rad,10,false),new THREE.MeshStandardMaterial({color:col,roughness:.4,clippingPlanes:[plane]})));}
+      vessel([[-.2,-1.1,.1],[-.1,-.4,.1],[.1,.1,0],[.6,.35,-.1],[1.2,.3,-.1]],.07,0x4f7fe0);
+      vessel([[.1,.1,0],[-.5,.25,.1],[-1.1,.15,.05]],.05,0x4f7fe0);
+      vessel([[-.35,-1.1,0],[-.25,-.5,0],[0,-.1,-.1],[.5,-.05,-.2],[1.05,-.2,-.15]],.055,0xd9483d);
+      vessel([[0,-.1,-.1],[-.6,-.2,-.05],[-1.15,-.35,0]],.04,0xd9483d);
+      var lesion=new THREE.Mesh(new THREE.SphereGeometry(.16,24,16),new THREE.MeshStandardMaterial({color:0xe8b06a,roughness:.6,clippingPlanes:[plane]}));lesion.position.set(.7,.15,.15);root.add(lesion);
+      var quad=new THREE.Mesh(new THREE.PlaneGeometry(2.1,2.1),new THREE.MeshBasicMaterial({color:0x78e0d6,transparent:true,opacity:.09,side:THREE.DoubleSide,depthWrite:false}));quad.rotation.y=Math.PI/2;scene.add(quad);
+      var edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(2.1,2.1)),new THREE.LineBasicMaterial({color:0x78e0d6,transparent:true,opacity:.8}));edge.rotation.y=Math.PI/2;scene.add(edge);
+      root.rotation.set(.1,0,0);root.scale.setScalar(.95);
+      var resize=sizer(r,cam,host);resize();addEventListener('resize',resize);
+      cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);manual=e.clientX;});
+      cv.addEventListener('pointermove',function(e){if(manual===null)return;var rr=cv.getBoundingClientRect();X=((e.clientX-rr.left)/rr.width-.5)*4.4;});
+      cv.addEventListener('pointerup',function(){manual=null;held=performance.now();});
+      var X=1.9,held=0,t0=performance.now(),lastStep=-1;
+      var screen=new THREE.Vector3();
+      (function f(t){requestAnimationFrame(f);if(!active)return;
+        if(manual===null&&performance.now()-held>2500){var s=((t-t0)/1000)%7/7,e=s<.5?s*2:2-s*2;e=e<.5?2*e*e:1-Math.pow(-2*e+2,2)/2;X=reduce?.2:1.9-3.8*e;}
+        plane.constant=X;quad.position.x=X;edge.position.x=X;
+        
+        r.render(scene,cam);
+        screen.set(X,.15,.5).project(cam);var w=host.clientWidth,h=host.clientHeight;
+        palm.style.left=((screen.x+1)/2*w-palm.clientWidth/2)+'px';palm.style.top=((1-screen.y)/2*h-palm.clientHeight*.62)+'px';
+        px.textContent=(X>=0?'+':'')+X.toFixed(2);
+        var stp=Math.max(0,Math.min(3,Math.floor((1.9-X)/3.8*4)));if(stp!==lastStep){lastStep=stp;items.forEach(function(li,j){li.classList.toggle('on',j===stp);});}
+      })(t0);
+    }
+    hooks['s-inn']={enter:function(){active=true;if(!started)init();},leave:function(){active=false;}};
+  })();
+
+  /* ===== 12 the prototype's heart ===== */
+  (function(){
+    var canvas=document.getElementById('gl'),view=document.getElementById('heartview'),point=document.getElementById('point');
+    var started=false,active=false,heartReset=null;
+    function giveUp(){view.classList.add('nogl');}
+    function init(){
+      started=true;
+      if(!window.THREE||!THREE.GLTFLoader){giveUp();return;}
+      var r=renderer(canvas);if(!r){giveUp();return;}
+      var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.01,100);camera.position.set(.55,.3,6.6);
+      scene.add(new THREE.HemisphereLight(0xffffff,0x1a2a30,.9));var key=new THREE.DirectionalLight(0xffffff,.9);key.position.set(2,3,4);scene.add(key);
+      var rim=new THREE.DirectionalLight(0x78e0d6,.6);rim.position.set(-3,1,-2);scene.add(rim);
+      var plane=new THREE.Plane(new THREE.Vector3(0,0,-1),0),local=new THREE.Plane(new THREE.Vector3(0,0,-1),1e3),localTrim=new THREE.Plane(new THREE.Vector3(0,1,0),1.3);
+      var axis='z',parts=[],root=new THREE.Group(),box=new THREE.Box3(),hot=null;root.position.y=.25;scene.add(root);
+      var COLORS={atrium:0xc0625a,ventricle:0xa94a45,aorta:0xd8443a,aortic_arch:0xd8443a,coronary_artery:0xe2574a,pulmonary_trunk:0x4d7fd6,vena_cava:0x3f6bc0,coronary_sinus:0x5a86d9,valve:0xeadfc6};
+      function colorFor(n){for(var k in COLORS){if(n.indexOf(k)>=0)return COLORS[k];}return 0xb8605a;}
+      var raw;try{var bin=atob(window.HEART_B64||'');raw=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)raw[i]=bin.charCodeAt(i);}catch(e){giveUp();return;}
+      if(!raw.length){giveUp();return;}
+      new THREE.GLTFLoader().parse(raw.buffer,'',function(g){
+        var model=g.scene;model.updateMatrixWorld(true);var meshes=[];model.traverse(function(o){if(o.isMesh)meshes.push(o);});
+        var b=new THREE.Box3();meshes.forEach(function(m){if((m.name||'').indexOf('vena_cava')<0)b.expandByObject(m);});
+        var c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3()),k=1.95/Math.max(s.x,s.y,s.z);
+        meshes.forEach(function(m){
+          var name=m.name||(m.parent&&m.parent.name)||'structure';
+          var geo=m.geometry.clone();geo.applyMatrix4(m.matrixWorld);geo.translate(-c.x,-c.y,-c.z);geo.scale(k,k,k);geo.rotateX(-Math.PI/2);geo.computeVertexNormals();geo.computeBoundingBox();
+          var col=colorFor(name),tp=name.indexOf('vena_cava')>=0?new THREE.Plane():null,cps=tp?[plane,tp]:[plane];
+          var front=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:col,roughness:.55,metalness:.05,clippingPlanes:cps}));
+          var inner=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(col).multiplyScalar(.45),side:THREE.BackSide,clippingPlanes:cps}));
+          var grp=new THREE.Group();grp.add(front);grp.add(inner);grp.userData={name:name,dir:geo.boundingBox.getCenter(new THREE.Vector3()),front:front,trim:tp};front.userData.grp=grp;root.add(grp);parts.push(grp);
+        });
+        box.copy(b).translate(c.clone().negate());box.min.multiplyScalar(k);box.max.multiplyScalar(k);
+        box.set(new THREE.Vector3(box.min.x,box.min.z,-box.max.y),new THREE.Vector3(box.max.x,box.max.z,-box.min.y));
+        if(reduce)still();else applyCut();resize();
+      },giveUp);
+      /* the reel: a scripted loop standing in for the hands */
+      var STEPS=[['Turn',3],['Pull apart',4.5],['Coronal cut',4],['Sagittal cut',3.5],['Axial cut',3.5],['Name each part',6.3]],TOTAL=0;STEPS.forEach(function(x){TOTAL+=x[1];});
+      var stepEl=document.getElementById('reelStep'),nEl=document.getElementById('reelN'),dots=[].slice.call(document.querySelectorAll('#reelDots i')),lastStep=-1;
+      var depth=0,ex=0,rotY=.5,rotX=0,TAU=Math.PI*2,named=[];
+      function nice(n){return n.replace(/-Mesh$/,'').replace(/_/g,' ');}
+      function applyCut(){if(axis==='off'||depth<=0){local.normal.set(0,0,-1);local.constant=1e3;}else{var n=new THREE.Vector3(axis==='x'?-1:0,axis==='y'?-1:0,axis==='z'?-1:0),min=box.min[axis],max=box.max[axis];local.normal.copy(n);local.constant=max-(max-min)*depth+.001;}
+        root.updateMatrixWorld(true);plane.copy(local).applyMatrix4(root.matrixWorld);parts.forEach(function(p){if(p.userData.trim)p.userData.trim.copy(localTrim).applyMatrix4(p.matrixWorld);});}
+      function setHot(g){if(g===hot)return;if(hot)hot.userData.front.material.emissive.setHex(0);hot=g;if(hot){hot.userData.front.material.emissive.setHex(0x1f6f78);point.innerHTML='naming <b>'+nice(hot.userData.name)+'</b>';}}
+      function pickNamed(){var want=['left_ventricle','right_ventricle','left_atrium','right_atrium','ascending_aorta','pulmonary_trunk','left_coronary_artery'];named=[];want.forEach(function(w){for(var i=0;i<parts.length;i++)if(parts[i].userData.name.indexOf(w)===0){named.push(parts[i]);break;}});if(!named.length)named=parts.slice(0,7);}
+      function ease(k){return .5-.5*Math.cos(Math.PI*Math.max(0,Math.min(1,k)));}
+      function toward(cur,target,dt,rate){target+=TAU*Math.round((cur-target)/TAU);return cur+(target-cur)*(1-Math.exp(-dt*rate));}
+      var T=0;
+      function reel(dt){
+        if(!parts.length)return;if(!named.length)pickNamed();
+        T=(T+dt)%TOTAL;var t=T,si=0;while(t>STEPS[si][1]){t-=STEPS[si][1];si++;}var k=t/STEPS[si][1];
+        if(si!==lastStep){lastStep=si;point.classList.toggle('on',si===5);stepEl.textContent=STEPS[si][0];nEl.textContent='0'+(si+1);if(si===0){setHot(null);point.innerHTML='naming <b>…</b>';}}
+        dots.forEach(function(d,i){d.style.transform='scaleX('+(i<si?1:i===si?k:0)+')';});
+        var tY=null,tX=0,wob=Math.sin(T*.9)*.18;ex=0;depth=0;axis='off';
+        if(si===1){ex=1.05*Math.pow(Math.sin(Math.PI*k),.7);tY=.55+wob;}
+        else if(si>=2&&si<=4){axis=['z','x','y'][si-2];depth=.62*Math.pow(Math.sin(Math.PI*k),.6);tY=(si===3?-Math.PI/2+.5:.45)+wob;tX=si===4?.75:0;}
+        else if(si===5){var idx=Math.min(named.length-1,Math.floor(k*named.length));setHot(named[idx]);}
+        if(si!==5&&hot&&si!==0)setHot(null);
+        rotY=tY===null?rotY+dt*.45:toward(rotY,tY,dt,2.2);rotX=rotX+(tX-rotX)*(1-Math.exp(-dt*2.2));
+        root.rotation.set(rotX,rotY,0);
+        parts.forEach(function(p){p.position.copy(p.userData.dir).multiplyScalar(ex);});
+        camera.position.setLength(6.6+ex*3);camera.lookAt(0,0,0);
+        applyCut();
+      }
+      function still(){if(!parts.length)return;axis='z';depth=.45;rotY=.45;root.rotation.set(0,rotY,0);applyCut();stepEl.textContent='Coronal cut';nEl.textContent='03';dots.forEach(function(d,i){d.style.transform='scaleX('+(i<3?1:0)+')';});}
+      heartReset=function(){T=0;lastStep=-1;};
+      var resize=sizer(r,camera,view);addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(resize).observe(view);
+      var prev=0;(function loop(now){requestAnimationFrame(loop);if(!active){prev=0;return;}var dt=prev?Math.min(.05,(now-prev)/1000):0;prev=now;if(!reduce)reel(dt);r.render(scene,camera);})(0);
+    }
+    hooks['s-heart']={enter:function(){active=true;if(heartReset)heartReset();if(!started)init();},leave:function(){active=false;}};
+  })();
+  window.__deckStart&&window.__deckStart();
+})();
+</script>
+</body>
+</html>
