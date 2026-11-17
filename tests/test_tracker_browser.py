@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tracker-page acceptance in a real (headless) Chrome: 2.1, 3.2, 3.3, 3.6-1, 3.9/3.10 plumbing, 3.11 opt-in.
+"""Tracker-page acceptance in a real (headless) Chrome: 2.1, 3.2, 3.3, 3.6-1, 3.9 HUD, 3.11 opt-in.
 
     python3 server.py &                 # idle server, like the other suites
     python3 tests/test_tracker_browser.py
@@ -111,7 +111,7 @@ with Browser() as b:
         s2 = item(lambda i: i.get("id") == it0["id"])["scale"]
         check("double-click resets the pose", abs(s2 - s0) < 0.05 * s0 + 1e-3, f"{s1} -> {s2} (start {s0})")
 
-    print("3.9 / 3.10 overlay + speech plumbing, live (no hands: pointing/speech by hand is manual)")
+    print("3.9 overlay, live (no hands: pointing by hand is manual)")
     hud = b.wait("document.getElementById('nova-hud')?.textContent", 10) or ""
     check("HUD panel is on the tracker page with the education-only banner", "NOT FOR CLINICAL USE" in hud, hud[:160])
     hud = b.wait("(t => t.includes('scan bundle') && t)(document.getElementById('nova-hud').textContent)", 10) or hud
@@ -120,16 +120,11 @@ with Browser() as b:
     check("HUD never shows bundle_id / source_case", "asymmetric-phantom" not in hud and "synthetic:" not in hud, hud[:300])
     check("HUD reports tracking honestly with no hands in the fake feed", "no hands" in hud, hud[:300])
     check("default page keeps the EMA (HUD names no alternative filter)", "one-euro" not in hud, hud[:300])
-    sp = b.eval("typeof speechSynthesis !== 'undefined'")
-    line = b.eval("[...document.querySelectorAll('#nova-hud .r')].map(r => r.textContent)"
-                  ".find(t => t.startsWith('SPEECH')) || ''")
-    check("HUD speech line is present and truthful about the engine",
-          ("unavailable" in line) != bool(sp), f"speechSynthesis={sp} line={line!r}")
-    print(f"    (headless speech line: {line!r})")
-    b.key("m")
-    check("M mutes (HUD says so)", b.wait("document.getElementById('nova-hud').textContent.includes('muted (M)')", 5))
-    b.key("m")
-    check("M again unmutes", b.wait("!document.getElementById('nova-hud').textContent.includes('muted (M)')", 5))
+    check("HUD has no speech row or controls (3.10 removed)",
+          not any(w in hud for w in ("SPEECH", "Mute", "Repeat", "muted")), hud[:300])
+    check("hint lists H and no speech keys",
+          b.eval("(t => t.includes('H hide HUD') && !/mute names|repeat name/.test(t))"
+                 "(document.getElementById('hint').textContent)"))
     b.key("h")
     check("H hides the HUD", b.wait("document.getElementById('nova-hud').classList.contains('off')", 5))
     b.key("h")
@@ -149,6 +144,32 @@ with Browser(port=9345) as b:
     b.open(BASE + "/stage.html?role=render")
     time.sleep(4)
     check("no HUD on ?role=render", b.eval("!document.getElementById('nova-hud')"))
+
+print("3.9 silent HUD: no speech, no console errors from the removed modules")
+# installed BEFORE page code runs: records console.error, [medical] warnings
+# (a failed lazy hud.js import only warns) and ANY speechSynthesis.speak call
+TRAP = ("window.__con=[];window.__spoke=[];"
+        "const _e=console.error.bind(console),_w=console.warn.bind(console);"
+        "console.error=(...a)=>{__con.push('error: '+a.map(String).join(' '));_e(...a)};"
+        "console.warn=(...a)=>{const t=a.map(String).join(' ');if(t.includes('[medical]'))__con.push('warn: '+t);_w(...a)};"
+        "try{if(window.speechSynthesis){const s=speechSynthesis.speak.bind(speechSynthesis);"
+        "speechSynthesis.speak=u=>{__spoke.push(String(u&&u.text));s(u)}}}catch(x){}")
+with Browser() as b:
+    b.call("Page.addScriptToEvaluateOnNewDocument", source=TRAP)
+    b.open(BASE + "/stage.html")
+    b.wait(BOOTED, 120)
+    b.wait("document.getElementById('nova-hud')", 15)
+    cmd({"a": "hand", "src": "models/heart/heart.glb"})    # the verb 3.6-1 uses headless
+    b.wait("(document.getElementById('nova-hud')?.textContent || '').includes('BodyParts3D')", 30)
+    for k in ("m", "n", "h", "h"):
+        b.key(k)
+    time.sleep(4)
+    errs = b.eval("[...(window.__errors||[]), ...window.__con]") or []
+    check("no page errors, console errors or [medical] warnings (removed speech import/hooks)",
+          not errs, errs[:5])
+    check("speechSynthesis.speak never called (boot, heart staged, M/N/H pressed)",
+          b.eval("window.__spoke.length === 0"), b.eval("window.__spoke"))
+    check("HUD loaded and shows the heart", "BodyParts3D" in (b.eval("document.getElementById('nova-hud')?.textContent || ''") or ""))
 
 print("3.11 smoothing opt-in (filter numbers: tests/test_smoothing.mjs)")
 with Browser() as b:

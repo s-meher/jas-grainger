@@ -28,8 +28,7 @@ All of it loads from public CDNs, so the browser needs network on first load (G4
 | `camera.js` | camera error screens + Retry, unplug recovery, picker, preview privacy (3.3) | `bootFailed`, `watchCamera`, `cameraMenu`, `togglePreview` |
 | `tracking.js` | GPU→CPU fallback, `?track=worker`, `?perf=1`, empty-frame guard (3.2) | `createLandmarker`, `wrapTracker` |
 | `track-worker.js` | the MediaPipe worker (module worker + `importScripts` shim) | — (loaded by tracking.js) |
-| `hud.js` | demo overlay: whitelisted model/case state, pointed name, mode, tracking, speech; M/N/H keys, Reset pose (3.9) | — (loaded lazily by core.js `installHud`) |
-| `speech.js` | browser speech: dwell/cooldown narrator, Web Speech adapter, voice choice (3.10, ADR 0006) | — (imported by hud.js) |
+| `hud.js` | demo overlay: whitelisted model/case state, pointed name, mode, tracking, smoothing mode; H key, Reset pose (3.9). Silent: no speech | — (loaded lazily by core.js `installHud`) |
 | `smoothing.js` | One Euro cursor filter, opt-in `?smooth=oneeuro` in place of the EMA (3.11) | `smoothCursor` |
 
 ## Hook points in stage.html

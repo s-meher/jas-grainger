@@ -838,7 +838,7 @@ function castAt(sc, nx, ny) {
   return null;
 }
 
-// ----------------------------------------------------- HUD + SPEECH (3.9/3.10)
+// ------------------------------------------------------------- HUD (3.9)
 // Read-only views for ./hud.js. They hand over reviewed sidecar text and
 // whitelisted bundle fields only: never the case/lesion ids (answer isolation),
 // never a raw mesh name. hud.js loads LAZILY behind its own catch, so a
@@ -847,7 +847,7 @@ function castAt(sc, nx, ny) {
 /** The reviewed display name of `structure` on the model whose file is
  *  `model` (the basename pointState publishes), or null. No id fallback:
  *  anatomy.schema.md makes `name` required, so a missing one is a sidecar
- *  bug to fix, not something to paper over by speaking "left_ventricle". */
+ *  bug to fix, not something to paper over by showing "left_ventricle". */
 export function structureName(model, structure) {
   try {
     for (const s of SCENES) {

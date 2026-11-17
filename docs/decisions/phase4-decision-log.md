@@ -4,21 +4,15 @@ Same format as the [Phase 1 log](phase1-decision-log.md): question → options �
 criterion → chosen leaf, with evidence. Status stays `proposed` until the
 owners' review accepts it.
 
-## D-P4-01 Browser speech: what triggers it, what it may say
+## D-P4-01 Browser speech — withdrawn
 
-2026-11-14 · tasks 3.10, G4 · proposed · ADR [0006](0006-browser-speech.md)
+2026-11-17 · task 3.10 · **withdrawn before merge at team direction**
 
-```mermaid
-flowchart TD
-  Q{When does a pointed structure get spoken, and with what words?}
-  Q --> A[Speak on every pt change]
-  Q --> B[Reuse narrate.sh: poll /state, macOS say]
-  Q --> C[speechSynthesis in the page, fed core.js pt<br/>+ 800 ms dwell, 8 s same-structure cooldown,<br/>sidecar name only, no id fallback]
-  A -->|pt already needs a still hand, but a border<br/>flickers between neighbours (L12)| AX[Rejected]
-  B -->|Mac-only, needs a terminal; not the browser| BX[Kept as agent tool, not reused]
-  C --> C1{Stale/obsolete speech impossible? No invented text?}
-  C1 -->|switch/loss/ambiguity drop the pending name;<br/>speak cancels a queued one; 75 node checks| CY[Chosen]
-```
+A browser-speech prototype (Web Speech API, reviewed sidecar `name` only,
+dwell + cooldown) was built on this branch and then removed before merge at
+the team's direction. No browser speech ships; the HUD is silent, and a test
+traps `speechSynthesis` to prove it. The decision topic stays open in the
+[decision queue](README.md) (0006). `bin/narrate.sh` is unchanged.
 
 ## D-P4-02 Overlay: what may it show?
 
@@ -34,8 +28,8 @@ flowchart TD
   B1 -->|no name/MRN/case id/lesion id/structure id in rendered text;<br/>free-text dataset dropped unless name-shaped| BY[Chosen]
 ```
 
-Pointing at a structure while a case is active still names that structure.
-That matches `board-state.sh`'s `POINTING AT` and `narrate.sh`: it names what
+Pointing at a structure while a case is active still shows that structure's
+name in the HUD. That matches `board-state.sh`'s `POINTING AT`: it names what
 the learner chose to point at, the same way for every structure, and never
 singles out the lesion's structure (the KNOWLEDGE.md isolation rule is about
 the examiner *labelling* it unprompted).
@@ -64,15 +58,15 @@ filter at the hand (the EMA glides 45 %/frame and writes that glide into
 webcam session: make it the default only if pointing names land at least as
 reliably and no unintended flings appear in the 3.4-3.6 checklist.
 
-## D-P4-04 Where the overlay and speech run
+## D-P4-04 Where the overlay runs
 
-2026-11-14 · tasks 3.9, 3.10 · proposed
+2026-11-14 · task 3.9 · proposed
 
 ```mermaid
 flowchart TD
-  Q{How do the HUD and speech attach without risking tracking?}
+  Q{How does the HUD attach without risking tracking?}
   Q --> A[Inline in stage.html's frame loop]
   Q --> B[One optional hook MED.installHud?.() on the tracker page;<br/>lazy import; own 100 ms setInterval; every tick in try/catch]
   A -->|a throw in rAF froze the tracker once (L6);<br/>violates the MEDICAL HOOK law| AX[Rejected]
-  B -->|throwing getters/engine recover next tick (node test);<br/>absent on ?role=render (browser test)| BY[Chosen]
+  B -->|throwing getters recover next tick (node test);<br/>absent on ?role=render; no console errors (browser test)| BY[Chosen]
 ```

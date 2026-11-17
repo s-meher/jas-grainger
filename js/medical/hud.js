@@ -1,12 +1,14 @@
-// js/medical/hud.js: task 3.9, the demo overlay, and the driver for 3.10's speech.
+// js/medical/hud.js: task 3.9, the demo overlay.
 //
 // A small read-only panel, bottom-left on the tracker page, that shows:
 // the active model, what is pointed at, the interaction mode, one short
-// gesture tip, tracking state, and the speech state. It has three mouse
-// buttons (mute, repeat, reset pose) plus keys M / N / H.
+// gesture tip, and tracking state (plus the filter when ?smooth=oneeuro).
+// It has one mouse button (Reset pose) and one key (H hides it).
 // It is installed through ONE optional hook (MED.installHud?.()) and runs on its own
 // setInterval, never inside the tracker's rAF loop. Every tick is wrapped,
-// so an overlay or speech fault can't touch hand tracking or rendering.
+// so an overlay fault can't touch hand tracking or rendering.
+// It is silent: browser speech (3.10) was removed from Phase 4 at team
+// direction (2026-11-17); nothing here uses the Web Speech API.
 //
 // What it is allowed to show is decided here by whitelist, not by the
 // sidecar or manifest:
@@ -22,10 +24,7 @@
 //     /case-render answer isolation from KNOWLEDGE.md.
 // All text goes in through textContent, never innerHTML.
 
-import { createNarrator, browserSpeaker } from "./speech.js";
-
 const TICK_MS = 100;
-const MUTE_KEY = "nova-tts-muted";
 const NOHAND_TIP_MS = 2000;    // after this long with no hands, offer the mouse fallback
 const MAXLEN = 48;
 
@@ -58,6 +57,19 @@ export function summarizeModel(raw) {
   return out;
 }
 
+/** Pure: what the POINTING row says for core.js's published `pt`. The
+ *  sidecar's reviewed `name` only (anatomy.schema.md makes it required), so
+ *  an unnamed structure shows nothing rather than a raw id or mesh name.
+ *  `nameOf(model, structure)` = core.js structureName. */
+export function pointingText(pt, nameOf) {
+  if (!pt) return null;
+  if (pt.ambiguous) return "two hands disagree (nothing named)";
+  if (!pt.structure || !pt.model) return null;
+  let n = null;
+  try { n = nameOf ? nameOf(pt.model, pt.structure) : null; } catch (e) { n = null; }
+  return typeof n === "string" && n.trim() ? n.trim() : null;
+}
+
 /** Pure: one interaction mode, highest priority first. */
 export function deriveMode({ hands = 0, frozen = 0, grabs = 0, twoHand = false,
                              armed = false, pt = null } = {}) {
@@ -65,23 +77,10 @@ export function deriveMode({ hands = 0, frozen = 0, grabs = 0, twoHand = false,
   if (twoHand) return { mode: "scaling", tip: "move hands apart / together · release to stop" };
   if (grabs) return { mode: "holding", tip: "drag to move · hold still ~1 s to rotate · release to drop" };
   if (pt && pt.ambiguous) return { mode: "pointing", tip: "two hands disagree. Point with one hand" };
-  if (pt && pt.structure) return { mode: "pointing", tip: "N repeats the name · M mutes" };
+  if (pt && pt.structure) return { mode: "pointing", tip: "pinch to grab · move on to name another structure" };
   if (!hands && frozen) return { mode: "tracking lost", tip: "hand frozen: bring it back into view" };
   if (!hands) return { mode: "no hands", tip: "show a hand to the camera" };
   return { mode: "ready", tip: "open hand, hold still on a structure to name it · pinch to grab" };
-}
-
-/** Pure: speech status line. `sp` = browserSpeaker(); `activated` = page has
- *  had a click/keypress (Chrome refuses speech before one). */
-export function speechLine(sp, muted, activated) {
-  if (!sp || !sp.available) return "unavailable in this browser";
-  if (muted) return "muted (M)";
-  if (sp.status === "blocked" || activated === false) return "click or press a key to enable";
-  if (sp.status === "error") return "error (see console)";
-  const v = sp.voice === "local" ? "on-device voice"
-          : sp.voice === "loading" ? "loading voices"
-          : "browser voice, may need network";
-  return "on · " + v;
 }
 
 /** Pure: everything the panel says, as [label, text] rows. */
@@ -98,7 +97,6 @@ export function hudRows(s) {
   rows.push(["POINTING", s.pointing || "—"]);
   rows.push(["MODE", s.mode.mode + " · " + s.tracking]);
   rows.push(["TIP", s.mode.tip]);
-  rows.push(["SPEECH", s.speech]);
   return rows;
 }
 
@@ -153,18 +151,16 @@ function build(doc, actions) {
     bar.appendChild(b);
     return b;
   };
-  const mute = btn("Mute (M)", "mute / unmute spoken names", actions.mute);
-  btn("Repeat (N)", "say the current structure again", actions.repeat);
   btn("Reset pose", "put the model back to its starting pose", actions.reset);
   el.appendChild(bar);
   // keep a click on the panel from also starting interaction.js's mouse drag
   el.addEventListener("mousedown", e => e.stopPropagation());
   doc.body.appendChild(el);
-  return { el, body, mute, last: "" };
+  return { el, body, last: "" };
 }
 
-function paintRows(ui, doc, rows, muted) {
-  const sig = JSON.stringify(rows) + muted;
+function paintRows(ui, doc, rows) {
+  const sig = JSON.stringify(rows);
   if (sig === ui.last) return;          // no DOM writes on an unchanged tick
   ui.last = sig;
   ui.body.textContent = "";
@@ -175,7 +171,6 @@ function paintRows(ui, doc, rows, muted) {
     b.textContent = v;
     r.appendChild(a); r.appendChild(b); ui.body.appendChild(r);
   }
-  ui.mute.textContent = muted ? "Unmute (M)" : "Mute (M)";
 }
 
 /** Called by core.installHud with the stage getters and core's read-only views.
@@ -184,25 +179,10 @@ function paintRows(ui, doc, rows, muted) {
 export function install(ctx, win = globalThis) {
   if (_el || !win.document || !win.document.body) return null;
   const doc = win.document;
-  let muted = false;
-  try { muted = win.localStorage && win.localStorage.getItem(MUTE_KEY) === "1"; } catch (e) {}
-  const speaker = browserSpeaker(win);
-  const nar = createNarrator({ speaker, muted });
   const toast = m => { try { ctx.toast && ctx.toast(m, 1600); } catch (e) {} };
   const now = () => (win.performance ? win.performance.now() : Date.now());
 
   const actions = {
-    mute() {
-      const m = nar.setMuted(!nar.state.muted);
-      try { win.localStorage && win.localStorage.setItem(MUTE_KEY, m ? "1" : "0"); } catch (e) {}
-      toast(m ? "speech muted" : "speech on");
-    },
-    repeat() {
-      const r = nar.repeat(now());
-      if (r === "nothing") toast("nothing pointed at yet");
-      else if (r === "muted") toast("speech is muted (M)");
-      else if (r === "unavailable") toast("speech unavailable in this browser");
-    },
     reset() {
       const its = (ctx.items && ctx.items()) || [];
       const it = its.filter(k => k.type === "model" && k.el && k.el.isConnected).pop();
@@ -216,11 +196,8 @@ export function install(ctx, win = globalThis) {
   _el = ui.el;
 
   win.addEventListener("keydown", e => {
-    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;   // Cmd-M minimizes; leave it alone
-    const k = (e.key || "").toLowerCase();
-    if (k === "m") actions.mute();
-    else if (k === "n") actions.repeat();
-    else if (k === "h") ui.el.classList.toggle("off");
+    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;   // Cmd-H hides the app; leave it alone
+    if ((e.key || "").toLowerCase() === "h") ui.el.classList.toggle("off");
   });
 
   let noHandSince = now();
@@ -229,10 +206,7 @@ export function install(ctx, win = globalThis) {
       const t = now();
       let pt = null;
       try { pt = ctx.pointState ? ctx.pointState() : null; } catch (e) {}
-      nar.update(pt, ctx.structureName, t);
-      // pointing text = the same reviewed name speech uses; never an id
-      const pointing = nar.state.current ? nar.state.current.name
-        : nar.state.why === "ambiguous" ? "two hands disagree (nothing named)" : null;
+      const pointing = pointingText(pt, ctx.structureName);   // reviewed name; never an id
       const tr = trackingState(ctx.cursors && ctx.cursors());
       // 3.11 A/B: name the filter only when it is NOT the default EMA
       try { if (ctx.smoothingMode && ctx.smoothingMode() === "oneeuro") tr.text += " · one-euro"; } catch (e) {}
@@ -250,14 +224,10 @@ export function install(ctx, win = globalThis) {
       if (tr.hands || tr.frozen) noHandSince = t;
       else if (t - noHandSince > NOHAND_TIP_MS)
         mode.tip = "no hands? mouse: drag = move · shift-drag = rotate · wheel = scale";
-      const activated = win.navigator && win.navigator.userActivation
-        ? win.navigator.userActivation.hasBeenActive : undefined;
-      paintRows(ui, doc, hudRows({ model, pointing, mode, tracking: tr.text,
-                                   speech: speechLine(speaker, nar.state.muted, activated) }),
-                nar.state.muted);
+      paintRows(ui, doc, hudRows({ model, pointing, mode, tracking: tr.text }));
     } catch (e) {}
   };
   win.setInterval(tick, TICK_MS);
   tick();
-  return { narrator: nar, speaker, tick, el: ui.el };
+  return { tick, el: ui.el };
 }
