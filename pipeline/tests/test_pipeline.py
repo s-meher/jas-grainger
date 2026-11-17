@@ -2,9 +2,11 @@
 
     ~/.venvs/jas/bin/python -m pytest pipeline/tests -q
 """
+import hashlib
 import json
 import shutil
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -13,9 +15,10 @@ import pytest
 HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
 
-from pipeline import build, optimize, phantom, surfaces  # noqa: E402
+from pipeline import build, export, optimize, phantom, surfaces  # noqa: E402
 from pipeline.canonical import CanonicalImage  # noqa: E402
-from pipeline.verify_bundle import verify  # noqa: E402
+from pipeline.verify_bundle import _revision, verify  # noqa: E402
+from schemas.validate import parse_glb_json  # noqa: E402
 
 trimesh = pytest.importorskip("trimesh")
 FIXTURE = HERE / "media" / "models" / "phantom"
@@ -153,9 +156,32 @@ def test_bundle_is_reproducible(bundle, tmp_path):
 
 
 def test_committed_fixture_is_current_and_valid(bundle):
+    import nrrd
+
     assert verify(FIXTURE) == []
-    rev = lambda d: json.loads((d / "manifest.json").read_text())["revision"]
-    assert rev(FIXTURE) == rev(bundle), "regenerate: python -m pipeline.build --phantom ..."
+    fmt = lambda d: json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+    committed, rebuilt = fmt(FIXTURE), fmt(bundle)
+    for field in ("geometry", "structures"):
+        assert committed[field] == rebuilt[field]
+    for name in ("model.orig.glb", "anatomy.json"):
+        assert (FIXTURE / name).read_bytes() == (bundle / name).read_bytes()
+    # Gzip's platform marker and near-zero optimized vertices vary by OS.
+    # Keep byte reproducibility in the same-environment test above and check
+    # the contents of the committed and rebuilt assets independently here.
+    old_volume, old_header = nrrd.read(FIXTURE / "volume.nrrd")
+    new_volume, new_header = nrrd.read(bundle / "volume.nrrd")
+    np.testing.assert_array_equal(old_volume, new_volume)
+    assert old_header.keys() == new_header.keys()
+    for key in old_header:
+        np.testing.assert_array_equal(old_header[key], new_header[key])
+    old_mesh, new_mesh = FIXTURE / "model.glb", bundle / "model.glb"
+    assert parse_glb_json(old_mesh) == parse_glb_json(new_mesh)
+    original = trimesh.load_scene(old_mesh, process=False)
+    updated = trimesh.load_scene(new_mesh, process=False)
+    for name, mesh in original.geometry.items():
+        other = updated.geometry[name]
+        np.testing.assert_array_equal(mesh.faces, other.faces)
+        np.testing.assert_allclose(mesh.vertices, other.vertices, rtol=0, atol=1e-7)
 
 
 def test_manifest_records_frame_and_empty_structure(bundle):
@@ -166,6 +192,39 @@ def test_manifest_records_frame_and_empty_structure(bundle):
     assert m["structures"]["portal_vein"] == {"label_value": 4, "mesh_node": None,
                                               "voxels": 0, "volume_ml": 0.0, "status": "empty"}
     assert any(f["structure"] == "portal_vein" for f in m["validation"]["findings"])
+
+
+def test_scan_sidecar_keeps_stable_labels_and_cited_drafts(tmp_path):
+    # Synthetic arrays exercise the scan export path without checking in scan data.
+    ci = replace(phantom.build(), source_case="test-scan", provenance={"dataset": "msd-liver"})
+    out = tmp_path / "b"
+    manifest = build.run(ci, out, with_volume=False, created=CREATED, log=lambda *_: None)
+    anatomy = json.loads((out / "anatomy.json").read_text(encoding="utf-8"))
+    assert verify(out) == []
+    assert manifest["structures"]["portal_vein"]["status"] == "empty"
+    assert "portal_vein" not in anatomy["structures"]
+    assert "hepatic portal vein" not in anatomy["aliases"]
+    assert anatomy["aliases"]["liver tumour"] == "liver_tumor"
+    for sid, entry in anatomy["structures"].items():
+        assert entry["scan"]["label_value"] == manifest["structures"][sid]["label_value"]
+        assert entry["teaching_reference"]["review_status"] == "pending_review"
+        assert entry["teaching_reference"]["sources"][0].startswith("https://")
+        assert "teach" not in entry
+
+
+def test_wrong_sidecar_label_is_rejected_even_if_all_hashes_match(bundle):
+    p = bundle / "anatomy.json"
+    anatomy = json.loads(p.read_text(encoding="utf-8"))
+    anatomy["structures"]["liver"]["scan"] = {"label_value": 99}
+    data = json.dumps(anatomy).encode()
+    p.write_bytes(data)
+    m = bundle / "manifest.json"
+    manifest = json.loads(m.read_text(encoding="utf-8"))
+    sidecar = next(a for a in manifest["assets"] if a["role"] == "sidecar")
+    sidecar.update(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+    manifest["revision"] = _revision(manifest)
+    m.write_text(json.dumps(manifest), encoding="utf-8")
+    assert any("liver: scan label disagrees" in e for e in verify(bundle))
 
 
 def test_tampered_asset_is_rejected(bundle):
@@ -203,6 +262,23 @@ def test_nrrd_header_carries_the_affine(bundle):
     assert data.shape == phantom.SHAPE
     assert np.allclose(hdr["space directions"], phantom.AFFINE[:3, :3].T)
     assert np.allclose(hdr["space origin"], phantom.AFFINE[:3, 3])
+
+
+def test_nrrd_preserves_fractional_and_out_of_int16_intensities(tmp_path):
+    import nrrd
+    image = np.array([500.004, 40000, -40100, -1024], dtype=np.float32).reshape(2, 2, 1)
+    path = tmp_path / "volume.nrrd"
+    export._nrrd(path, image, np.eye(4))
+    data, _header = nrrd.read(str(path))
+    assert data.dtype == np.float32
+    np.testing.assert_array_equal(data, image)
+
+
+def test_nrrd_rejects_nonfinite_intensity(tmp_path):
+    path = tmp_path / "volume.nrrd"
+    with pytest.raises(ValueError, match="finite intensities"):
+        export._nrrd(path, np.full((1, 1, 1), np.nan), np.eye(4))
+    assert not path.exists()
 
 
 def test_real_data_cannot_be_written_into_tracked_media():

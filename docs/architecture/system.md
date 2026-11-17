@@ -123,6 +123,31 @@ These are engineering design decisions based on the
 and [NiBabel coordinate documentation](https://nipy.org/nibabel/coordinate_systems.html).
 Numerical tolerances must be agreed with imaging reviewers before acceptance.
 
+### Phase 3 scan rendering
+
+The educational tracker implements this path for verified synthetic and
+approved de-identified development bundles. The image and meshes share one
+patient root. The inverse voxel affine locates intensity samples for each
+RAS plane, while triangle intersections draw contours in the same frame. A
+WebGL2 raymarch samples the same volume in 3D. The patient-space cut supplies
+one half-space to the surface, cap and volume paths.
+
+```mermaid
+flowchart LR
+  Bundle[Verified bundle] --> CT[NRRD voxels and affine]
+  Bundle --> Mesh[GLB surfaces and indexed anatomy]
+  CT --> Frame[Shared RAS mm frame]
+  Mesh --> Frame
+  Board[Tracker and manual controls] --> Plane[Patient cut plane]
+  Plane --> Frame
+  Frame --> MPR[CT slices and surface contours]
+  Frame --> Raymarch[3D CT and clipped surfaces]
+  Frame --> Hits[Stable anatomy IDs and patient-space hits]
+```
+
+See [ADR 0003](../decisions/0003-volume-mpr-rendering.md) and
+the [Phase 3 guide](../project/phase3-m3.md).
+
 ## Proposed asset manifest
 
 Introduce a separately versioned bundle manifest; do not silently change

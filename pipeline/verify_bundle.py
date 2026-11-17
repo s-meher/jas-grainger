@@ -9,8 +9,9 @@ Checks, in order, so the first error is the most fundamental one:
      recorded byte size and sha256 (catches truncation and tampering)
   3. revision = hash of assets + geometry + structures (catches a
      hand-edited manifest whose assets were left alone)
-  4. every "present" structure has its mesh node in model.glb, and no
-     "empty" structure has one; anatomy.json passes schemas/validate.py
+  4. present structures have unique labels and GLB nodes; no empty
+     structure has geometry or a sidecar entry. Sidecar labels and mesh
+     patterns agree with the manifest, and schemas/validate.py passes.
   5. anatomy.json `axes` agrees with the manifest frame (RAS)
 Exit code 0 = valid. The browser loader (2.3) repeats the hash and node
 checks client-side; this is the build-time gate.
@@ -18,6 +19,7 @@ checks client-side; this is the build-time gate.
 import hashlib
 import json
 import sys
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
@@ -39,7 +41,7 @@ def verify(bundle_dir):
     d = Path(bundle_dir).resolve()
     errs = []
     try:
-        m = json.loads((d / "manifest.json").read_text())
+        m = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
     except Exception as e:
         return [f"manifest.json: {e}"]
     try:
@@ -67,22 +69,53 @@ def verify(bundle_dir):
     if _revision(m) != m["revision"]:
         errs.append("revision does not match assets/geometry/structures")
     roles = {a["role"]: a["path"] for a in m["assets"]}
+    if len(roles) != len(m["assets"]):
+        errs.append("bundle asset roles must be unique")
     if "mesh" not in roles or "sidecar" not in roles:
         errs.append("bundle needs a mesh and a sidecar asset")
+    if errs:
         return errs
     try:
         names = anatomy_validate.glb_mesh_node_names(
             anatomy_validate.parse_glb_json(d / roles["mesh"]))
     except Exception as e:
         return errs + [f"model: {e}"]
+    labels, present_nodes, present = set(), set(), {}
     for sid, s in m["structures"].items():
-        if s["status"] == "present" and s["mesh_node"] not in names:
-            errs.append(f"structure {sid}: mesh node {s['mesh_node']!r} not in GLB")
-        if s["status"] == "empty" and sid in names:
-            errs.append(f"structure {sid}: marked empty but GLB has a node for it")
-    anat = json.loads((d / roles["sidecar"]).read_text())
+        value, node = s["label_value"], s["mesh_node"]
+        if value in labels:
+            errs.append(f"structure {sid}: duplicate label value {value}")
+        labels.add(value)
+        if s["status"] == "present":
+            present[sid] = s
+            if node not in names or s["voxels"] == 0:
+                errs.append(f"structure {sid}: present label has no voxels or GLB node {node!r}")
+            if node in present_nodes:
+                errs.append(f"structure {sid}: mesh node {node!r} belongs to multiple structures")
+            present_nodes.add(node)
+        elif node is not None or sid in names or s["voxels"] or s["volume_ml"]:
+            errs.append(f"structure {sid}: marked empty but declares geometry")
+    try:
+        anat = json.loads((d / roles["sidecar"]).read_text(encoding="utf-8"))
+    except (ValueError, OSError) as e:
+        return errs + [f"anatomy.json: {e}"]
     e1, _w, structs = anatomy_validate.validate_anatomy_shape(anat)
     errs += [f"anatomy.json: {e}" for e in e1]
+    if e1:
+        return errs
+    if anat["model"] != roles["mesh"]:
+        errs.append("anatomy.json model does not match the manifest mesh path")
+    if set(structs) != set(present):
+        errs.append("anatomy.json structure IDs must match the manifest's present structures")
+    has_scan_labels = any("scan" in s for s in structs.values())
+    for sid in set(structs) & set(present):
+        s, declared = structs[sid], present[sid]
+        if declared["mesh_node"] in names and not any(
+            fnmatchcase(declared["mesh_node"], pattern) for pattern in s["meshes"]
+        ):
+            errs.append(f"structure {sid}: anatomy.json does not own manifest mesh {declared['mesh_node']!r}")
+        if has_scan_labels and s.get("scan", {}).get("label_value") != declared["label_value"]:
+            errs.append(f"structure {sid}: scan label disagrees with the manifest")
     if structs:
         e2, _w2 = anatomy_validate.validate_glb_coverage(structs, d / roles["mesh"])
         errs += [f"anatomy.json vs GLB: {e}" for e in e2]

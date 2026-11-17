@@ -20,6 +20,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .anatomy_catalog import reference_for
+
 SCHEMA = "jas-bundle/1"
 RAS_AXES = {"superior": "+z", "left": "-x", "anterior": "+y"}   # RAS+: +x = patient right
 
@@ -93,7 +95,17 @@ def _nrrd(path, image, affine):
            # pynrrd: row i is the world-space vector of array axis i
            "space directions": A[:3, :3].T, "space origin": A[:3, 3],
            "kinds": ["domain"] * 3, "encoding": "gzip"}
-    arr = image.astype(np.int16) if np.allclose(image, np.round(image)) else image.astype(np.float32)
+    minimum, maximum = image.min(), image.max()
+    if not (np.isfinite(minimum) and np.isfinite(maximum)):
+        raise ValueError("volume must contain finite intensities")
+    int16 = np.iinfo(np.int16)
+    fits_int16 = int16.min <= minimum and maximum <= int16.max
+    # CT loaders give float32. Avoid approximating near-integer HU or
+    # wrapping large values when selecting the compact integer encoding.
+    integral = fits_int16 and all(np.equal(plane, np.trunc(plane)).all() for plane in image)
+    arr = image.astype(np.int16 if integral else np.float32, copy=False)
+    if not integral and not all(np.equal(plane, encoded).all() for plane, encoded in zip(image, arr)):
+        raise ValueError("volume intensities cannot be represented as float32")
     nrrd.write(str(path), arr, hdr)
     # pynrrd stamps "# on <wall clock>" into the header; drop it so a
     # rebuild is byte-identical and the bundle revision stays stable
@@ -103,26 +115,43 @@ def _nrrd(path, image, affine):
     Path(path).write_bytes(head + b[end:])
 
 
-def anatomy_sidecar(present_ids, source):
+def anatomy_sidecar(present_ids, source, *, scan_labels=None):
     has_parent = PARENT in present_ids
-    structures = {}
+    structures, aliases = {}, {}
+    ambiguous_terms = set()
     for sid in present_ids:
         parent = PARENT if has_parent and sid != PARENT else None
-        structures[sid] = {
+        entry = structures[sid] = {
             "name": style(sid)[0],
             "meshes": [sid], "parent": parent,
             "children": [c for c in present_ids if has_parent and sid == PARENT and c != PARENT],
             "layer": 0 if parent is None else 1,
         }
+        if scan_labels is not None:
+            entry["scan"] = {"label_value": scan_labels[sid]}
+            reference = reference_for(sid)
+            if reference is not None:
+                name, terms, teaching = reference
+                entry["name"] = name
+                entry["teaching_reference"] = teaching
+                for term in terms:
+                    if term in aliases:
+                        del aliases[term]
+                        ambiguous_terms.add(term)
+                    elif term not in ambiguous_terms:
+                        aliases[term] = sid
     return {"schema": "barehands-anatomy/1", "model": "model.glb", "source": source,
             "system": "hepatobiliary", "axes": dict(RAS_AXES),
-            "structures": structures, "aliases": {}}
+            "structures": structures, "aliases": aliases}
 
 
 def write_bundle(out, ci, surfaces, optimized, reports, *, source, dataset_license,
                  citation, segmentation, pipeline_config, with_volume=False,
                  created=None):
     """surfaces: 1.4 Surface list; optimized: {sid: (v, f)}; reports: {sid: 1.5 report}."""
+    all_ids = [s.structure_id for s in surfaces]
+    if len(set(all_ids)) != len(all_ids):
+        raise ValueError("bundle needs a unique structure ID for every declared label")
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     present = [s for s in surfaces if s.status == "present"]
@@ -131,7 +160,11 @@ def write_bundle(out, ci, surfaces, optimized, reports, *, source, dataset_licen
         "model.glb": _glb([(s.structure_id, *optimized[s.structure_id]) for s in present]),
         "model.orig.glb": _glb([(s.structure_id, s.vertices, s.faces) for s in present]),
     }
-    files["anatomy.json"] = (json.dumps(anatomy_sidecar(ids, source), indent=2) + "\n").encode()
+    scan_labels = None if ci.source_case.startswith("synthetic:") else {
+        s.structure_id: s.label_value for s in present
+    }
+    sidecar = anatomy_sidecar(ids, source, scan_labels=scan_labels)
+    files["anatomy.json"] = (json.dumps(sidecar, indent=2) + "\n").encode()
     for name, b in files.items():
         (out / name).write_bytes(b)
     roles = {"model.glb": ("mesh", "model/gltf-binary"),

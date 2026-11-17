@@ -235,6 +235,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
      fully removed 2026-08-13 — the line was killed 8/11 but its
      tracker half survived the baseline; Jared field-caught it.) */
   #behind { position:fixed; inset:0; z-index:1; perspective:1200px; }
+  /* MEDICAL HOOK: scan controls sit outside the movable board cards. */
+  .jas-scan-controls { position:fixed; right:12px; bottom:12px; z-index:30;
+    width:min(420px, calc(100vw - 24px)); max-height:70vh; overflow:auto;
+    box-sizing:border-box; padding:10px 14px; color:#fff; background:#17232f;
+    border:1px solid #57727d; border-radius:9px; font:13px system-ui,sans-serif; }
+  .jas-scan-controls [hidden] { display:none; }
+  .jas-scan-controls p { margin:3px 0; }
+  .jas-scan-controls button, .jas-scan-controls select { margin:3px 4px 3px 0; }
+  .jas-scan-controls button[aria-pressed="true"] { outline:2px solid #7ee5d5; }
+  .jas-scan-controls input[type="number"] { width:5em; }
+  .jas-scan-controls input[type="range"] { width:min(100%, 94px); vertical-align:middle; }
+  .jas-scan-name { overflow-wrap:anywhere; }
+  .jas-scan-slices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .jas-scan-slices canvas { display:block; width:100%; aspect-ratio:1; object-fit:contain; background:#0d151e; }
+  /* /MEDICAL HOOK */
   /* (an earlier whole-screen voice-pulse border was removed —
      THE RING is the assistant's presence now.) */
   #boot { position:absolute; inset:0; display:flex; align-items:center;
@@ -843,8 +858,8 @@ async function buildModelScene(el, src, mm, lift) {
     // MEDICAL HOOK (2.3): a jas-bundle/1 folder is verified (schema, hashes,
     // structure nodes) and its VERIFIED bytes parsed; a throw refuses the
     // model via the catch below. No manifest -> null -> upstream load path.
-    const bun = await MED.bundleFor?.(src);
-    const gltf = bun ? await new GLTFLoader().parseAsync(bun.glb, "")
+    const {glb, ...verifiedBundle} = (await MED.bundleFor?.(src)) || {};
+    const gltf = glb ? await new GLTFLoader().parseAsync(glb, "")
                      : await new GLTFLoader().loadAsync(src);
     // /MEDICAL HOOK
     const obj = gltf.scene;
@@ -865,7 +880,7 @@ async function buildModelScene(el, src, mm, lift) {
     // the box instantly.
     // MEDICAL HOOK (2.4): a rebuilt bundle at the same path must not read
     // the previous build's cached box; the manifest revision keys it
-    const bkey = "barehands-box:" + src + (bun ? "@" + bun.revision : "");
+    const bkey = "barehands-box:" + src + (glb ? "@" + verifiedBundle.revision : "");
     // /MEDICAL HOOK
     let cachedBox = null;
     try { cachedBox = JSON.parse(localStorage.getItem(bkey) || "null"); }
@@ -1060,6 +1075,7 @@ async function buildModelScene(el, src, mm, lift) {
       : nLift ? buildBloomRig(THREE, renderer, { k: 2.2, sat: 2.6, spread: 2.6 })
       : null;
     return { renderer, scene, camera, group, canvas, mixer, post, THREE, ghostMat,
+             verifiedBundle: glb ? verifiedBundle : null, // MEDICAL HOOK: scene-local metadata
              exParts, exSpread, exC: 0,
              bufSize: Math.round(MODEL_PX * Math.min(devicePixelRatio || 1, 2)) };
   } catch (e) {
@@ -1100,6 +1116,7 @@ function makeModel(src, title, mode, lift) {
     grabbedBy: [], ox: 0, oy: 0, flying: false, stretch: null };
   buildModelScene(el, src, mm, lift).then(sc => {
     if (sc) {
+      if (!el.isConnected) { disposeScene(sc); return; } // MEDICAL HOOK: late load after removal
       sc.it = it; MSCENES.set(it.id, sc);
       MED.onModelLoaded?.(sc, src);   // MEDICAL HOOK
       if (sc.exParts && sc.exParts.length > 2) it.exCap = 1;
@@ -1616,6 +1633,11 @@ addEventListener("keydown", e => {
 
 function toScreen(lm) {
   const vw = cam.videoWidth, vh = cam.videoHeight;
+  // MEDICAL HOOK: one mirrored cover mapping for the board and scan picking.
+  const mapped = MED.videoToBoard?.(lm, {width: vw, height: vh},
+    {left: 0, top: 0, width: innerWidth, height: innerHeight});
+  if (mapped) return mapped;
+  // /MEDICAL HOOK
   const scale = Math.max(innerWidth / vw, innerHeight / vh);
   const dw = vw * scale, dh = vh * scale;
   const ox = (innerWidth - dw) / 2, oy = (innerHeight - dh) / 2;
