@@ -22,8 +22,6 @@ Use a local server rather than opening the file directly, or the fonts and the h
 | T | Clock |
 | F | Fullscreen |
 
-The speaker script with per-slide timings is in [`SCRIPT.md`](SCRIPT.md).
-
 ## Assets
 
 - `film.mp4`: AI-generated concept film. It is not footage of the product.
