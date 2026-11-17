@@ -78,6 +78,15 @@ hardcoding mesh names.
 | `layer` | integer ≥ 0 | yes | dissection depth — layer 0 is outermost/skin-level, higher numbers are deeper. Drives the `layer` verb (see `schemas/verbs.md`) |
 | `fma` | string | no | Foundational Model of Anatomy ontology id, e.g. `"FMA:9466"` |
 | `teach` | object | no | `{function, connects[], diseased_appearance, sources[]}` — all optional within `teach`; `connects` is a list of structure ids |
+| `scan` | object | no | `{label_value}` preserves the positive integer segmentation label declared by the bundle. Only present structures appear in this sidecar; empty labels are recorded in the manifest. |
+| `teaching_reference` | object | no | `{text, sources[], review_status: "pending_review"}` contains a general anatomy reference for human review. It is separate from reviewed `teach` content and scan-derived provenance. Do not publish or speak it as reviewed material. |
+
+Scan sidecars reuse the stable structure IDs declared by `jas-bundle/1`. If
+they provide `scan` labels, every present structure must agree with the
+manifest. Unknown dataset labels retain their recorded ID and a neutral
+display name without a teaching reference; a missing structure receives
+neither a mesh nor an alias. Existing sidecars without these optional fields
+remain valid.
 
 ### Ids
 

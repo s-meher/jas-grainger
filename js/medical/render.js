@@ -30,6 +30,8 @@ const CAP_FLESH = 0x9a6a66;    // fallback when a material carries no colour
 // scratch — reused every frame so a 45Hz tick allocates nothing
 let _v, _m1, _m2, _b1, _b2;
 
+import { legacyCutToPatientPlane, patientPlaneToGroup } from "./patient-space.js";
+
 function css(THREE) {
   if (document.getElementById(CSS_ID)) return;
   const s = document.createElement("style");
@@ -135,7 +137,7 @@ function localBox(sc) {
   const inv = new THREE.Matrix4().copy(sc.group.matrixWorld).invert();
   const b = new THREE.Box3(), t = new THREE.Box3(), mm = new THREE.Matrix4();
   sc.group.traverse(n => {
-    if (!n.isMesh || !n.geometry || n.userData.medCap) return;   // not our own caps
+    if (!n.isMesh || !n.geometry || n.userData.medCap || n.userData.phase3Volume) return;
     if (!n.geometry.boundingBox) n.geometry.computeBoundingBox();
     if (!n.geometry.boundingBox) return;
     t.copy(n.geometry.boundingBox);
@@ -179,8 +181,17 @@ function axisVec(THREE, M, preset) {
 export function applyCut(sc, st) {
   const M = sc.med, THREE = sc.THREE;
   const cut = st.cut;
+  M.patientCut = null;
   if (!cut) { M.plane = null; M.planeL = null; return null; }
   const lb = localBox(sc);
+  if (sc.bundle) {
+    M.patientCut = legacyCutToPatientPlane(sc, cut, lb);
+    M.planeL = M.patientCut && patientPlaneToGroup(sc, M.patientCut);
+    if (!M.planeL) { M.plane = null; return null; }
+    sc.group.updateWorldMatrix(true, false);
+    if (!M.plane) M.plane = new THREE.Plane();
+    return M.plane.copy(M.planeL).applyMatrix4(sc.group.matrixWorld);
+  }
   const c = lb.getCenter(new THREE.Vector3());
   const h = lb.getSize(new THREE.Vector3()).multiplyScalar(0.5);
   let n, pt;

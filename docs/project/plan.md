@@ -135,6 +135,10 @@ Every row remains open until its exit condition has a linked PR/test record.
 
 ### Phase 3 / M3
 
+The [Phase 3 implementation guide](phase3-m3.md) covers the delivered scan
+workflow. The [validation record](../validation/2026-11-17-phase3.md) tracks
+automated evidence and the outstanding hardware and imaging acceptance.
+
 | ID | Owner / status | Deliverable and acceptance | Depends on |
 | --- | --- | --- | --- |
 | 1.8 | Data / Extend | Extend existing anatomy sidecar, stable structure IDs and citations for scan-derived structures; separate observed patient annotations from general teaching. | G1, G2 |
