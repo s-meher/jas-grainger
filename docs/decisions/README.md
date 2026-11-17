@@ -29,4 +29,4 @@ implementation spikes establish evidence.
 | [0005](0005-tracking-worker.md) | Hand tracking on the main thread vs in a worker | proposed (main-thread default until measured on target hardware) |
 
 Phases 1 and 2 log each smaller choice as a decision tree:
-[Phase 1](phase1-decision-log.md) · [Phase 2](phase2-decision-log.md).
+[Phase 1](phase1-decision-log.md) · [Phase 2](phase2-decision-log.md) · [Phase 4](phase4-decision-log.md).

@@ -19,6 +19,7 @@ flowchart LR
   Server --> Case[case-render: filtered lesion data]
   Driver[bin scripts / examiner skill] -->|validated commands| Server
   Driver --> Narrate[macOS narration helper]
+  Core --> Hud[js/medical/hud.js: demo overlay]
 ```
 
 There is no patient-scan ingestion pipeline, volume renderer, React application,

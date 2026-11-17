@@ -104,6 +104,11 @@ medical layer, so you don't re-learn something already paid for.
   board is open. Board-state tests report SKIPPED instead of failing in that
   case. An idle but live tracker posts byte-identical heartbeats, so matching
   hashes don't mean the page has stopped. `6dd96ab`, `2a2664e`
+- **FACT** — Queued `/cmd` commands go to ONE tracker: each `/state`
+  heartbeat drains up to 8 (`server.py` `_CMDS[:8]`), so with two tracker
+  tabs open a `bin/board.sh` command can land in the other tab and seem to
+  do nothing. Test with a single tracker tab. Observed 2026-11-16 in the
+  3.9 manual session; `server.py`
 - **FACT** — The `/state` heartbeat budget is 256 KB, which is why the bus
   field names are short (`cut`, `iso`, `hid`, `lb`, `pt`). `schemas/verbs.md`
 - **FACT** — The tracker page can't boot headless because MediaPipe needs a
@@ -117,6 +122,15 @@ medical layer, so you don't re-learn something already paid for.
   (medical) · **G** cut-gesture sampler (medical, `gesture.js`).
 - **FACT** — The flat-palm incision **works on a real hand**. This was the
   first live confirmation of any cut threshold. `879e36d`
+- **FACT** — One more tracker hotkey (3.9, `js/medical/hud.js`): **H** hides
+  or shows the demo HUD. The HUD shows a pointed structure by its sidecar
+  `name` only, never an id, and is silent (no browser speech).
+  `tests/test_hud.mjs`
+- **FACT** — The cursor already has a filter: an EMA, α 0.45 per video frame
+  (`stage.html` ~2091). On synthetic 30 fps signals it cuts 3 px jitter to
+  1.71 px σ and lags a 1500 px/s move by 41 ms; One Euro (1 Hz, 0.01, 1 Hz)
+  gives 1.09 px and 8 ms. Not measured on a real hand.
+  `tests/test_smoothing.mjs`
 
 ### Content
 - **FACT** — Under the Fourth Universal Definition, a 48 h infarct is
@@ -200,6 +214,17 @@ medical layer, so you don't re-learn something already paid for.
 - **OPEN** — The visual suite hasn't been re-run since `b26172e` onward
   changed render/camera behaviour (drift removed, explode dolly added).
 - **OPEN** — `Claude.pdf` in the repo root is untracked and unreviewed.
+- **OPEN** — HUD manual session is partial: S10 two-hand ambiguity, S11
+  bundle fields, S12 answer isolation and S13 HUD legibility PASS
+  (2026-11-16); S1/S14 covered only by a general owner summary; the
+  post-removal checks R1–R6 and A1 (default vs `?smooth=oneeuro` A/B) not
+  run. One Euro stays opt-in. `docs/validation/2026-11-14-3-9-3-11-ui.md`
+- **OPEN** — On reacquisition the default EMA glides 45 %/frame from the
+  frozen position and writes the glide into `cur.history` (135 px on a 300 px
+  jump), contradicting `foundCursor`'s "resumes from where it is NOW". Not
+  seen as a fling in the field yet; `?smooth=oneeuro` avoids it.
+- **OPEN** — `test_visual.py` teardown DIFFER reproduces on pristine `HEAD`
+  (2026-11-14): the "baseline again" frame varies between runs.
 
 ---
 
@@ -216,3 +241,10 @@ medical layer, so you don't re-learn something already paid for.
   `5815850`.
 - **2026-09-16** — Ledger created. Contract 77/77, gesture 54/54, both
   validators clean. README rewritten around the anatomy edition.
+- **2026-11-14** — 3.9 demo HUD, 3.11 One Euro opt-in, and a 3.10
+  browser-speech prototype (`feat/ui/3-10-browser-tts`).
+- **2026-11-16** — Manual Chrome/webcam session (partial): S10–S13 PASS;
+  A1 not run. Found: one tracker tab only (command queue).
+- **2026-11-17** — Browser speech (3.10) removed before merge at team
+  direction; HUD and smoothing kept. HUD 47, smoothing 19, contract 97,
+  tracker browser 32 (incl. no console errors, speak never called).
