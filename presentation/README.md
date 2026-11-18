@@ -1,6 +1,6 @@
 # NOVA · Grainger pitch deck
 
-A paged, website-style slide deck for the 10-minute Grainger Computing Innovation Prize pitch. It is 12 slides, planned at 9:10.
+A paged, website-style slide deck for the 10-minute Grainger Computing Innovation Prize pitch. It is 10 slides, planned at 8:15.
 
 ## Run it
 
