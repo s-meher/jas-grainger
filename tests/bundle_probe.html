@@ -57,9 +57,26 @@ try {
   out.arm_right_of_body_mm = +(b.sceneToMm(arm).x - b.sceneToMm(body).x).toFixed(3);
   // a plain model (no manifest) takes the untouched upstream path
   out.heart_is_plain = (await bundleFor("/media/models/heart/heart.glb")) === null;
+  // == shading: the pipeline ships no NORMAL, so the REAL loader flat-shades;
+  // core.js's ensureNormals (its own source text, run here on the loaded
+  // phantom) must add normals AND turn flat shading off, moving no vertex ==
+  const meshes = []; obj.traverse(n => { if (n.isMesh) meshes.push(n); });
+  const mats = () => meshes.flatMap(n => [].concat(n.material));
+  out.loader_flat_shaded = meshes.length > 0 && mats().every(m => m.flatShading) &&
+                           meshes.every(n => !n.geometry.attributes.normal);
+  const src0 = await (await fetch("../js/medical/core.js")).text();
+  const fn = src0.match(/\nfunction ensureNormals\(sc\) \{[\s\S]*?\n\}\n/)[0];
+  const pos0 = meshes.map(n => n.geometry.attributes.position.array.slice());
+  new Function("sc", "console", fn + "\nensureNormals(sc);")(
+    { scene: obj, med: { src } }, { info() {} });
+  out.smooth_shaded = mats().every(m => !m.flatShading) &&
+                      meshes.every(n => !!n.geometry.attributes.normal);
+  out.vertices_unmoved = meshes.every((n, i) =>
+    n.geometry.attributes.position.array.every((v, k) => v === pos0[i][k]));
   out.ok = out.verified && out.attached && out.marker && out.tumor_err_mm < 0.8 &&
            out.roundtrip_err_mm < 1e-6 && Math.abs(out.scene_per_mm - out.fit) < 1e-6 &&
-           out.arm_right_of_body_mm > 0 && out.heart_is_plain;
+           out.arm_right_of_body_mm > 0 && out.heart_is_plain &&
+           out.loader_flat_shaded && out.smooth_shaded && out.vertices_unmoved;
 } catch (e) { out.error = String(e && e.message || e); out.ok = false; }
 document.getElementById("out").textContent = JSON.stringify(out);
 </script>
