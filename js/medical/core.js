@@ -254,13 +254,21 @@ function buildIndex(sc) {
 // normalize(vec3(0)) is NaN — which is why the x-ray ghost drew literally
 // nothing (zero non-white pixels) until this ran. Compute them once, at
 // load, for any medical model that arrives without them.
+// The loader's flat-shading flag must come OFF once real normals exist:
+// left on, every marching-cubes facet lights as its own tile and the
+// voxel staircase reads as deep terracing (the 2026-11-17 liver screenshot).
+// Shading only — no vertex moves, so the mesh QA in pipeline/ still holds.
 function ensureNormals(sc) {
   let fixed = 0;
   sc.scene.traverse(n => {
     const g = n.isMesh && n.geometry;
     if (!g || !g.attributes || !g.attributes.position) return;
     if (g.attributes.normal) return;
-    try { g.computeVertexNormals(); fixed++; } catch (e) {}
+    try {
+      g.computeVertexNormals(); fixed++;
+      for (const m of [].concat(n.material || []))
+        if (m && m.flatShading) { m.flatShading = false; m.needsUpdate = true; }
+    } catch (e) {}
   });
   if (fixed)
     console.info(`[medical] computed vertex normals for ${fixed} mesh(es) in ` +
