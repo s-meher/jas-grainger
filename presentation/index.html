@@ -24,15 +24,15 @@
 :root{
   --bg:#06090d; --bg-2:#0b1117; --surface:rgba(150,200,210,.055); --surface-2:rgba(150,200,210,.09);
   --line:rgba(190,225,230,.12); --line-2:rgba(190,225,230,.22);
-  --ink:#eaf2f3; --ink-2:rgba(234,242,243,.74); --ink-3:rgba(234,242,243,.56);
+  --ink:#eef5f6; --ink-2:rgba(238,245,246,.9); --ink-3:rgba(238,245,246,.76);
   --teal:#78e0d6; --teal-2:#3fb8ae; --teal-dim:rgba(120,224,214,.14);
   --amber:#ffb84d; --amber-dim:rgba(255,184,77,.14); --ok:#8be3a6; --cut:#ff6b5e;
   --serif:"Instrument Serif",Georgia,serif; --sans:"Geist","Helvetica Neue",Arial,sans-serif; --mono:"Geist Mono",ui-monospace,Menlo,monospace;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1);
   --u:min(1vw,1.7778vh);
   --mx:calc(var(--u)*4.6); --gut:calc(var(--u)*1.8);
-  --fs-hero:calc(var(--u)*6.6); --fs-h2:calc(var(--u)*4.2); --fs-h3:calc(var(--u)*1.38);
-  --fs-body:calc(var(--u)*1.16); --fs-small:calc(var(--u)*.9); --fs-big:calc(var(--u)*6.2);
+  --fs-hero:calc(var(--u)*7.2); --fs-h2:calc(var(--u)*4.9); --fs-h3:calc(var(--u)*1.8);
+  --fs-body:calc(var(--u)*1.5); --fs-small:calc(var(--u)*1.2); --fs-big:calc(var(--u)*7.4);
   --sp1:calc(var(--u)*.6); --sp2:calc(var(--u)*1.2); --sp3:calc(var(--u)*2); --sp4:calc(var(--u)*3.2);
   --r:calc(var(--u)*1.1);
   color-scheme:dark;
@@ -49,7 +49,7 @@ button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
 .num{font-variant-numeric:tabular-nums}
 .mono{font-family:var(--mono)}
-.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:8px;text-decoration:none}
+.skip{position:absolute;left:12px;top:-200px;z-index:100;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:8px;text-decoration:none}
 .skip:focus{top:12px}
 
 h2{font-size:var(--fs-h2);font-weight:500;line-height:1.02;letter-spacing:-.035em;text-wrap:balance;max-width:20ch}
@@ -185,21 +185,21 @@ p{max-width:60ch}
 .measures span{font-size:var(--fs-small);padding:.4em .9em;border-radius:99px;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink-2)}
 
 /* ---------- 06 innovation ---------- */
-.s-inn .left{grid-column:1/5;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4);position:relative;z-index:2}
-.s-inn .list{display:flex;flex-direction:column;gap:var(--sp3)}
+.s-inn .left{grid-column:1/6;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3);position:relative;z-index:2}
+.s-inn .list{display:flex;flex-direction:column;gap:var(--sp2)}
 .s-inn .list li{display:flex;flex-direction:column;gap:.3em;padding-left:var(--sp2);box-shadow:inset 2px 0 0 var(--line-2);transition:box-shadow .3s ease}
 .s-inn .list li.on{box-shadow:inset 2px 0 0 var(--teal)}
 .s-inn .list p{font-size:var(--fs-small);color:var(--ink-2)}
-.organ{position:absolute;top:0;bottom:0;right:0;left:30%;z-index:1}
+.organ{position:absolute;top:0;bottom:0;right:0;left:40%;z-index:1}
 .organ canvas{position:absolute;inset:0;width:100%;height:100%;cursor:ew-resize;touch-action:pan-y}
 .organ svg.hand{position:absolute;width:calc(var(--u)*13);height:calc(var(--u)*16);pointer-events:none}
 .readout{position:absolute;right:var(--mx);bottom:calc(var(--u)*6.4);display:flex;gap:var(--sp2);font-family:var(--mono);font-size:var(--fs-small);color:var(--ink-3)}
 .readout b{color:var(--teal);font-weight:500}
 
 /* ---------- 07 scale ---------- */
-.s-sca .left{grid-column:1/7;display:flex;flex-direction:column;justify-content:center;gap:var(--sp4);position:relative;z-index:2}
+.s-sca .left{grid-column:1/7;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3);position:relative;z-index:2}
 .figs{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:var(--sp4)}
-.figs b{display:block;font-size:var(--fs-big);font-weight:500;letter-spacing:-.05em;line-height:1}
+.figs b{display:block;font-size:calc(var(--fs-big)*.85);font-weight:500;letter-spacing:-.05em;line-height:1}
 .figs b small{font-family:var(--serif);font-style:italic;font-weight:400;font-size:.55em;color:var(--teal);letter-spacing:0;margin-left:.04em}
 .figs p{font-size:var(--fs-small);color:var(--ink-2);max-width:20ch;margin-top:.5em}
 .subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp2) var(--sp3)}
@@ -247,9 +247,11 @@ p{max-width:60ch}
 .set .lic{font-family:var(--mono);font-size:max(11px,calc(var(--fs-small)*.88));color:var(--ink-3)}
 
 /* ---------- 10 scan to 3D: system map ---------- */
-.s-road .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp3)}
+.s-road .g{grid-template-rows:auto 1fr auto;row-gap:var(--sp2)}
+.s-road .head h2{max-width:none;flex:none}
+.s-road .head .lede{max-width:32ch}
 .s-road .head{grid-column:1/13;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp4)}
-.sysmap{grid-column:1/13;position:relative;display:grid;grid-template-columns:1fr .9fr 1.3fr .55fr 1.1fr .4fr 1fr;grid-template-rows:repeat(3,auto);row-gap:calc(var(--u)*2.4);align-items:center;align-self:center}
+.sysmap{grid-column:1/13;position:relative;display:grid;grid-template-columns:1fr .6fr 1.3fr .4fr 1.1fr .3fr 1fr;grid-template-rows:repeat(3,auto);row-gap:calc(var(--u)*1.5);align-items:center;align-self:center}
 .sysmap .wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .wires path{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .wires .w-n{stroke:var(--ink-3)}.wires .w-t{stroke:var(--teal)}.wires .w-a{stroke:var(--amber)}
