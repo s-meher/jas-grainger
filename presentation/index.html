@@ -9,7 +9,7 @@
 <meta name="site-kind" content="software">
 <meta name="theme-color" content="#06090d">
 <meta property="og:title" content="NOVA · Grainger Computing Innovation Prize">
-<meta property="og:description" content="The scan, back in the surgeon's hands. A Team JAS pitch.">
+<meta property="og:description" content="The scan, back in the surgeon's hands. A Team NOVA pitch.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2306090d'/%3E%3Cpath d='M9 23V9l14 14V9' stroke='%2378e0d6' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
@@ -202,9 +202,9 @@ p{max-width:60ch}
 .figs b{display:block;font-size:calc(var(--fs-big)*.85);font-weight:500;letter-spacing:-.05em;line-height:1}
 .figs b small{font-family:var(--serif);font-style:italic;font-weight:400;font-size:.55em;color:var(--teal);letter-spacing:0;margin-left:.04em}
 .figs p{font-size:var(--fs-small);color:var(--ink-2);max-width:20ch;margin-top:.5em}
-.subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp2) var(--sp3)}
-.subs li{display:flex;flex-direction:column;gap:.2em;padding-top:var(--sp1);border-top:1px solid var(--line)}
-.subs h3{font-size:var(--fs-body)}
+.subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp3) var(--sp4)}
+.subs li{display:flex;flex-direction:column;gap:.2em;padding-top:var(--sp2);border-top:1px solid var(--line-2)}
+.subs h3{font-size:calc(var(--fs-h3)*1.15)}
 .subs p{font-size:var(--fs-small);color:var(--ink-2)}
 .globe{position:absolute;top:0;bottom:0;right:0;width:58%}
 .globe canvas{position:absolute;inset:0;width:100%;height:100%}
@@ -239,7 +239,8 @@ p{max-width:60ch}
 .sets{grid-column:1/13;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gut);min-height:0}
 .set{display:flex;flex-direction:column;overflow:hidden}
 .set .thumb{width:100%;flex:1;min-height:calc(var(--u)*7);border-bottom:1px solid var(--line);background:#020406}
-.set .body{padding:var(--sp2) var(--sp3) var(--sp3);display:flex;flex-direction:column;gap:.5em}
+.set .body{padding:var(--sp2) var(--sp3) var(--sp3);display:flex;flex-direction:column;gap:.5em;min-height:calc(var(--u)*11)}
+.set .top span{white-space:nowrap}
 .set .top{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp1);font-family:var(--mono);font-size:var(--fs-small);color:var(--teal)}
 .set .top b{font-family:var(--sans);font-size:calc(var(--fs-h3)*2);color:var(--ink);font-weight:500;letter-spacing:-.045em;line-height:1}
 .set .top b small{font-size:.42em;letter-spacing:0;color:var(--ink-3);margin-left:.3em;font-weight:400}
@@ -289,6 +290,27 @@ p{max-width:60ch}
 .team>div{border-top:1px solid var(--line);padding-top:var(--sp1)}
 .team b{display:block;font-weight:550}
 .team span{font-size:var(--fs-small);color:var(--ink-3)}
+
+/* ---------- vision: today, next, later ---------- */
+.s-vis .g{grid-template-rows:auto 1fr;row-gap:var(--sp4)}
+.s-vis .head{grid-column:1/13;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp4)}
+.s-vis .head h2{max-width:none}
+.s-vis .head .lede{max-width:34ch}
+.vis{grid-column:1/13;position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gut);align-self:stretch;padding-bottom:calc(var(--u)*1.5)}
+.vis::before{content:"";position:absolute;left:0;right:calc(var(--u)*.4);top:calc(var(--u)*1.25);height:1px;background:var(--line-2)}
+.vis::after{content:"";position:absolute;right:0;top:calc(var(--u)*1.25 - 5px);width:10px;height:10px;border-top:1px solid var(--line-2);border-right:1px solid var(--line-2);transform:rotate(45deg)}
+.vcol{display:flex;flex-direction:column;gap:var(--sp2);min-width:0}
+.vhead{display:flex;align-items:center;gap:var(--sp1);position:relative;z-index:1}
+.pill{display:inline-flex;align-items:center;font-family:var(--mono);font-size:var(--fs-small);padding:.35em 1em;border-radius:99px;line-height:1.3;background:var(--bg)}
+.pill.p-now{color:var(--ok);box-shadow:inset 0 0 0 1px rgba(139,227,166,.45),inset 0 0 0 100px rgba(139,227,166,.08)}
+.pill.p-next{color:var(--teal);box-shadow:inset 0 0 0 1px rgba(120,224,214,.45),inset 0 0 0 100px rgba(120,224,214,.08)}
+.pill.p-later{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(255,184,77,.45),inset 0 0 0 100px rgba(255,184,77,.08)}
+.vhead svg{width:calc(var(--u)*1.7);height:calc(var(--u)*1.7);color:var(--ink-3);background:var(--bg);padding:2px}
+.vcard{flex:1;display:grid;grid-template-rows:1fr 1fr;gap:var(--sp3);padding:var(--sp4);border-radius:var(--r);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.vcard li{display:grid;grid-template-columns:auto 1fr;gap:var(--sp2);align-items:center;align-self:center}
+.vcard li i{font-style:normal;font-family:var(--mono);font-size:var(--fs-body);width:2.4em;height:2.4em;border-radius:50%;display:grid;place-items:center;color:var(--teal);box-shadow:inset 0 0 0 1px var(--line-2);align-self:start}
+.vcard h3{font-size:calc(var(--fs-h3)*1.45)}
+.vcard p{font-size:var(--fs-body);color:var(--ink-2);margin-top:.35em}
 
 /* ---------- 12 heart + close ---------- */
 .s-heart .left{grid-column:1/5;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3);position:relative;z-index:2}
@@ -377,6 +399,9 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
   .elabel{display:none}
   .n-img{order:1}.elabel{order:2}.n-hand{order:3}.n-pipe{order:4}.n-ai{order:5}.n-web{order:6}.n-use{order:7}.sproof{order:8;margin-top:12px}
   .conv{grid-template-columns:1fr}
+  .s-vis .head{flex-direction:column;align-items:flex-start}
+  .vis{grid-template-columns:1fr}
+  .vis::before,.vis::after{display:none}
   .conv .panel{min-height:0}
   .team{grid-template-columns:1fr 1fr}
   .heartview{position:relative;left:auto;height:90vw;margin:0 -16px}
@@ -397,9 +422,9 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
   <header class="rail" id="rail">
     <a class="mark" href="#s-film" aria-label="NOVA, first slide"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x=".5" y=".5" width="31" height="31" rx="8" fill="none" stroke="rgba(234,242,243,.3)"/><path d="M10 22V10l12 12V10" stroke="#78e0d6" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>NOVA</a>
     <nav class="crit" id="crit" aria-label="Judging criteria">
-      <button type="button" data-goto="s-eff" data-c="eff"><span data-t="Effectiveness">Effectiveness</span></button>
-      <button type="button" data-goto="s-inn" data-c="inn"><span data-t="Innovation">Innovation</span></button>
+      <button type="button" data-goto="s-problem" data-c="eff"><span data-t="Effectiveness">Effectiveness</span></button>
       <button type="button" data-goto="s-sca" data-c="sca"><span data-t="Scalability">Scalability</span></button>
+      <button type="button" data-goto="s-inn" data-c="inn"><span data-t="Innovation">Innovation</span></button>
       <button type="button" data-goto="s-emp" data-c="emp"><span data-t="Empowerment">Empowerment</span></button>
       <button type="button" data-goto="s-exe" data-c="exe"><span data-t="Execution">Execution</span></button>
     </nav>
@@ -409,16 +434,16 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
   <main id="main">
 
   <!-- 01 film -->
-  <section class="slide s-film" id="s-film" data-title="NOVA and the film" data-budget="85" data-rubric="Grainger Computing Innovation Prize · Team JAS · The film is AI-generated concept footage, not the product" aria-label="Slide 1: NOVA and the concept film" tabindex="-1">
+  <section class="slide s-film" id="s-film" data-title="NOVA and the film" data-budget="85" data-rubric="Grainger Computing Innovation Prize · Team NOVA · The film is AI-generated concept footage, not the product" aria-label="Slide 1: NOVA and the concept film" tabindex="-1">
     <video id="film" muted loop playsinline autoplay preload="auto" aria-label="NOVA concept film"><source src="film.mp4" type="video/mp4"></video>
     <div class="scrim"></div>
     <div class="copy">
-      <h1 data-in>The scan, back in the <em>surgeon's hands.</em></h1>
+      <h1 data-in>The scan, back in the <em>surgeon's hands</em></h1>
       <p class="lede" data-in>NOVA turns a patient's CT or MRI into a 3D model a surgeon can turn, zoom and cut open with bare hands. Nothing to touch, so nothing to contaminate.</p>
       <div class="act" data-in>
         <button class="btn" type="button" id="playFilm">Play the film <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z"/></svg></button>
       </div>
-      <div class="meta" data-in><span>Team <b>JAS</b></span><span>Runs on <b>laptop · webcam · monitor</b></span></div>
+      <div class="meta" data-in><span>Team <b>NOVA</b></span><span>Runs on <b>laptop · webcam · monitor</b></span></div>
     </div>
     <div class="filmbar" aria-label="Film controls">
       <button type="button" id="filmPause">Pause</button>
@@ -430,14 +455,14 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
   </section>
 
   <!-- 02 problem -->
-  <section class="slide s-problem" id="s-problem" data-title="The problem" data-budget="40" data-rubric="The problem: once a surgeon scrubs in, the scan is out of reach" aria-label="Slide 2: The problem" tabindex="-1">
+  <section class="slide s-problem" id="s-problem" data-title="The problem" data-budget="40" data-c="eff" data-rubric="Effectiveness: the problem NOVA solves" aria-label="Slide 2: The problem" tabindex="-1">
     <div class="g">
       <div class="left">
-        <h2 data-in>Once a surgeon scrubs in, the scan <em>stays out of reach.</em></h2>
+        <h2 data-in>Once a surgeon scrubs in, the scan <em>stays out of reach</em></h2>
         <ul class="pts3">
-          <li data-in><i>1</i><div><h3>The screen sits outside the sterile field</h3><p>Checking it means stepping away, or asking someone else to drive.</p></div></li>
-          <li data-in><i>2</i><div><h3>Flat slices, solid anatomy</h3><p>The surgeon rebuilds 3D in their head when attention is scarcest.</p></div></li>
-          <li data-in><i>3</i><div><h3>Load turns into risk</h3><p>Slower decisions in exactly the steps that matter most.</p></div></li>
+          <li data-in><i>1</i><div><h3>The surgeon can't touch the screen</h3><p>It's outside the sterile area. They have to step away or ask someone else.</p></div></li>
+          <li data-in><i>2</i><div><h3>Scans are flat 2D images</h3><p>The surgeon has to picture the 3D organ in their head.</p></div></li>
+          <li data-in><i>3</i><div><h3>That slows surgery down</h3><p>Extra mental work at the moments that matter most.</p></div></li>
         </ul>
       </div>
       <div class="stackwrap" data-in>
@@ -447,11 +472,33 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
     </div>
   </section>
 
+  <!-- 07 scale -->
+  <section class="slide s-sca" id="s-sca" data-title="Scalability" data-c="sca" data-budget="45" data-rubric="Implementation · Scalability: reach, ease of implementation, simplicity of adoption, minimal barriers to access" aria-label="Slide 3: Scalability" tabindex="-1">
+    <div class="globe"><canvas id="globe" aria-hidden="true"></canvas></div>
+    <div class="g">
+      <div class="left">
+        <h2 data-in>Built to reach people, <em>not just hospitals that can pay</em></h2>
+        <div class="figs">
+          <div data-in><b class="num"><span data-count="313">313</span><small>M</small></b><p>surgical procedures a year worldwide</p></div>
+          <div data-in><b class="num"><span data-count="5">5</span><small>B</small></b><p>people without safe, affordable surgery</p></div>
+          <div data-in><b class="num"><span data-count="3">3</span></b><p>devices: laptop, webcam, monitor</p></div>
+        </div>
+        <ul class="subs">
+          <li data-in><h3>Easy to implement</h3></li>
+          <li data-in><h3>Simple to adopt</h3></li>
+          <li data-in><h3>Fewer barriers</h3></li>
+          <li data-in><h3>People reached</h3></li>
+        </ul>
+        <p class="src" data-in>Figures: Lancet Commission on Global Surgery, 2015.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- 04 how -->
-  <section class="slide s-how" id="s-how" data-title="How it works" data-budget="45" data-rubric="The system: four computing stages behind one webcam" aria-label="Slide 3: How it works" tabindex="-1">
+  <section class="slide s-how" id="s-how" data-title="How it works" data-budget="45" data-c="eff" data-rubric="Effectiveness: how NOVA solves it" aria-label="Slide 4: How it works" tabindex="-1">
     <div class="g">
       <div class="head">
-        <h2 data-in>Four stages behind <em>one webcam.</em></h2>
+        <h2 data-in>Four stages behind <em>one webcam</em></h2>
         <p class="lede" data-in>From a labelled scan to a model the surgeon handles in real time.</p>
       </div>
       <div class="flow">
@@ -459,19 +506,6 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
         <div class="panel" data-in><div class="viz"><canvas id="vHand" aria-hidden="true"></canvas></div><div class="txt"><span class="k">See</span><h3>Hands, tracked</h3><p>Computer vision finds both hands and their pose in the live webcam feed.</p></div></div>
         <div class="panel" data-in><div class="viz"><canvas id="vResp" aria-hidden="true"></canvas><span class="gesture" id="gest">pinch → <b>turn</b></span></div><div class="txt"><span class="k">Respond</span><h3>Gesture to action</h3><p>Pinch to turn, spread to zoom, a flat palm to slice. Low latency.</p></div></div>
         <div class="panel ai" data-in><div class="viz"><canvas id="vAdv" aria-hidden="true"></canvas></div><div class="txt"><span class="k">Advise</span><h3>A second pair of eyes</h3><p>A vision language model flags regions worth a second look.</p></div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 05 effectiveness -->
-  <section class="slide s-eff" id="s-eff" data-title="Effectiveness" data-c="eff" data-budget="50" data-rubric="Effectiveness: does it solve the problem?" aria-label="Slide 4: Effectiveness" tabindex="-1">
-    <div class="g">
-      <div class="head"><h2 data-in>Does it solve the problem? <em>Each piece, honestly.</em></h2></div>
-      <div class="rows">
-        <div class="panel" data-in><p class="q">Scans out of reach after scrubbing in</p><p class="a">Turn, zoom, pull apart and cut the model with hands that touch nothing</p><span class="st st-work">Working</span></div>
-        <div class="panel" data-in><p class="q">2D slices are hard to read under pressure</p><p class="a">The patient's own anatomy, cut along any plane</p><span class="st st-work">Working</span></div>
-        <div class="panel" data-in><p class="q">High load slows decisions</p><p class="a">The plan stays in view, and a vision language model points at what to check</p><span class="st st-prop">Proposed</span></div>
-        <div class="panel" data-in><p class="q">Residents learn from flat diagrams</p><p class="a">The same tool on real scans and sourced cases, with grading</p><span class="st st-work">Working</span></div>
       </div>
     </div>
   </section>
@@ -484,45 +518,23 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
     </div>
     <div class="g">
       <div class="left">
-        <h2 data-in>Your palm <em>is the scalpel.</em></h2>
+        <h2 data-in>Your palm <em>is the scalpel</em></h2>
         <ul class="list" id="innList">
-          <li class="on" data-in><h3>The hand's plane becomes the incision</h3><p>Sweep a flat palm to cut; spread two fingers to go deeper. Cut faces render solid.</p></li>
-          <li data-in><h3>Sterile by design</h3><p>The only hardware is a webcam on the monitor.</p></li>
-          <li data-in><h3>Measured in real millimetres</h3><p>Simplified meshes must pass displacement, volume and topology checks, so thin vessels stay.</p></li>
-          <li data-in><h3>An AI with a narrow set of controls</h3><p>It sees what the hand points at and can only send validated commands.</p></li>
+          <li class="on" data-in><h3>Gestured incisions</h3><p>Move your palm through the model to slice it.</p></li>
+          <li data-in><h3>Sterile by design</h3><p>Just a webcam. The surgeon stays sterile.</p></li>
+          <li data-in><h3>True to anatomy</h3><p>Real patient scans become real 3D models.</p></li>
+          <li data-in><h3>Safe AI</h3><p>It can only point things out. It can't take actions on its own.</p></li>
         </ul>
       </div>
     </div>
     <div class="readout" aria-hidden="true"><span>gesture <b>flat palm</b></span><span>plane x <b id="planeX">+0.00</b></span><span>faces <b>solid</b></span></div>
   </section>
 
-  <!-- 07 scale -->
-  <section class="slide s-sca" id="s-sca" data-title="Scalability" data-c="sca" data-budget="45" data-rubric="Implementation · Scalability: reach, ease of implementation, simplicity of adoption, minimal barriers to access" aria-label="Slide 6: Scalability" tabindex="-1">
-    <div class="globe"><canvas id="globe" aria-hidden="true"></canvas></div>
-    <div class="g">
-      <div class="left">
-        <h2 data-in>Built to reach people, <em>not just hospitals that can pay.</em></h2>
-        <div class="figs">
-          <div data-in><b class="num"><span data-count="313">313</span><small>M</small></b><p>surgical procedures a year worldwide</p></div>
-          <div data-in><b class="num"><span data-count="5">5</span><small>B</small></b><p>people without safe, affordable surgery</p></div>
-          <div data-in><b class="num"><span data-count="3">3</span></b><p>devices: laptop, webcam, monitor</p></div>
-        </div>
-        <ul class="subs">
-          <li data-in><h3>Easy to implement</h3><p>Runs in Chrome on equipment already in the building.</p></li>
-          <li data-in><h3>Simple to adopt</h3><p>Pinch, pull, spread, slice. Minutes to learn.</p></li>
-          <li data-in><h3>Fewer barriers</h3><p>Open source, on MediaPipe, three.js and open CT data.</p></li>
-          <li data-in><h3>People reached</h3><p>Surgeons who plan from imaging, and the residents who train.</p></li>
-        </ul>
-        <p class="src" data-in>Figures: Lancet Commission on Global Surgery, 2015.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- 08 empowerment -->
-  <section class="slide s-emp" id="s-emp" data-title="Empowerment" data-c="emp" data-budget="45" data-rubric="Implementation · Empowerment: all people, including underrepresented communities, above technology in access, usefulness and control" aria-label="Slide 7: Empowerment" tabindex="-1">
+  <section class="slide s-emp" id="s-emp" data-title="Empowerment" data-c="emp" data-budget="45" data-rubric="Implementation · Empowerment: all people, including underrepresented communities, above technology in access, usefulness and control" aria-label="Slide 6: Empowerment" tabindex="-1">
     <div class="g">
       <div class="left">
-        <h2 data-in>The AI flags. <em>The surgeon decides.</em></h2>
+        <h2 data-in>The AI flags, <em>the surgeon decides</em></h2>
         <ul class="three">
           <li data-in><h3>Access</h3><p>Programs without sim labs and hospitals without navigation suites still get patient-specific 3D, on hardware they own.</p></li>
           <li data-in><h3>Usefulness</h3><p>Every name and teaching line is cited and reviewed. Nothing clinical is invented at runtime.</p></li>
@@ -556,26 +568,26 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
   </section>
 
   <!-- 09 the data -->
-  <section class="slide s-exe" id="s-exe" data-title="The data" data-c="exe" data-budget="45" data-rubric="Execution: the public datasets every 3D model is built from" aria-label="Slide 8: The datasets" tabindex="-1">
+  <section class="slide s-exe" id="s-exe" data-title="The data" data-c="exe" data-budget="45" data-rubric="Execution: the public datasets every 3D model is built from" aria-label="Slide 7: The datasets" tabindex="-1">
     <div class="g">
       <div class="head">
-        <h2 data-in>Real scans, <em>real millimetres.</em></h2>
+        <h2 data-in>Real scans, <em>real models</em></h2>
         <p class="lede" data-in>Three public CT datasets and one anatomical atlas. 45 labelled CT cases in all.</p>
       </div>
       <div class="sets">
-        <div class="panel set" data-in><canvas class="thumb" data-kind="ircad" aria-hidden="true"></canvas><div class="body"><div class="top"><span>DICOM · CT</span><b class="num">20<small>patients</small></b></div><h3>3D-IRCADb-01</h3><p>Liver, vessel and tumour masks, plus IRCAD's own reference meshes that we check our output against.</p></div></div>
-        <div class="panel set" data-in><canvas class="thumb" data-kind="liver" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">10<small>cases</small></b></div><h3>MSD Task03 · Liver</h3><p>Medical Segmentation Decathlon. Labels: liver and tumour. Our first real run, at 1 mm isotropic.</p></div></div>
-        <div class="panel set" data-in><canvas class="thumb" data-kind="vessel" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">15<small>cases</small></b></div><h3>MSD Task08 · Vessels</h3><p>Labels: hepatic vessels and tumour. Thin branching tubes that smoothing must not erase.</p></div></div>
-        <div class="panel set" data-in><canvas class="thumb" data-kind="heart" aria-hidden="true"></canvas><div class="body"><div class="top"><span>Mesh atlas</span><b class="num">16<small>parts</small></b></div><h3>BodyParts3D · Heart</h3><p>Chambers, great vessels, coronaries and valves, each named. The heart on our last slide.</p></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="ircad" aria-hidden="true"></canvas><div class="body"><div class="top"><span>DICOM · CT</span><b class="num">20<small>patients</small></b></div><h3>3D-IRCADb-01</h3></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="liver" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">10<small>cases</small></b></div><h3>MSD Task03 · Liver</h3></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="vessel" aria-hidden="true"></canvas><div class="body"><div class="top"><span>NIfTI · CT</span><b class="num">15<small>cases</small></b></div><h3>MSD Task08 · Vessels</h3></div></div>
+        <div class="panel set" data-in><canvas class="thumb" data-kind="heart" aria-hidden="true"></canvas><div class="body"><div class="top"><span>Mesh atlas</span><b class="num">16<small>parts</small></b></div><h3>BodyParts3D · Heart</h3></div></div>
       </div>
     </div>
   </section>
 
   <!-- 10 system map -->
-  <section class="slide s-road" id="s-road" data-title="System map" data-c="exe" data-budget="40" data-rubric="Execution: the system map, from patient imaging to the surgeon" aria-label="Slide 9: System map" tabindex="-1">
+  <section class="slide s-road" id="s-road" data-title="System map" data-c="exe" data-budget="40" data-rubric="Execution: the system map, from patient imaging to the surgeon" aria-label="Slide 8: System map" tabindex="-1">
     <div class="g">
       <div class="head">
-        <h2 data-in>From scan <em>to surgeon.</em></h2>
+        <h2 data-in>From scan <em>to surgeon</em></h2>
         <p class="lede" data-in>Three streams, one webcam, one browser. They meet in a single surgical view.</p>
       </div>
       <div class="sysmap" id="sysmap">
@@ -591,6 +603,31 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
     </div>
   </section>
 
+  <!-- vision -->
+  <section class="slide s-vis" id="s-vis" data-title="Where we're going" data-c="exe" data-budget="40" data-rubric="Execution: what runs today and what comes next" aria-label="Slide 9: Today and next" tabindex="-1">
+    <div class="g">
+      <div class="head">
+        <h2 data-in>Where NOVA is, <em>and where it's going</em></h2>
+      </div>
+      <div class="vis">
+        <div class="vcol" data-in>
+          <div class="vhead"><span class="pill p-now">Current</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.7 2.7L16.5 9"/></svg></div>
+          <ol class="vcard">
+            <li><i>1</i><div><h3>Gestures</h3></div></li>
+            <li><i>2</i><div><h3>Scan → Render</h3></div></li>
+          </ol>
+        </div>
+        <div class="vcol" data-in>
+          <div class="vhead"><span class="pill p-later">Vision</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg></div>
+          <ol class="vcard">
+            <li><i>1</i><div><h3>AI anomaly detection</h3><p>Flags tumours and suspicious regions for review.</p></div></li>
+            <li><i>2</i><div><h3>More sources of truth</h3><p>Heart and brain from real patient scans, MRI, PET/CT activity overlays, bone fractures and tumours, 3D ultrasound.</p></div></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 12 heart + close -->
   <section class="slide s-heart" id="s-heart" data-title="The heart, and thanks" data-budget="45" data-rubric="Live: the prototype's own 16-part heart · BodyParts3D, CC BY 4.0" aria-label="Slide 10: Live heart and close" tabindex="-1">
     <div class="heartview" id="heartview">
@@ -599,7 +636,7 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
     </div>
     <div class="g">
       <div class="left">
-        <h2 data-in>The prototype's <em>heart.</em></h2>
+        <h2 data-in>The prototype's <em>heart</em></h2>
         <p class="dim" data-in>The same 16-part model. Live demo next.</p>
         <div class="reel" data-in>
           <p class="step"><span class="k" id="reelN">01</span><b id="reelStep">Turn</b></p>
@@ -609,7 +646,7 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
       </div>
     </div>
     <div class="closer" data-in>
-      <p class="big">Keep the plan <em>in reach.</em></p>
+      <p class="big">Keep the plan <em>in reach</em></p>
       <a class="btn" href="https://github.com/s-meher/jas-grainger" target="_blank" rel="noopener">View the code <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"/></svg></a>
     </div>
   </section>
@@ -658,15 +695,15 @@ var TEAM = [];
 
 /* Speaker notes, in slide order. Speakers A–D until names are added. */
 var NOTES = {
- "s-film":["A","We're Team JAS, and this is NOVA. A surgeon studies the CT or MRI before an operation, then carries that plan in their head for hours. NOVA puts the scan back in their hands: a 3D model they turn, zoom and cut open with bare hands. Here's what that looks like in the room.\n(Press Play the film. Stay quiet for 57 seconds. The deck moves on by itself.)"],
- "s-problem":["A","Once a surgeon scrubs in, the scan is out of reach. The screen is outside the sterile field, so checking it means stepping away or asking someone to drive.\nAnd the scan is hundreds of flat slices. The surgeon rebuilds solid anatomy in their head, when attention is scarcest. More load means slower decisions in the steps that matter."],
+ "s-film":["A","We're Team NOVA. A surgeon studies the CT or MRI before an operation, then carries that plan in their head for hours. NOVA puts the scan back in their hands: a 3D model they turn, zoom and cut open with bare hands. Here's what that looks like in the room.\n(Press Play the film. Stay quiet for 57 seconds. The deck moves on by itself.)"],
+ "s-problem":["A","Once a surgeon scrubs in, they can't touch the screen. It's outside the sterile area, so they have to step away or ask someone else to scroll.\nAnd scans are flat 2D images. The surgeon has to picture the 3D organ in their head. That extra mental work slows surgery down at the moments that matter most."],
  "s-how":["A","NOVA is four stages behind one webcam.\nReconstruct: labelled scans become meshes in real millimetres.\nSee: computer vision tracks both hands from the webcam. No gloves with markers, no controller.\nRespond: pinch to turn, spread to zoom, a flat palm to slice.\nAdvise: a vision language model flags regions worth a second look."],
- "s-eff":["B","Does it solve the problem? Here's each piece and where it honestly stands.\nTouchless turn, zoom and cut: working today on a reference heart.\nThe patient's own anatomy, cut along any plane: working, from liver CT in real millimetres.\nAn AI that points at what to check: proposed.\nResidents: graded cases on real anatomy, one cardiac case working."],
- "s-inn":["B","Here's what we think is new: your palm is the scalpel.\nThe plane of a flat hand becomes the incision. Spread two fingers to go deeper, and the cut faces render solid, like tissue.\nIt's sterile by design: the only hardware is a webcam.\nIt's measured in real millimetres; simplified meshes must pass displacement, volume and topology checks.\nAnd the AI can see what the hand points at, but can only send validated commands."],
+ "s-inn":["B","Here's what's new: your palm is the scalpel.\nGestured incisions: move your palm through the model to slice it.\nSterile by design: just a webcam, so the surgeon stays sterile.\nTrue to anatomy: real patient scans become real 3D models.\nAnd safe AI: it can only point things out. It can't take actions on its own."],
  "s-sca":["C","How many people could this reach? 313 million procedures a year, and any planned from imaging is a candidate. Five billion people lack safe, affordable surgery, and expensive hardware never reaches them.\nNOVA needs three devices hospitals and schools already own. It runs in Chrome, takes minutes to learn, and it's open source on open tools and data."],
  "s-emp":["C","People stay above the technology.\nAccess: programs without sim labs and hospitals without navigation suites still get patient-specific 3D.\nUsefulness: every name and teaching line is cited and reviewed.\nControl: watch the screen. The AI flags a region. The surgeon decides what happens. The AI never diagnoses or acts, and cutting must be armed."],
  "s-exe":["D","Execution starts with data. We built on public sources. 3D-IRCADb: twenty patients in DICOM, with IRCAD's own reference meshes we test against. Two Medical Segmentation Decathlon sets: ten liver CTs and fifteen hepatic-vessel CTs in NIfTI. And the BodyParts3D heart, sixteen named parts."],
  "s-road":["D","Here's the whole system. Patient CT or MRI comes in. Geometry-checked scans go to our 3D graphics pipeline: segmentation masks become meshes in real millimetres, then the model is rendered. The same scans can feed an AI detection engine that flags suspicious regions for a clinician to review.\nA webcam tracks the surgeon's hands in mid air. All three meet in one web app, the surgical view, for pre-op planning and in-op review."],
+ "s-vis":["D","Here's where NOVA is, and where it's going.\nCurrent: gestures, and scan to render.\nVision: AI anomaly detection that flags tumours and suspicious regions for review. And more sources of truth: heart and brain from real patient scans, MRI, PET/CT activity overlays, bone fractures and tumours, and 3D ultrasound."],
  "s-heart":["A","This is the prototype's own heart: sixteen named parts. It turns, pulls apart, and cuts on three planes with solid faces, and every structure has a name. In a moment we'll show it live, driven by bare hands.\nA surgeon who can't touch anything still gets the scan back in their hands. NOVA: keep the plan in reach. The code is open. Thank you, and we'd love your questions."]
 };
 </script>
@@ -810,7 +847,7 @@ var NOTES = {
     rehearse=false;times[cur]+=(Date.now()-slide0)/1000;slide0=Date.now();
     var tot=0,rows=slides.map(function(s,i){tot+=times[i];var d=times[i]-budgets[i];
       return '<tr><td>'+(i+1)+'</td><td>'+s.dataset.title+'</td><td class="n">'+fmt(budgets[i])+'</td><td class="n">'+fmt(times[i])+'</td><td class="n '+(d>5?'over':'ok')+'">'+(d>=0?'+':'−')+fmt(Math.abs(d))+'</td></tr>';}).join('');
-    box.innerHTML='<h2>Rehearsal <em>timing.</em></h2><p class="lede">Total '+fmt(tot)+' against a plan of '+fmt(PLAN)+' and a limit of 10:00. '+(tot>600?'Over the limit: trim the red rows.':'Inside the limit.')+'</p><table><thead><tr><th>#</th><th>Slide</th><th class="n">Plan</th><th class="n">Actual</th><th class="n">Difference</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td></td><td>Total</td><td class="n">'+fmt(PLAN)+'</td><td class="n">'+fmt(tot)+'</td><td class="n">'+(tot-PLAN>=0?'+':'−')+fmt(Math.abs(tot-PLAN))+'</td></tr></tfoot></table><p><button class="btn" type="button" id="closeRes">Close</button></p>';
+    box.innerHTML='<h2>Rehearsal <em>timing</em></h2><p class="lede">Total '+fmt(tot)+' against a plan of '+fmt(PLAN)+' and a limit of 10:00. '+(tot>600?'Over the limit: trim the red rows.':'Inside the limit.')+'</p><table><thead><tr><th>#</th><th>Slide</th><th class="n">Plan</th><th class="n">Actual</th><th class="n">Difference</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td></td><td>Total</td><td class="n">'+fmt(PLAN)+'</td><td class="n">'+fmt(tot)+'</td><td class="n">'+(tot-PLAN>=0?'+':'−')+fmt(Math.abs(tot-PLAN))+'</td></tr></tfoot></table><p><button class="btn" type="button" id="closeRes">Close</button></p>';
     box.classList.add('show');$('closeRes').onclick=function(){box.classList.remove('show');};
     var log=JSON.parse(store('nova-rehearsals')||'[]');log.push({at:new Date().toISOString(),total:tot,times:times.slice()});store('nova-rehearsals',JSON.stringify(log.slice(-20)));
   }
