@@ -543,7 +543,7 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
       </div>
       <div class="mock panel" data-in aria-label="Illustration of the NOVA screen: the AI flags a region, the surgeon chooses what to do">
         <div class="view">
-          <div class="bar"><span class="on">Liver · CT</span><span>Coronal</span><span>mm</span></div>
+          <div class="bar"><span class="on">Liver · CT</span><span>Coronal</span></div>
           <svg id="mockSvg" viewBox="0 0 400 260" aria-hidden="true">
             <defs><radialGradient id="lv" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#b8615a"/><stop offset="1" stop-color="#6e2b28"/></radialGradient></defs>
             <path d="M40 120 C40 60 120 30 210 34 C300 38 372 70 366 112 C360 150 300 160 250 186 C200 212 140 226 96 206 C56 188 40 160 40 120Z" fill="url(#lv)" opacity=".92"/>
@@ -595,7 +595,7 @@ body.is-presenter .presenter{display:grid;min-height:100vh;grid-template-columns
         <div class="sn n-img" id="n-img" data-in><span class="k">Input</span><h3>Patient imaging</h3><p>CT and MRI scans, DICOM or NIfTI.</p></div>
         <span class="elabel" data-in>geometry-checked<br>scans</span>
         <div class="sn n-hand" id="n-hand" data-in><span class="k">Vision</span><h3>Webcam hand tracking</h3><p>Mid-air gestures, 21 points per hand.</p></div>
-        <div class="sn core n-pipe" id="n-pipe" data-in><span class="k">Graphics</span><h3>3D graphics pipeline</h3><p>Segmentation masks → 3D meshes in real mm, then model rendering.</p></div>
+        <div class="sn core n-pipe" id="n-pipe" data-in><span class="k">Graphics</span><h3>3D graphics pipeline</h3><p>Segmentation masks → 3D meshes, then model rendering.</p></div>
         <div class="sn ai n-ai" id="n-ai" data-in><span class="k">AI · proposed</span><h3>AI detection engine</h3><p>Flags suspicious regions for clinician review.</p></div>
         <div class="sn n-web" id="n-web" data-in><span class="k">Web app</span><h3>Surgical view</h3><p>Runs in Chrome. Validated commands only.</p></div>
         <div class="sn end n-use" id="n-use" data-in><span class="k">Surgeon utility</span><h3>Pre-op planning</h3><p>and in-op review.</p></div>
